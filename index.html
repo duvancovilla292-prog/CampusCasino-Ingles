@@ -1,0 +1,4716 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Casino Campus &mdash; Multiplayer</title>
+
+  <!-- Firebase Realtime Database (serverless sync layer). The project config is
+       hardcoded in the script below, so every visitor connects automatically. -->
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-database-compat.js"></script>
+
+  <style>
+/* =========================================================================
+   CASINO CAMPUS — STYLESHEET
+   Dark "casino felt table" theme: green felt + gold. Fully self-contained,
+   no external fonts or assets (works fully offline once loaded).
+   ========================================================================= */
+
+:root {
+  --color-bg: #0a0e12;
+  --color-bg-alt: #0f151a;
+  --color-felt: #0b3d2e;
+  --color-felt-dark: #072a20;
+  --color-felt-light: #12523f;
+  --color-gold: #e9c46a;
+  --color-gold-strong: #f4c430;
+  --color-gold-dark: #b8860b;
+  --color-red: #e0483e;
+  --color-red-dark: #a8302a;
+  --color-black: #14171c;
+  --color-green: #2e8b57;
+
+  --color-surface: #151b22;
+  --color-surface-alt: #1c2530;
+  --color-border: #2a3542;
+  --color-text: #eef2f5;
+  --color-text-muted: #9aa7b4;
+  --color-text-inverse: #10151a;
+
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 22px;
+
+  --shadow-soft: 0 8px 24px rgba(0, 0, 0, 0.35);
+  --shadow-strong: 0 16px 48px rgba(0, 0, 0, 0.5);
+
+  --font-body: "Segoe UI", "Helvetica Neue", Arial, system-ui, -apple-system, sans-serif;
+
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-body);
+  color: var(--color-text);
+  background:
+    radial-gradient(ellipse at top, rgba(233, 196, 106, 0.06), transparent 55%),
+    radial-gradient(ellipse at bottom, rgba(11, 61, 46, 0.35), transparent 60%),
+    var(--color-bg);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+.view {
+  min-height: 100vh;
+}
+
+.view[hidden] {
+  display: none !important;
+}
+
+button {
+  font-family: inherit;
+}
+
+/* =========================================================================
+   BUTTONS
+   ========================================================================= */
+.btn {
+  cursor: pointer;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  padding: 0.65rem 1.1rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, background-color 0.15s ease, opacity 0.15s ease;
+  color: var(--color-text);
+  background: var(--color-surface-alt);
+}
+
+.btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-block {
+  display: block;
+  width: 100%;
+  text-align: center;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--color-gold-strong), var(--color-gold-dark));
+  color: var(--color-text-inverse);
+  box-shadow: 0 4px 14px rgba(244, 196, 48, 0.25);
+}
+
+.btn-primary:hover:not(:disabled) {
+  box-shadow: 0 6px 18px rgba(244, 196, 48, 0.4);
+}
+
+.btn-secondary {
+  background: var(--color-surface-alt);
+  border-color: var(--color-border);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: #24303d;
+}
+
+.btn-ghost {
+  background: transparent;
+  border-color: var(--color-border);
+  color: var(--color-text-muted);
+}
+
+.btn-ghost:hover:not(:disabled) {
+  color: var(--color-text);
+  border-color: var(--color-gold-dark);
+}
+
+.btn-danger {
+  background: linear-gradient(135deg, var(--color-red), var(--color-red-dark));
+  color: #fff;
+}
+
+.btn-small {
+  padding: 0.35rem 0.65rem;
+  font-size: 0.8rem;
+  border-radius: 6px;
+}
+
+.btn-icon {
+  padding: 0.5rem 0.65rem;
+  font-size: 1.05rem;
+  line-height: 1;
+}
+
+.btn-file {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-action {
+  background: var(--color-felt-light);
+  border-color: var(--color-felt);
+}
+
+.btn-action:hover:not(:disabled) {
+  background: #17654e;
+}
+
+.btn-game-select {
+  background: transparent;
+  border-color: var(--color-border);
+  color: var(--color-text-muted);
+}
+
+.btn-game-select[aria-pressed="true"] {
+  background: var(--color-felt-light);
+  color: var(--color-text);
+  border-color: var(--color-gold-dark);
+  box-shadow: inset 0 0 0 1px rgba(233, 196, 106, 0.3);
+}
+
+/* =========================================================================
+   FORM ELEMENTS
+   ========================================================================= */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-bottom: 1rem;
+}
+
+.form-group label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.input-field {
+  width: 100%;
+  padding: 0.65rem 0.8rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-alt);
+  color: var(--color-text);
+  font-size: 0.95rem;
+}
+
+.input-field:focus {
+  outline: none;
+  border-color: var(--color-gold-dark);
+  box-shadow: 0 0 0 3px rgba(233, 196, 106, 0.2);
+}
+
+.input-search {
+  margin-bottom: 0.9rem;
+}
+
+.form-help {
+  color: var(--color-text-muted);
+  font-size: 0.75rem;
+}
+
+.form-help code {
+  background: var(--color-bg-alt);
+  padding: 0.1rem 0.35rem;
+  border-radius: 4px;
+}
+
+.form-error {
+  display: block;
+  min-height: 1.1rem;
+  color: var(--color-red);
+  font-size: 0.82rem;
+  margin: -0.4rem 0 0.6rem;
+}
+
+/* =========================================================================
+   NOTIFICATIONS (toasts)
+   ========================================================================= */
+.notification-container {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 1000;
+  pointer-events: none;
+}
+
+.notification-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-width: 320px;
+}
+
+.toast {
+  pointer-events: auto;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  border-left: 4px solid var(--color-gold);
+  box-shadow: var(--shadow-soft);
+  font-size: 0.85rem;
+  animation: toast-in 0.25s ease;
+}
+
+.toast-success { border-left-color: var(--color-green); }
+.toast-error { border-left-color: var(--color-red); }
+.toast-warning { border-left-color: var(--color-gold); }
+
+.toast-exit {
+  animation: toast-out 0.25s ease forwards;
+}
+
+@keyframes toast-in {
+  from { opacity: 0; transform: translateX(30px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes toast-out {
+  to { opacity: 0; transform: translateX(30px); }
+}
+
+/* =========================================================================
+   CELEBRATION OVERLAY
+   ========================================================================= */
+.celebration-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.celebration-banner {
+  font-size: clamp(1.5rem, 4vw, 2.6rem);
+  font-weight: 800;
+  color: var(--color-gold-strong);
+  background: rgba(10, 14, 18, 0.85);
+  border: 2px solid var(--color-gold);
+  border-radius: var(--radius-lg);
+  padding: 1.2rem 2.2rem;
+  text-shadow: 0 0 20px rgba(244, 196, 48, 0.6);
+  box-shadow: var(--shadow-strong);
+  animation: celebration-pop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.celebration-banner-exit {
+  animation: celebration-fade 0.3s ease forwards;
+}
+
+@keyframes celebration-pop {
+  from { opacity: 0; transform: scale(0.6); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes celebration-fade {
+  to { opacity: 0; transform: scale(1.08); }
+}
+
+/* =========================================================================
+   AUTH VIEW (room connect / player selection)
+   ========================================================================= */
+.view-auth {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1.25rem;
+}
+
+.auth-shell {
+  width: 100%;
+  max-width: 960px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-strong);
+  overflow: hidden;
+}
+
+.auth-header {
+  padding: 1.75rem 2rem 1.25rem;
+  text-align: center;
+  background: linear-gradient(180deg, rgba(233, 196, 106, 0.08), transparent);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+}
+
+.brand-icon {
+  font-size: 1.8rem;
+  color: var(--color-gold-strong);
+}
+
+.auth-header h1 {
+  margin: 0;
+  font-size: 1.9rem;
+  letter-spacing: 0.02em;
+  background: linear-gradient(135deg, var(--color-gold-strong), var(--color-gold));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.auth-subtitle {
+  margin: 0.4rem 0 0;
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+}
+
+.auth-body {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr;
+  gap: 0;
+}
+
+.auth-panel {
+  padding: 1.5rem 1.75rem;
+}
+
+.players-panel {
+  border-right: 1px solid var(--color-border);
+  max-height: 520px;
+  overflow-y: auto;
+}
+
+.panel-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.85rem;
+}
+
+.panel-heading h2 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.players-count-badge {
+  background: var(--color-felt-light);
+  color: var(--color-gold);
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  border: 1px solid var(--color-gold-dark);
+}
+
+.players-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.players-empty {
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+  text-align: center;
+  padding: 1.5rem 0.5rem;
+}
+
+.player-card {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 0.75rem;
+  background: var(--color-surface-alt);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  transition: border-color 0.15s ease;
+}
+
+.player-card:hover {
+  border-color: var(--color-gold-dark);
+}
+
+.player-avatar {
+  flex-shrink: 0;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--color-felt-light), var(--color-felt-dark));
+  color: var(--color-gold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.8rem;
+  border: 1px solid var(--color-gold-dark);
+}
+
+.player-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.player-name {
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.player-balance {
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+}
+
+.player-actions {
+  display: flex;
+  gap: 0.4rem;
+  flex-shrink: 0;
+}
+
+.auth-divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  color: var(--color-text-muted);
+  font-size: 0.75rem;
+  margin: 1.1rem 0;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+  content: "";
+  flex: 1;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.auth-divider span {
+  padding: 0 0.75rem;
+}
+
+.new-player-panel .btn + .btn {
+  margin-top: 0.6rem;
+}
+
+.auth-footer {
+  padding: 0.85rem 1.75rem;
+  text-align: center;
+  font-size: 0.72rem;
+  color: var(--color-text-muted);
+  border-top: 1px solid var(--color-border);
+  background: var(--color-bg-alt);
+}
+
+/* =========================================================================
+   TOP PANEL (lobby)
+   ========================================================================= */
+.top-panel {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  padding: 0.8rem 1.25rem;
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+  box-shadow: var(--shadow-soft);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.top-panel-user,
+.top-panel-balance {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.top-panel-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--color-felt-light), var(--color-felt-dark));
+  color: var(--color-gold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 700;
+  border: 1px solid var(--color-gold-dark);
+}
+
+.top-panel-user-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
+}
+
+.top-panel-label {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-muted);
+}
+
+.top-panel-value {
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.top-panel-balance .top-panel-value {
+  color: var(--color-gold-strong);
+  transition: transform 0.15s ease;
+}
+
+.balance-pulse {
+  animation: balance-pop 0.3s ease;
+}
+
+@keyframes balance-pop {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.18); }
+  100% { transform: scale(1); }
+}
+
+.top-panel-unit {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+.game-selector {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  margin-left: auto;
+}
+
+.top-panel-actions {
+  display: flex;
+  gap: 0.4rem;
+}
+
+/* =========================================================================
+   GAME SECTIONS (shared)
+   ========================================================================= */
+.game-section {
+  padding: 1.75rem 1.5rem 3rem;
+  max-width: 980px;
+  margin: 0 auto;
+}
+
+.game-section[hidden] {
+  display: none;
+}
+
+.game-section h2 {
+  text-align: center;
+  color: var(--color-gold);
+  margin-top: 0;
+}
+
+.game-result {
+  text-align: center;
+  min-height: 1.4rem;
+  font-weight: 600;
+  margin-top: 1rem;
+}
+
+.bet-group {
+  max-width: 220px;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 0.6rem;
+}
+
+/* =========================================================================
+   BLACKJACK
+   ========================================================================= */
+.blackjack-table {
+  background: radial-gradient(ellipse at center, var(--color-felt-light), var(--color-felt-dark));
+  border: 6px solid #3a2415;
+  border-radius: var(--radius-lg);
+  padding: 1.75rem 1.5rem;
+  box-shadow: inset 0 0 60px rgba(0, 0, 0, 0.4), var(--shadow-soft);
+}
+
+.dealer-area, .player-area {
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.dealer-area h3, .player-area h3 {
+  margin: 0 0 0.5rem;
+  color: var(--color-gold);
+  font-size: 0.95rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.card-row {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 84px;
+  flex-wrap: wrap;
+}
+
+.card {
+  width: 58px;
+  height: 82px;
+  background: #fdfdfb;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1.15rem;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.35);
+  border: 1px solid #d8d8d0;
+}
+
+.card-red { color: var(--color-red-dark); }
+.card-black { color: var(--color-black); }
+
+.card-back {
+  background: repeating-linear-gradient(45deg, var(--color-felt-dark), var(--color-felt-dark) 6px, var(--color-felt-light) 6px, var(--color-felt-light) 12px);
+  border: 2px solid var(--color-gold-dark);
+}
+
+.card-deal-in {
+  animation: card-deal 0.28s ease;
+}
+
+@keyframes card-deal {
+  from { opacity: 0; transform: translateY(-16px) scale(0.9); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.score-display {
+  display: inline-block;
+  margin-top: 0.4rem;
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
+
+.blackjack-controls {
+  display: flex;
+  align-items: flex-end;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+  margin-top: 1.5rem;
+  justify-content: center;
+}
+
+/* =========================================================================
+   ROULETTE
+   ========================================================================= */
+.roulette-layout {
+  display: flex;
+  gap: 2rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.roulette-wheel-container {
+  position: relative;
+  width: 200px;
+  height: 200px;
+  flex-shrink: 0;
+}
+
+.roulette-wheel {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: conic-gradient(
+    var(--color-red) 0deg 20deg, var(--color-black) 20deg 40deg,
+    var(--color-red) 40deg 60deg, var(--color-black) 60deg 80deg,
+    var(--color-red) 80deg 100deg, var(--color-black) 100deg 120deg,
+    var(--color-red) 120deg 140deg, var(--color-black) 140deg 160deg,
+    var(--color-red) 160deg 180deg, var(--color-black) 180deg 200deg,
+    var(--color-red) 200deg 220deg, var(--color-black) 220deg 240deg,
+    var(--color-red) 240deg 260deg, var(--color-black) 260deg 280deg,
+    var(--color-red) 280deg 300deg, var(--color-black) 300deg 320deg,
+    var(--color-red) 320deg 340deg, var(--color-black) 340deg 350deg,
+    var(--color-green) 350deg 360deg
+  );
+  border: 6px solid var(--color-gold-dark);
+  box-shadow: var(--shadow-strong), inset 0 0 20px rgba(0, 0, 0, 0.5);
+  transition: transform 3s cubic-bezier(0.15, 0.85, 0.25, 1);
+  position: relative;
+}
+
+.roulette-wheel::after {
+  content: "";
+  position: absolute;
+  inset: 34%;
+  border-radius: 50%;
+  background: radial-gradient(circle, #2b2013, #14100a);
+  border: 3px solid var(--color-gold);
+}
+
+.roulette-pointer {
+  position: absolute;
+  top: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 10px solid transparent;
+  border-right: 10px solid transparent;
+  border-top: 16px solid var(--color-gold-strong);
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.5));
+  z-index: 2;
+}
+
+/* =========================================================================
+   PLAYER WHEEL (multiplayer name-elimination roulette)
+   ========================================================================= */
+.wheel-layout {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.wheel-container {
+  position: relative;
+  width: 280px;
+  height: 280px;
+  flex-shrink: 0;
+}
+
+@media (min-width: 640px) {
+  .wheel-container {
+    width: 340px;
+    height: 340px;
+  }
+}
+
+.wheel-dial {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 6px solid var(--color-gold-dark);
+  box-shadow: var(--shadow-strong), inset 0 0 20px rgba(0, 0, 0, 0.5);
+  transition: transform 3.2s cubic-bezier(0.15, 0.85, 0.25, 1);
+  position: relative;
+  background: var(--color-felt-dark);
+}
+
+.wheel-hub {
+  position: absolute;
+  inset: 40%;
+  border-radius: 50%;
+  background: radial-gradient(circle, #2b2013, #14100a);
+  border: 3px solid var(--color-gold);
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+}
+
+.wheel-label {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  height: 1.1em;
+  line-height: 1.1em;
+  margin-top: -0.55em;
+  transform-origin: 0 50%;
+  text-align: right;
+  padding-right: 12px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--color-text);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.wheel-pointer {
+  position: absolute;
+  top: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 11px solid transparent;
+  border-right: 11px solid transparent;
+  border-top: 18px solid var(--color-gold-strong);
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.5));
+  z-index: 3;
+}
+
+.wheel-empty-state {
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+  text-align: center;
+  padding: 0 1rem;
+}
+
+.wheel-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+  justify-content: center;
+}
+
+.wheel-pool-panel {
+  width: 100%;
+  max-width: 420px;
+}
+
+.wheel-pool-list {
+  list-style: none;
+  margin: 0.5rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  justify-content: center;
+}
+
+.wheel-pool-chip {
+  background: var(--color-surface-alt);
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  padding: 0.3rem 0.75rem;
+  font-size: 0.8rem;
+  color: var(--color-text);
+}
+
+.wheel-pool-count {
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+.wheel-winner-name {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--color-gold-strong);
+  text-align: center;
+  margin: 0.5rem 0 1.25rem;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.modal-actions .btn {
+  flex: 1;
+  min-width: 140px;
+}
+
+@keyframes wheel-pulse {
+  0%, 100% { transform: translateX(-50%) scale(1); }
+  50% { transform: translateX(-50%) scale(1.15); }
+}
+
+.wheel-pointer.is-spinning {
+  animation: wheel-pulse 0.4s ease-in-out infinite;
+}
+
+.roulette-board-wrapper {
+  flex: 1;
+  min-width: 280px;
+}
+
+.roulette-numbers {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(34px, 1fr));
+  gap: 4px;
+  margin-bottom: 0.75rem;
+}
+
+.roulette-number-cell {
+  aspect-ratio: 1;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  color: #fff;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  background: var(--color-surface-alt);
+}
+
+.roulette-number-cell.is-red { background: var(--color-red-dark); }
+.roulette-number-cell.is-black { background: var(--color-black); }
+.roulette-number-cell[data-number="0"] { background: var(--color-green); }
+
+.roulette-number-cell.is-selected {
+  outline: 3px solid var(--color-gold-strong);
+  outline-offset: -3px;
+}
+
+.roulette-colors, .roulette-parity {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.roulette-color-bet, .roulette-parity-bet {
+  flex: 1;
+  color: #fff;
+  border-color: var(--color-border);
+}
+
+.roulette-color-bet.is-red { background: var(--color-red-dark); }
+.roulette-color-bet.is-black { background: var(--color-black); }
+.roulette-color-bet.is-green { background: var(--color-green); }
+.roulette-parity-bet { background: var(--color-surface-alt); }
+
+.roulette-color-bet.is-active, .roulette-parity-bet.is-active {
+  outline: 3px solid var(--color-gold-strong);
+  outline-offset: -3px;
+}
+
+.roulette-controls {
+  display: flex;
+  align-items: flex-end;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-top: 1.5rem;
+  justify-content: center;
+}
+
+.chip-panel {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.chip-btn {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  border: 2px dashed var(--color-gold-dark);
+  background: var(--color-surface-alt);
+  font-weight: 700;
+  font-size: 0.8rem;
+}
+
+.chip-btn.is-selected {
+  border-style: solid;
+  background: linear-gradient(135deg, var(--color-gold-strong), var(--color-gold-dark));
+  color: var(--color-text-inverse);
+}
+
+/* =========================================================================
+   SLOTS
+   ========================================================================= */
+.slots-machine {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem;
+  background: linear-gradient(180deg, #2a1f10, #1a1409);
+  border: 6px solid var(--color-gold-dark);
+  border-radius: var(--radius-lg);
+  padding: 2rem 1.5rem;
+  box-shadow: var(--shadow-strong);
+}
+
+.slots-reels {
+  display: flex;
+  gap: 0.75rem;
+  background: var(--color-black);
+  padding: 1rem;
+  border-radius: var(--radius-md);
+  border: 3px solid var(--color-gold);
+}
+
+.reel {
+  width: 78px;
+  height: 78px;
+  background: #fdfdfb;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+}
+
+.reel-symbol {
+  font-size: 2.2rem;
+  transition: transform 0.1s ease;
+}
+
+.reel.is-spinning .reel-symbol {
+  animation: reel-spin 0.12s linear infinite;
+}
+
+@keyframes reel-spin {
+  0% { transform: translateY(-6px); filter: blur(1px); }
+  50% { transform: translateY(6px); filter: blur(1px); }
+  100% { transform: translateY(-6px); filter: blur(1px); }
+}
+
+.slots-lever {
+  width: 90px;
+  height: 34px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--color-red), var(--color-red-dark));
+  border: 2px solid #7a1f1a;
+  cursor: pointer;
+  position: relative;
+  box-shadow: var(--shadow-soft);
+}
+
+.slots-lever::after {
+  content: "⬤";
+  position: absolute;
+  right: -8px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--color-gold-strong);
+  font-size: 1.3rem;
+}
+
+.slots-lever.lever-pulled {
+  transform: scale(0.94);
+}
+
+.slots-controls {
+  display: flex;
+  align-items: flex-end;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+  margin-top: 1.5rem;
+  justify-content: center;
+}
+
+/* =========================================================================
+   HI-LO
+   ========================================================================= */
+.hilo-table {
+  display: flex;
+  justify-content: center;
+  gap: 2.5rem;
+  flex-wrap: wrap;
+  background: radial-gradient(ellipse at center, var(--color-felt-light), var(--color-felt-dark));
+  border: 6px solid #3a2415;
+  border-radius: var(--radius-lg);
+  padding: 2rem 1.5rem;
+  box-shadow: inset 0 0 60px rgba(0, 0, 0, 0.4), var(--shadow-soft);
+}
+
+.hilo-current-card-area, .hilo-next-card-area {
+  text-align: center;
+}
+
+.hilo-current-card-area h3, .hilo-next-card-area h3 {
+  margin: 0 0 0.75rem;
+  color: var(--color-gold);
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.hilo-card {
+  width: 90px;
+  height: 128px;
+  background: #fdfdfb;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1.7rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  transition: transform 0.25s ease;
+}
+
+.hilo-card-hidden {
+  background: repeating-linear-gradient(45deg, var(--color-felt-dark), var(--color-felt-dark) 6px, var(--color-felt-light) 6px, var(--color-felt-light) 12px);
+  border: 2px solid var(--color-gold-dark);
+  color: transparent;
+}
+
+.hilo-controls {
+  display: flex;
+  align-items: flex-end;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+  margin-top: 1.5rem;
+  justify-content: center;
+}
+
+/* =========================================================================
+   MODALS (leaderboard & admin)
+   ========================================================================= */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(4, 6, 8, 0.72);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 800;
+  padding: 1rem;
+}
+
+.modal-overlay[hidden] {
+  display: none;
+}
+
+.modal {
+  position: relative;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 1.75rem;
+  width: 100%;
+  max-width: 480px;
+  max-height: 85vh;
+  overflow-y: auto;
+  box-shadow: var(--shadow-strong);
+}
+
+.admin-modal {
+  max-width: 720px;
+}
+
+.modal h2 {
+  margin-top: 0;
+  color: var(--color-gold);
+}
+
+.modal-subtitle {
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+  margin-top: -0.5rem;
+}
+
+.modal-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: transparent;
+  border: none;
+  color: var(--color-text-muted);
+  font-size: 1.1rem;
+  cursor: pointer;
+}
+
+.modal-close:hover {
+  color: var(--color-text);
+}
+
+/* Leaderboard */
+.leaderboard-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.leaderboard-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.55rem 0.75rem;
+  background: var(--color-surface-alt);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+}
+
+.leaderboard-item.is-current-player {
+  border-color: var(--color-gold-dark);
+  box-shadow: inset 0 0 0 1px rgba(233, 196, 106, 0.3);
+}
+
+.leaderboard-rank {
+  width: 28px;
+  text-align: center;
+  font-weight: 700;
+}
+
+.leaderboard-name {
+  flex: 1;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.leaderboard-balance {
+  color: var(--color-gold);
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+.leaderboard-empty {
+  text-align: center;
+  color: var(--color-text-muted);
+  padding: 1.5rem 0;
+}
+
+/* Admin */
+.admin-lock {
+  text-align: center;
+  padding: 1rem 0;
+}
+
+.admin-lock .input-field {
+  margin: 0.75rem 0;
+}
+
+.admin-summary {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.admin-stat {
+  flex: 1;
+  min-width: 120px;
+  text-align: center;
+  background: var(--color-surface-alt);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 0.75rem;
+}
+
+.admin-stat-value {
+  display: block;
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: var(--color-gold-strong);
+}
+
+.admin-stat label {
+  font-size: 0.72rem;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.admin-table-wrapper {
+  overflow-x: auto;
+  margin-bottom: 1.25rem;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+}
+
+.admin-table th, .admin-table td {
+  padding: 0.5rem 0.6rem;
+  text-align: left;
+  border-bottom: 1px solid var(--color-border);
+  white-space: nowrap;
+}
+
+.admin-table th {
+  color: var(--color-text-muted);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.net-positive { color: #4caf7d; }
+.net-negative { color: var(--color-red); }
+
+.admin-actions {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+/* =========================================================================
+   RESPONSIVE
+   ========================================================================= */
+@media (max-width: 800px) {
+  .auth-body {
+    grid-template-columns: 1fr;
+  }
+  .players-panel {
+    border-right: none;
+    border-bottom: 1px solid var(--color-border);
+    max-height: 320px;
+  }
+  .top-panel {
+    justify-content: center;
+  }
+  .game-selector {
+    margin-left: 0;
+    justify-content: center;
+    width: 100%;
+    order: 3;
+  }
+}
+
+@media (max-width: 480px) {
+  .auth-panel {
+    padding: 1.25rem 1.1rem;
+  }
+  .card, .hilo-card {
+    width: 48px;
+    height: 68px;
+    font-size: 0.95rem;
+  }
+  .hilo-card {
+    width: 70px;
+    height: 100px;
+    font-size: 1.3rem;
+  }
+  .roulette-wheel-container {
+    width: 160px;
+    height: 160px;
+  }
+}
+
+/* =========================================================================
+   ROOM / MULTIPLAYER CONNECTION SCREENS
+   ========================================================================= */
+.mode-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.mode-tab {
+  flex: 1;
+}
+
+.mode-tab.is-active {
+  background: linear-gradient(135deg, var(--color-gold-strong), var(--color-gold-dark));
+  color: var(--color-text-inverse);
+}
+
+.mode-panel[hidden] {
+  display: none;
+}
+
+.room-code-display {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  margin: 1rem 0;
+  padding: 1rem;
+  background: var(--color-surface-alt);
+  border: 1px dashed var(--color-gold-dark);
+  border-radius: var(--radius-md);
+}
+
+.room-code-value {
+  font-size: 1.8rem;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  color: var(--color-gold-strong);
+}
+
+.room-link-row {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.room-link-row input {
+  flex: 1;
+}
+
+.role-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background: var(--color-gold-dark);
+  color: var(--color-text-inverse);
+  margin-left: 0.4rem;
+  vertical-align: middle;
+}
+
+.connection-status {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+  margin-top: 0.5rem;
+}
+
+.connection-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-red);
+  flex-shrink: 0;
+}
+
+.connection-dot.is-online {
+  background: var(--color-green);
+  box-shadow: 0 0 6px rgba(46, 139, 87, 0.7);
+}
+
+.online-players-list {
+  list-style: none;
+  margin: 0.5rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.online-players-list li {
+  background: var(--color-surface-alt);
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  padding: 0.25rem 0.7rem;
+  font-size: 0.78rem;
+}
+
+.top-panel-room {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding-right: 0.75rem;
+  border-right: 1px solid var(--color-border);
+  margin-right: 0.25rem;
+}
+
+.setup-note {
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+  line-height: 1.5;
+}
+
+.setup-note a {
+  color: var(--color-gold);
+}
+
+/* =========================================================================
+   SETUP SCREEN (room code only)
+   ========================================================================= */
+.setup-card { max-width: 560px; width: 100%; margin: 0 auto; }
+.room-code-caption { font-size: 0.72rem; color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+.room-code-input { text-transform: uppercase; letter-spacing: 0.15em; font-size: 1.1rem; text-align: center; }
+.setup-divider {
+  display: flex; align-items: center; gap: 0.75rem; margin: 1.4rem 0 1.1rem;
+  color: var(--color-text-muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em;
+}
+.setup-divider::before, .setup-divider::after { content: ""; flex: 1; height: 1px; background: var(--color-border); }
+
+/* =========================================================================
+   LUCKY DRAW / WINNER SELECTION
+   ========================================================================= */
+.draw-controls { display: flex; flex-direction: column; align-items: center; gap: 0.85rem; margin: 1.1rem 0 1.25rem; }
+.draw-row { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 0.45rem; }
+.draw-row-label { width: 100%; text-align: center; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-text-muted); }
+.draw-count-btn { width: 42px; height: 42px; padding: 0; border-radius: 50%; }
+.draw-player-count { margin: 0; font-size: 0.82rem; color: var(--color-text-muted); }
+
+.draw-stage {
+  position: relative; width: 100%; min-height: 340px; padding: 1rem;
+  display: flex; align-items: center; justify-content: center; overflow: hidden;
+  border-radius: var(--radius-lg); border: 2px solid var(--color-gold-dark);
+  background: radial-gradient(ellipse at center, var(--color-felt-light), var(--color-felt) 55%, var(--color-felt-dark));
+  box-shadow: inset 0 0 60px rgba(0, 0, 0, 0.55), var(--shadow-strong);
+}
+.draw-canvas { display: block; max-width: 100%; }
+.draw-idle { text-align: center; color: var(--color-text-muted); max-width: 320px; }
+.draw-idle-icon { font-size: 3.2rem; filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.5)); }
+
+/* Mode 1: reels */
+.reels { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.7rem; }
+.reel {
+  --h: 52px; position: relative; width: clamp(88px, 28vw, 140px); height: calc(var(--h) * 3); overflow: hidden;
+  border-radius: 10px; border: 3px solid var(--color-gold-dark);
+  background: linear-gradient(#0d1216, #1b242d 50%, #0d1216); box-shadow: inset 0 0 18px #000, 0 6px 16px rgba(0, 0, 0, 0.45);
+}
+.reel::before, .reel::after { content: ""; position: absolute; left: 0; right: 0; height: var(--h); z-index: 2; pointer-events: none; }
+.reel::before { top: 0; background: linear-gradient(rgba(0, 0, 0, 0.75), transparent); }
+.reel::after { bottom: 0; background: linear-gradient(transparent, rgba(0, 0, 0, 0.75)); }
+.reel-window { position: absolute; left: 0; right: 0; top: var(--h); height: var(--h); z-index: 3; pointer-events: none; border-top: 2px solid var(--color-gold-strong); border-bottom: 2px solid var(--color-gold-strong); }
+.reel-strip { will-change: transform; }
+.reel-item { height: var(--h); display: flex; align-items: center; justify-content: center; padding: 0 0.4rem; font-weight: 700; font-size: 0.95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.reel.is-spinning .reel-strip { filter: blur(1.4px); }
+.reel.is-done { border-color: var(--color-gold-strong); box-shadow: 0 0 22px rgba(244, 196, 48, 0.6), inset 0 0 18px #000; }
+.reel.is-done .reel-window { background: rgba(244, 196, 48, 0.14); }
+
+/* Mode 3: card dealer */
+.deal-area { display: flex; flex-direction: column; align-items: center; gap: 1rem; width: 100%; }
+.deal-label { margin: 0; font-size: 0.8rem; color: var(--color-text-muted); }
+.deck { position: relative; width: 66px; height: 92px; margin: 0.5rem 0 1rem; }
+.deck-card {
+  position: absolute; inset: 0; border-radius: 8px; border: 2px solid #f5efe0;
+  background: repeating-linear-gradient(45deg, #7a1d18, #7a1d18 5px, #a8302a 5px, #a8302a 10px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.45);
+}
+.deck.is-shuffling .deck-card { animation: riffle 0.44s ease-in-out infinite; }
+@keyframes riffle {
+  0%, 100% { margin-left: 0; rotate: 0deg; }
+  25% { margin-left: -34px; rotate: -6deg; }
+  75% { margin-left: 34px; rotate: 6deg; }
+}
+.deal-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.7rem; min-height: 120px; }
+.deal-card { width: clamp(76px, 22vw, 104px); aspect-ratio: 5 / 7; perspective: 700px; }
+.deal-inner { position: relative; width: 100%; height: 100%; transform-style: preserve-3d; transition: transform 0.7s cubic-bezier(.2, .8, .2, 1); }
+.deal-card.is-flipped .deal-inner { transform: rotateY(180deg); }
+.deal-face {
+  position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.15rem;
+  padding: 0.3rem; border-radius: 10px; text-align: center; font-weight: 700; backface-visibility: hidden; -webkit-backface-visibility: hidden;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.45);
+}
+.deal-back { border: 3px solid #f5efe0; color: var(--color-gold); font-size: 1.7rem; background: repeating-linear-gradient(45deg, #7a1d18, #7a1d18 6px, #a8302a 6px, #a8302a 12px); }
+.deal-front { transform: rotateY(180deg); background: #f7f2e6; color: #14171c; border: 3px solid var(--color-gold-dark); overflow: hidden; }
+.deal-front.is-red .deal-suit { color: #c0392b; }
+.deal-suit { font-size: 1.5rem; line-height: 1; }
+.deal-name { font-size: 0.82rem; line-height: 1.15; max-width: 100%; overflow-wrap: anywhere; }
+.deal-tag { font-size: 0.55rem; letter-spacing: 0.12em; color: var(--color-gold-dark); }
+.deal-card.is-winner .deal-front { animation: card-glow 1.1s ease-in-out infinite alternate; }
+@keyframes card-glow {
+  from { box-shadow: 0 0 0 2px var(--color-gold), 0 0 14px 3px rgba(244, 196, 48, 0.55); }
+  to { box-shadow: 0 0 0 3px var(--color-gold-strong), 0 0 30px 10px rgba(244, 196, 48, 0.9); }
+}
+
+/* Podium (shared) */
+.draw-podium { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.6rem; margin-top: 1.25rem; min-height: 46px; }
+.podium-item {
+  display: flex; align-items: center; gap: 0.55rem; max-width: 100%; padding: 0.5rem 1rem 0.5rem 0.55rem; border-radius: 999px;
+  background: linear-gradient(135deg, rgba(244, 196, 48, 0.2), rgba(184, 134, 11, 0.12)); border: 1px solid var(--color-gold-dark);
+  font-weight: 700; animation: podium-in 0.5s cubic-bezier(.2, 1.4, .4, 1);
+}
+.podium-rank { flex: none; width: 26px; height: 26px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 0.8rem; color: var(--color-text-inverse); background: linear-gradient(135deg, var(--color-gold-strong), var(--color-gold-dark)); }
+.podium-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+@keyframes podium-in { from { transform: scale(0.4); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+/* =========================================================================
+   UI POLISH: viewport units, safe areas, small screens, motion
+   ========================================================================= */
+html { -webkit-text-size-adjust: 100%; }
+body { overflow-x: hidden; }
+.view { min-height: 100vh; min-height: 100dvh; }
+button, input { touch-action: manipulation; }
+.top-panel { padding-left: max(1.25rem, env(safe-area-inset-left)); padding-right: max(1.25rem, env(safe-area-inset-right)); padding-top: max(0.8rem, env(safe-area-inset-top)); }
+.notification-container { top: max(1rem, env(safe-area-inset-top)); right: max(1rem, env(safe-area-inset-right)); }
+.game-selector .btn { white-space: nowrap; }
+.form-group .input-field, .room-link-row .input-field { min-width: 0; }
+
+@media (max-width: 800px) {
+  .top-panel { gap: 0.7rem; }
+  .top-panel-room { border-right: none; padding-right: 0; margin-right: 0; }
+  .top-panel-actions { margin-left: auto; }
+}
+
+@media (max-width: 480px) {
+  .game-section { padding: 1.25rem 0.9rem 2.5rem; }
+  .notification-container { left: 0.75rem; right: 0.75rem; }
+  .notification-list { max-width: none; }
+  .game-selector { gap: 0.3rem; }
+  .game-selector .btn { padding: 0.5rem 0.65rem; font-size: 0.82rem; }
+  .draw-stage { min-height: 300px; padding: 0.75rem; }
+  .draw-mode-btn { flex: 1 1 calc(50% - 0.45rem); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .deck.is-shuffling .deck-card, .deal-card.is-winner .deal-front, .podium-item { animation: none; }
+  .deal-inner { transition-duration: 0.01s; }
+}
+
+  </style>
+</head>
+<body>
+
+  <!-- Floating notifications / system log container -->
+  <div id="notification-container" class="notification-container" role="status" aria-live="polite" aria-atomic="true">
+    <ul id="notification-list" class="notification-list"></ul>
+  </div>
+
+  <!-- Full-screen celebration overlay for big wins -->
+  <div id="celebration-overlay" class="celebration-overlay" aria-hidden="true"></div>
+
+  <!-- ============================= -->
+  <!-- VIEW: SETUP / ROOM CONNECTION -->
+  <!-- ============================= -->
+  <section id="view-setup" class="view view-auth" aria-labelledby="setup-heading">
+    <div class="auth-shell">
+
+      <header class="auth-header">
+        <div class="brand">
+          <span class="brand-icon" aria-hidden="true">&spades;</span>
+          <h1 id="setup-heading">Casino Campus</h1>
+        </div>
+        <p class="auth-subtitle">Educational simulator with virtual chips &mdash; real-time multiplayer, zero real risk.</p>
+      </header>
+
+      <div class="auth-body" style="grid-template-columns: 1fr;">
+        <div class="auth-panel new-player-panel setup-card">
+
+          <div id="panel-host">
+            <p class="setup-note">
+              Start a new room and become the <strong>Host / Administrator</strong>.
+              Share the room code or link so everyone else can join instantly.
+            </p>
+
+            <span id="host-error" class="form-error" role="alert"></span>
+            <button type="button" id="btn-create-room" class="btn btn-primary btn-block">Create Room</button>
+
+            <div id="host-room-result" class="room-code-display" hidden>
+              <div>
+                <div class="room-code-caption">Room code</div>
+                <div id="created-room-code" class="room-code-value">------</div>
+              </div>
+            </div>
+            <div id="host-link-row" class="room-link-row" hidden>
+              <input type="text" id="host-share-link" class="input-field" readonly aria-label="Share link">
+              <button type="button" id="btn-copy-link" class="btn btn-secondary">Copy Link</button>
+            </div>
+            <button type="button" id="btn-host-continue" class="btn btn-primary btn-block" style="margin-top:0.75rem;" hidden>Continue to Lobby &rarr;</button>
+          </div>
+
+          <div class="setup-divider" role="separator"><span>or join a room</span></div>
+
+          <div id="panel-join">
+            <div class="form-group">
+              <label for="input-room-code">Room code</label>
+              <input type="text" id="input-room-code" class="input-field room-code-input" placeholder="e.g. AB12CD" maxlength="8" autocomplete="off" autocapitalize="characters" spellcheck="false">
+            </div>
+            <span id="join-error" class="form-error" role="alert"></span>
+            <button type="button" id="btn-join-room" class="btn btn-secondary btn-block">Join Room</button>
+          </div>
+
+          <div class="connection-status">
+            <span id="connection-dot" class="connection-dot"></span>
+            <span id="connection-status-text">Not connected</span>
+          </div>
+        </div>
+      </div>
+
+      <footer class="auth-footer">
+        <span>Devices sync in real time through Firebase &middot; no backend install &middot; works on any static host (e.g. GitHub Pages)</span>
+      </footer>
+    </div>
+  </section>
+
+  <!-- ============================= -->
+  <!-- VIEW: AUTH / PLAYER SELECTION -->
+  <!-- ============================= -->
+  <section id="view-auth" class="view view-auth" hidden aria-labelledby="auth-heading">
+    <div class="auth-shell">
+
+      <header class="auth-header">
+        <div class="brand">
+          <span class="brand-icon" aria-hidden="true">&spades;</span>
+          <h1 id="auth-heading">Casino Campus</h1>
+        </div>
+        <p class="auth-subtitle">
+          Room <strong id="auth-room-code">------</strong>
+          <span id="auth-host-badge" class="role-badge" hidden>&#9733; HOST</span>
+        </p>
+      </header>
+
+      <div class="auth-body">
+
+        <div class="auth-panel players-panel">
+          <div class="panel-heading">
+            <h2>Players in this room</h2>
+            <span id="players-count" class="players-count-badge">0</span>
+          </div>
+
+          <input
+            type="text"
+            id="input-player-search"
+            class="input-field input-search"
+            placeholder="Search player by name...">
+
+          <div id="players-grid" class="players-grid" role="list"></div>
+          <p id="players-empty" class="players-empty">No players have joined this room yet. Create the first profile on the right &rarr;</p>
+        </div>
+
+        <div class="auth-panel new-player-panel">
+          <div class="panel-heading">
+            <h2>New player</h2>
+          </div>
+
+          <form id="login-form" class="login-form" novalidate>
+            <div class="form-group">
+              <label for="input-username">Username</label>
+              <input
+                type="text"
+                id="input-username"
+                name="username"
+                class="input-field"
+                placeholder="e.g. student01"
+                pattern="[A-Za-z0-9_-]{3,16}"
+                minlength="3"
+                maxlength="16"
+                required
+                aria-describedby="username-help">
+              <small id="username-help" class="form-help">3-16 characters: letters, numbers, hyphens or underscores</small>
+            </div>
+
+            <div class="form-group">
+              <label for="select-starting-chips">Starting chips</label>
+              <select id="select-starting-chips" name="startingChips" class="input-field" required>
+                <option value="500">500 chips</option>
+                <option value="1000" selected>1,000 chips</option>
+                <option value="2500">2,500 chips</option>
+                <option value="5000">5,000 chips</option>
+              </select>
+            </div>
+
+            <span id="login-error" class="form-error" role="alert" aria-live="assertive"></span>
+
+            <button type="submit" id="btn-login-submit" class="btn btn-primary btn-block">Create Player &amp; Join</button>
+          </form>
+
+          <div class="auth-divider"><span>or</span></div>
+
+          <button type="button" id="btn-open-leaderboard-auth" class="btn btn-secondary btn-block">&#127942; View Leaderboard</button>
+          <button type="button" id="btn-open-admin" class="btn btn-ghost btn-block" hidden>&#9881; Administrator Panel</button>
+          <button type="button" id="btn-leave-room" class="btn btn-ghost btn-block">&larr; Leave Room</button>
+        </div>
+
+      </div>
+
+      <footer class="auth-footer">
+        <span>Synced live across every device connected to room <strong id="auth-room-code-footer">------</strong></span>
+      </footer>
+    </div>
+  </section>
+
+  <!-- ============================= -->
+  <!-- VIEW: LOBBY / MAIN APP        -->
+  <!-- ============================= -->
+  <section id="view-lobby" class="view view-lobby" hidden>
+
+    <!-- Top control panel -->
+    <header id="top-panel" class="top-panel">
+      <div class="top-panel-room">
+        <span class="top-panel-label">Room</span>
+        <span id="display-room-code" class="top-panel-value">------</span>
+      </div>
+
+      <div class="top-panel-user">
+        <span class="top-panel-avatar" id="display-avatar">--</span>
+        <div class="top-panel-user-text">
+          <span class="top-panel-label">Player</span>
+          <span id="display-username" class="top-panel-value">--</span>
+          <span id="lobby-host-badge" class="role-badge" hidden>HOST</span>
+        </div>
+      </div>
+
+      <div class="top-panel-balance" aria-live="polite">
+        <span class="top-panel-label">Balance</span>
+        <span id="display-balance" class="top-panel-value">0</span>
+        <span class="top-panel-unit">chips</span>
+      </div>
+
+      <nav id="game-selector" class="game-selector" aria-label="Game selection">
+        <button type="button" class="btn btn-game-select" id="nav-blackjack" data-game="blackjack" aria-pressed="false">&#127137; Blackjack</button>
+        <button type="button" class="btn btn-game-select" id="nav-roulette" data-game="roulette" aria-pressed="false">&#127923; Roulette</button>
+        <button type="button" class="btn btn-game-select" id="nav-wheel" data-game="wheel" aria-pressed="false">&#127905; Player Wheel</button>
+        <button type="button" class="btn btn-game-select" id="nav-draw" data-game="draw" aria-pressed="false">&#127873; Lucky Draw</button>
+        <button type="button" class="btn btn-game-select" id="nav-slots" data-game="slots" aria-pressed="false">&#127920; Slot Machine</button>
+        <button type="button" class="btn btn-game-select" id="nav-hilo" data-game="hilo" aria-pressed="false">&#128256; Hi-Lo</button>
+      </nav>
+
+      <div class="top-panel-actions">
+        <button type="button" id="btn-sound-toggle" class="btn btn-icon" aria-pressed="true" aria-label="Mute sound">&#128266;</button>
+        <button type="button" id="btn-open-leaderboard" class="btn btn-secondary">&#127942;</button>
+        <button type="button" id="btn-open-admin-lobby" class="btn btn-secondary" hidden>&#9881;</button>
+        <button type="button" id="btn-logout" class="btn btn-secondary">Leave</button>
+      </div>
+    </header>
+
+    <!-- ============================= -->
+    <!-- GAME SECTION: BLACKJACK       -->
+    <!-- ============================= -->
+    <section id="game-blackjack" class="game-section" data-game-section="blackjack" hidden aria-labelledby="blackjack-heading">
+      <h2 id="blackjack-heading">Blackjack</h2>
+
+      <div class="blackjack-table">
+        <div class="dealer-area">
+          <h3>Dealer</h3>
+          <div id="dealer-cards" class="card-row" aria-label="Dealer's cards"></div>
+          <span id="dealer-score" class="score-display">Score: 0</span>
+        </div>
+
+        <div class="player-area">
+          <h3>Player</h3>
+          <div id="player-cards" class="card-row" aria-label="Player's cards"></div>
+          <span id="player-score" class="score-display">Score: 0</span>
+        </div>
+      </div>
+
+      <div class="blackjack-controls">
+        <div class="form-group bet-group">
+          <label for="input-blackjack-bet">Bet</label>
+          <input type="number" id="input-blackjack-bet" name="blackjackBet" class="input-field input-bet" min="1" step="1" placeholder="Amount">
+        </div>
+
+        <div class="action-buttons">
+          <button type="button" id="btn-blackjack-deal" class="btn btn-primary">Deal</button>
+          <button type="button" id="btn-blackjack-hit" class="btn btn-action" disabled>Hit</button>
+          <button type="button" id="btn-blackjack-stand" class="btn btn-action" disabled>Stand</button>
+        </div>
+      </div>
+
+      <p id="blackjack-result" class="game-result" role="status" aria-live="polite"></p>
+    </section>
+
+    <!-- ============================= -->
+    <!-- GAME SECTION: ROULETTE        -->
+    <!-- ============================= -->
+    <section id="game-roulette" class="game-section" data-game-section="roulette" hidden aria-labelledby="roulette-heading">
+      <h2 id="roulette-heading">Roulette</h2>
+
+      <div class="roulette-layout">
+        <div id="roulette-wheel-container" class="roulette-wheel-container" aria-label="Roulette wheel">
+          <div id="roulette-wheel" class="roulette-wheel"></div>
+          <div class="roulette-pointer" aria-hidden="true"></div>
+        </div>
+
+        <div class="roulette-board-wrapper">
+          <div id="roulette-board" class="roulette-board" role="group" aria-label="Betting board">
+            <div class="roulette-numbers" id="roulette-numbers"></div>
+            <div class="roulette-colors">
+              <button type="button" class="btn roulette-color-bet is-red" id="bet-color-red" data-color="red">Red</button>
+              <button type="button" class="btn roulette-color-bet is-black" id="bet-color-black" data-color="black">Black</button>
+              <button type="button" class="btn roulette-color-bet is-green" id="bet-color-green" data-color="green">Green (0)</button>
+            </div>
+            <div class="roulette-parity">
+              <button type="button" class="btn roulette-parity-bet" id="bet-even" data-parity="even">Even</button>
+              <button type="button" class="btn roulette-parity-bet" id="bet-odd" data-parity="odd">Odd</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="roulette-controls">
+        <div id="chip-panel" class="chip-panel" role="group" aria-label="Chip value">
+          <button type="button" class="btn chip-btn" data-chip-value="10">10</button>
+          <button type="button" class="btn chip-btn" data-chip-value="25">25</button>
+          <button type="button" class="btn chip-btn" data-chip-value="50">50</button>
+          <button type="button" class="btn chip-btn" data-chip-value="100">100</button>
+        </div>
+
+        <div class="form-group bet-group">
+          <label for="input-roulette-bet">Current bet</label>
+          <input type="text" id="input-roulette-bet" name="rouletteBet" class="input-field input-bet" placeholder="Selection: none" readonly>
+        </div>
+
+        <button type="button" id="btn-roulette-spin" class="btn btn-primary">Spin</button>
+        <button type="button" id="btn-roulette-clear" class="btn btn-secondary">Clear</button>
+      </div>
+
+      <p id="roulette-result" class="game-result" role="status" aria-live="polite"></p>
+    </section>
+
+    <!-- ============================= -->
+    <!-- GAME SECTION: PLAYER WHEEL    -->
+    <!-- (multiplayer name-elimination -->
+    <!-- roulette, driven by the room's -->
+    <!-- live Firebase player list)     -->
+    <!-- ============================= -->
+    <section id="game-wheel" class="game-section" data-game-section="wheel" hidden aria-labelledby="wheel-heading">
+      <h2 id="wheel-heading">Player Wheel</h2>
+      <p class="modal-subtitle" style="text-align:center;">Spin to land on a room member, then choose whether to keep them in the pool.</p>
+
+      <div class="wheel-layout">
+        <div id="wheel-container" class="wheel-container" aria-label="Player wheel">
+          <div id="wheel-dial" class="wheel-dial">
+            <div id="wheel-labels"></div>
+          </div>
+          <div class="wheel-hub" aria-hidden="true">&#127942;</div>
+          <div id="wheel-pointer" class="wheel-pointer" aria-hidden="true"></div>
+        </div>
+
+        <p id="wheel-empty-state" class="wheel-empty-state" hidden>No players are currently in the pool. Add players to the room, or restart the wheel below.</p>
+
+        <div class="wheel-controls">
+          <button type="button" id="btn-wheel-spin" class="btn btn-primary">&#127920; Spin the Wheel</button>
+          <button type="button" id="btn-wheel-restart" class="btn btn-secondary">&#8635; Restart Pool</button>
+        </div>
+
+        <div class="wheel-pool-panel">
+          <p id="wheel-pool-count" class="wheel-pool-count">0 players in the pool</p>
+          <ul id="wheel-pool-list" class="wheel-pool-list" role="list"></ul>
+        </div>
+      </div>
+
+      <p id="wheel-result" class="game-result" role="status" aria-live="polite"></p>
+    </section>
+
+    <!-- ============================= -->
+    <!-- GAME SECTION: LUCKY DRAW      -->
+    <!-- (pick 1-6 winners, 4 modes)   -->
+    <!-- ============================= -->
+    <section id="game-draw" class="game-section" data-game-section="draw" hidden aria-labelledby="draw-heading">
+      <h2 id="draw-heading">Lucky Draw / Winner Selection</h2>
+      <p class="modal-subtitle" style="text-align:center;">Pick 1 to 6 random winners from the players in this room.</p>
+
+      <div class="draw-controls">
+        <div class="draw-row" role="group" aria-label="Number of winners">
+          <span class="draw-row-label">Winners</span>
+          <button type="button" class="btn btn-game-select draw-count-btn" data-count="1" aria-pressed="false">1</button>
+          <button type="button" class="btn btn-game-select draw-count-btn" data-count="2" aria-pressed="false">2</button>
+          <button type="button" class="btn btn-game-select draw-count-btn" data-count="3" aria-pressed="true">3</button>
+          <button type="button" class="btn btn-game-select draw-count-btn" data-count="4" aria-pressed="false">4</button>
+          <button type="button" class="btn btn-game-select draw-count-btn" data-count="5" aria-pressed="false">5</button>
+          <button type="button" class="btn btn-game-select draw-count-btn" data-count="6" aria-pressed="false">6</button>
+        </div>
+        <div class="draw-row" role="group" aria-label="Draw mode">
+          <span class="draw-row-label">Mode</span>
+          <button type="button" class="btn btn-game-select draw-mode-btn" data-draw-mode="slots" aria-pressed="true">&#127920; Slot Reels</button>
+          <button type="button" class="btn btn-game-select draw-mode-btn" data-draw-mode="bingo" aria-pressed="false">&#127921; Bingo Blower</button>
+          <button type="button" class="btn btn-game-select draw-mode-btn" data-draw-mode="cards" aria-pressed="false">&#127183; Card Dealer</button>
+          <button type="button" class="btn btn-game-select draw-mode-btn" data-draw-mode="laser" aria-pressed="false">&#128302; Chip Laser</button>
+        </div>
+        <div class="draw-row">
+          <button type="button" id="btn-draw-start" class="btn btn-primary">&#127922; Draw Winners</button>
+          <button type="button" id="btn-draw-reset" class="btn btn-secondary">&#8635; Reset</button>
+        </div>
+        <p id="draw-player-count" class="draw-player-count"></p>
+      </div>
+
+      <div id="draw-stage" class="draw-stage"></div>
+      <div id="draw-podium" class="draw-podium" role="list" aria-label="Winners"></div>
+      <p id="draw-result" class="game-result" role="status" aria-live="polite"></p>
+    </section>
+
+    <!-- ============================= -->
+    <!-- GAME SECTION: SLOT MACHINE    -->
+    <!-- ============================= -->
+    <section id="game-slots" class="game-section" data-game-section="slots" hidden aria-labelledby="slots-heading">
+      <h2 id="slots-heading">Slot Machine</h2>
+
+      <div class="slots-machine">
+        <div class="slots-reels" role="group" aria-label="Slot machine reels">
+          <div class="reel" id="reel-1" data-reel="1">
+            <span class="reel-symbol" id="reel-1-symbol">?</span>
+          </div>
+          <div class="reel" id="reel-2" data-reel="2">
+            <span class="reel-symbol" id="reel-2-symbol">?</span>
+          </div>
+          <div class="reel" id="reel-3" data-reel="3">
+            <span class="reel-symbol" id="reel-3-symbol">?</span>
+          </div>
+        </div>
+
+        <button type="button" id="btn-slots-lever" class="slots-lever" aria-label="Pull the lever to spin"></button>
+      </div>
+
+      <div class="slots-controls">
+        <div class="form-group bet-group">
+          <label for="input-slots-bet">Bet</label>
+          <input type="number" id="input-slots-bet" name="slotsBet" class="input-field input-bet" min="1" step="1" placeholder="Amount">
+        </div>
+
+        <button type="button" id="btn-slots-spin" class="btn btn-primary">Spin</button>
+      </div>
+
+      <p id="slots-result" class="game-result" role="status" aria-live="polite"></p>
+    </section>
+
+    <!-- ============================= -->
+    <!-- GAME SECTION: HI-LO           -->
+    <!-- ============================= -->
+    <section id="game-hilo" class="game-section" data-game-section="hilo" hidden aria-labelledby="hilo-heading">
+      <h2 id="hilo-heading">Hi-Lo &mdash; Guess the Next Card</h2>
+
+      <div class="hilo-table">
+        <div class="hilo-current-card-area">
+          <h3>Current card</h3>
+          <div id="hilo-current-card" class="hilo-card" aria-label="Current card on the table">?</div>
+        </div>
+
+        <div class="hilo-next-card-area">
+          <h3>Next card</h3>
+          <div id="hilo-next-card" class="hilo-card hilo-card-hidden" aria-label="Next card, hidden until revealed">?</div>
+        </div>
+      </div>
+
+      <div class="hilo-controls">
+        <div class="form-group bet-group">
+          <label for="input-hilo-bet">Bet</label>
+          <input type="number" id="input-hilo-bet" name="hiloBet" class="input-field input-bet" min="1" step="1" placeholder="Amount">
+        </div>
+
+        <div class="action-buttons">
+          <button type="button" id="btn-hilo-higher" class="btn btn-action">Higher &#9650;</button>
+          <button type="button" id="btn-hilo-lower" class="btn btn-action">Lower &#9660;</button>
+        </div>
+      </div>
+
+      <p id="hilo-result" class="game-result" role="status" aria-live="polite"></p>
+    </section>
+
+  </section>
+
+  <!-- ============================= -->
+  <!-- MODAL: LEADERBOARD            -->
+  <!-- ============================= -->
+  <div id="leaderboard-modal" class="modal-overlay" hidden>
+    <div class="modal" role="dialog" aria-labelledby="leaderboard-title">
+      <button type="button" class="modal-close" id="btn-leaderboard-close" aria-label="Close">&#10005;</button>
+      <h2 id="leaderboard-title">&#127942; Leaderboard</h2>
+      <p class="modal-subtitle">Top 15 players by chip balance in this room</p>
+      <ol id="leaderboard-list" class="leaderboard-list"></ol>
+    </div>
+  </div>
+
+  <!-- ============================= -->
+  <!-- MODAL: ADMINISTRATOR PANEL    -->
+  <!-- ============================= -->
+  <div id="admin-modal" class="modal-overlay" hidden>
+    <div class="modal admin-modal" role="dialog" aria-labelledby="admin-title">
+      <button type="button" class="modal-close" id="btn-admin-close" aria-label="Close">&#10005;</button>
+      <h2 id="admin-title">&#9881; Administrator Panel</h2>
+
+      <div id="admin-lock" class="admin-lock">
+        <p>Enter the access PIN to manage this room's players.</p>
+        <input type="password" id="input-admin-code" class="input-field" placeholder="Access PIN" autocomplete="off">
+        <span id="admin-lock-error" class="form-error" role="alert"></span>
+        <button type="button" id="btn-admin-unlock" class="btn btn-primary btn-block">Unlock</button>
+        <small class="form-help">Default PIN: <code>admin123</code> (editable in CONFIG.ADMIN_CODE). Only this room's Host device can open this panel.</small>
+      </div>
+
+      <div id="admin-content" class="admin-content" hidden>
+        <div class="admin-summary">
+          <div class="admin-stat">
+            <span id="admin-total-players" class="admin-stat-value">0</span>
+            <label>Players</label>
+          </div>
+          <div class="admin-stat">
+            <span id="admin-total-chips" class="admin-stat-value">0</span>
+            <label>Chips in circulation</label>
+          </div>
+          <div class="admin-stat">
+            <span id="admin-total-rounds" class="admin-stat-value">0</span>
+            <label>Rounds played</label>
+          </div>
+        </div>
+
+        <div class="admin-table-wrapper">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Player</th>
+                <th>Balance</th>
+                <th>Rounds</th>
+                <th>Net profit</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="admin-table-body"></tbody>
+          </table>
+        </div>
+
+        <div class="admin-actions">
+          <button type="button" id="btn-admin-export" class="btn btn-secondary">&#8681; Export Backup (.json)</button>
+          <label class="btn btn-secondary btn-file">
+            &#8679; Import Backup
+            <input type="file" id="input-admin-import" accept="application/json" hidden>
+          </label>
+          <button type="button" id="btn-admin-reset-all" class="btn btn-danger">&#128465; Delete All Players</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================= -->
+  <!-- MODAL: WHEEL WINNER            -->
+  <!-- ============================= -->
+  <div id="wheel-winner-modal" class="modal-overlay" hidden>
+    <div class="modal" role="dialog" aria-labelledby="wheel-winner-title">
+      <h2 id="wheel-winner-title">&#127942; The Wheel Has Spoken</h2>
+      <p class="modal-subtitle">The wheel landed on:</p>
+      <p id="wheel-winner-name" class="wheel-winner-name">--</p>
+      <div class="modal-actions">
+        <button type="button" id="btn-wheel-remove" class="btn btn-danger">Remove from Pool</button>
+        <button type="button" id="btn-wheel-keep" class="btn btn-secondary">Keep In Pool</button>
+      </div>
+      <small class="form-help" style="display:block; text-align:center; margin-top:0.75rem;">This only affects this round of the wheel &mdash; the player stays in the room either way.</small>
+    </div>
+  </div>
+
+  <!-- ============================= -->
+  <!-- MODAL: WHEEL SESSION RESUME    -->
+  <!-- ============================= -->
+  <div id="wheel-resume-modal" class="modal-overlay" hidden>
+    <div class="modal" role="dialog" aria-labelledby="wheel-resume-title">
+      <h2 id="wheel-resume-title">&#127905; Welcome Back to the Wheel</h2>
+      <p class="modal-subtitle" id="wheel-resume-subtitle">You have a wheel pool from earlier in this session.</p>
+      <div class="modal-actions">
+        <button type="button" id="btn-wheel-resume-restart" class="btn btn-secondary">Restart Wheel (all room players)</button>
+        <button type="button" id="btn-wheel-resume-continue" class="btn btn-primary">Continue Previous Pool</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+/* =========================================================================
+   CASINO CAMPUS — APPLICATION SCRIPT
+   Vanilla JavaScript (ES6+). No local backend, no Node.js server, no
+   dedicated hosting required — this file can be opened directly or served
+   from any static host (e.g. GitHub Pages).
+
+   MULTIPLAYER ARCHITECTURE
+   One device creates a "Room" (becoming its Host/Administrator) backed by
+   a Firebase Realtime Database project whose config is hardcoded in this
+   file (no configuration screens, no server code of any kind is written or
+   run by this app). Other devices join that room with
+   a room code or shared link and see the same players, balances and
+   leaderboard update live. Only the device that created the room keeps
+   access to the Administrator Panel; everyone else only sees the player
+   lobby and game tables.
+   ========================================================================= */
+"use strict";
+
+(() => {
+
+  /* =========================================================================
+     0. CONFIG
+     ========================================================================= */
+  const CONFIG = {
+    SETTINGS_KEY: "casinoCampus.settings.v1",
+    // Hardcoded Firebase project: every user connects automatically.
+    FIREBASE_CONFIG: Object.freeze({
+      apiKey: "AIzaSyDPkX9ivTDeeuPl_PU2c9jWGnuJQO2vPOg",
+      authDomain: "campuscasino-1f8d2.firebaseapp.com",
+      databaseURL: "https://campuscasino-1f8d2-default-rtdb.firebaseio.com",
+      projectId: "campuscasino-1f8d2",
+      storageBucket: "campuscasino-1f8d2.firebasestorage.app",
+      messagingSenderId: "235148370786",
+      appId: "1:235148370786:web:341f36c2fb69eea46fc23b"
+    }),
+    DEVICE_ID_KEY: "casinoCampus.deviceId.v1",
+    ADMIN_CODE: "admin123",       // Change this code to re-lock the Administrator Panel
+    LEADERBOARD_LIMIT: 15,
+    BIG_WIN_THRESHOLD: 250        // Minimum payout (chips) that triggers the celebration
+  };
+
+  /* =========================================================================
+     1. LOCAL DEVICE / SETTINGS STORAGE
+     Only used for: this device's identity (to prove Host ownership) and
+     the sound toggle.
+     No player data or balances are ever stored locally — the Realtime
+     Database room is always the single source of truth.
+     ========================================================================= */
+  const Storage = {
+    getDeviceId() {
+      try {
+        let id = window.localStorage.getItem(CONFIG.DEVICE_ID_KEY);
+        if (!id) {
+          id = "dev-" + Math.random().toString(36).slice(2) + Date.now().toString(36);
+          window.localStorage.setItem(CONFIG.DEVICE_ID_KEY, id);
+        }
+        return id;
+      } catch (err) {
+        // Storage unavailable (private mode, etc.) — fall back to a session-only id.
+        if (!window.__casinoCampusSessionDeviceId) {
+          window.__casinoCampusSessionDeviceId = "dev-" + Math.random().toString(36).slice(2) + Date.now().toString(36);
+        }
+        return window.__casinoCampusSessionDeviceId;
+      }
+    },
+
+
+    loadSettings() {
+      try {
+        const raw = window.localStorage.getItem(CONFIG.SETTINGS_KEY);
+        return raw ? JSON.parse(raw) : { soundEnabled: true };
+      } catch (err) {
+        return { soundEnabled: true };
+      }
+    },
+
+    saveSettings(settings) {
+      try {
+        window.localStorage.setItem(CONFIG.SETTINGS_KEY, JSON.stringify(settings));
+      } catch (err) {
+        console.error("Storage.saveSettings error:", err);
+      }
+    }
+  };
+
+  /* =========================================================================
+     2. URL / CONFIG ENCODING HELPERS (for shareable join links)
+     ========================================================================= */
+  const LinkUtils = {
+    readParams() {
+      const room = new URLSearchParams(window.location.search).get("room");
+      return { room: room ? room.toUpperCase().replace(/[^A-Z0-9]/g, "") : null };
+    },
+
+    buildShareLink(roomCode) {
+      const url = new URL(window.location.href);
+      url.search = "";
+      url.hash = "";
+      url.searchParams.set("room", roomCode);
+      return url.toString();
+    }
+  };
+
+  /* =========================================================================
+     3. NETWORK / ROOM LAYER (Firebase Realtime Database)
+     This is the only synchronization layer in the app. It replaces the
+     single-device localStorage player list from earlier versions with a
+     shared, real-time "rooms/{code}" node that every connected browser
+     reads and writes to directly (peer devices never talk to each other
+     or to any server code we host — Firebase's managed backend is the
+     whole "backend").
+     ========================================================================= */
+  const Room = {
+    app: null,
+    db: null,
+    code: null,
+    metaRef: null,
+    playersRef: null,
+    playersCache: {},
+    listenersBound: false,
+    onPlayersChange: null,
+
+    isConfigured() {
+      return !!this.db;
+    },
+
+    /** Initializes (or re-initializes) the Firebase app with the given config. */
+    connect(configObj) {
+      if (!window.firebase) {
+        throw new Error("Firebase SDK failed to load. Check your internet connection.");
+      }
+      if (this.app) {
+        try { this.app.delete(); } catch (err) { /* ignore */ }
+        this.app = null;
+      }
+      this.app = window.firebase.initializeApp(configObj, "casinoCampus-" + Date.now());
+      this.db = this.app.database();
+      ConnectionStatus.bind(this.db);
+      return this.db;
+    },
+
+    generateRoomCode() {
+      const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // no ambiguous 0/O/1/I
+      let code = "";
+      for (let i = 0; i < 6; i += 1) {
+        code += chars[Math.floor(Math.random() * chars.length)];
+      }
+      return code;
+    },
+
+    /** Creates a brand-new room and marks this device as its Host. */
+    async createRoom() {
+      let code = null;
+      for (let attempt = 0; attempt < 6; attempt += 1) {
+        const candidate = this.generateRoomCode();
+        const snap = await this.db.ref(`rooms/${candidate}/meta`).once("value");
+        if (!snap.exists()) {
+          code = candidate;
+          break;
+        }
+      }
+      if (!code) throw new Error("Could not generate a free room code. Please try again.");
+
+      const deviceId = Storage.getDeviceId();
+      await this.db.ref(`rooms/${code}/meta`).set({
+        hostDeviceId: deviceId,
+        createdAt: window.firebase.database.ServerValue.TIMESTAMP,
+        roomCode: code
+      });
+
+      this.code = code;
+      this.attachListeners();
+      return code;
+    },
+
+    /** Joins an existing room by code. Returns the room's meta object. */
+    async joinRoom(code) {
+      const normalized = String(code).trim().toUpperCase();
+      const snap = await this.db.ref(`rooms/${normalized}/meta`).once("value");
+      if (!snap.exists()) {
+        throw new Error("Room not found. Double-check the code with your host.");
+      }
+      this.code = normalized;
+      this.attachListeners();
+      return snap.val();
+    },
+
+    attachListeners() {
+      this.detachListeners();
+      this.metaRef = this.db.ref(`rooms/${this.code}/meta`);
+      this.playersRef = this.db.ref(`rooms/${this.code}/players`);
+      this.onPlayersChange = (snap) => {
+        this.playersCache = snap.val() || {};
+        PubSub.emit("players-updated", this.playersCache);
+      };
+      this.playersRef.on("value", this.onPlayersChange);
+      this.listenersBound = true;
+    },
+
+    detachListeners() {
+      if (this.playersRef && this.onPlayersChange) {
+        this.playersRef.off("value", this.onPlayersChange);
+      }
+      this.metaRef = null;
+      this.playersRef = null;
+      this.playersCache = {};
+      this.listenersBound = false;
+    },
+
+    disconnect() {
+      this.detachListeners();
+      this.code = null;
+      if (this.app) {
+        try { this.app.delete(); } catch (err) { /* ignore */ }
+      }
+      this.app = null;
+      this.db = null;
+      ConnectionStatus.setOffline();
+    },
+
+    list() {
+      return Object.values(this.playersCache);
+    },
+
+    get(username) {
+      return this.playersCache[username] || null;
+    },
+
+    exists(username) {
+      return Object.prototype.hasOwnProperty.call(this.playersCache, username);
+    },
+
+    /** Atomically creates a player if the username is free in this room. */
+    createPlayer(username, startingChips) {
+      const now = Date.now();
+      return this.playersRef.child(username).transaction((current) => {
+        if (current !== null) return; // abort — username already taken
+        return {
+          username,
+          balance: startingChips,
+          createdAt: now,
+          updatedAt: now,
+          deviceId: Storage.getDeviceId(),
+          stats: { gamesPlayed: 0, totalWagered: 0, netProfit: 0 }
+        };
+      });
+    },
+
+    /** Persists an absolute balance plus an optional incremental stats patch. */
+    persistPlayer(username, balance, statsPatch) {
+      if (!this.playersRef) return Promise.resolve();
+      return this.playersRef.child(username).transaction((player) => {
+        if (!player) return player;
+        player.balance = Math.max(0, Math.round(balance));
+        player.updatedAt = Date.now();
+        if (statsPatch) {
+          player.stats = player.stats || { gamesPlayed: 0, totalWagered: 0, netProfit: 0 };
+          player.stats.gamesPlayed = (player.stats.gamesPlayed || 0) + (statsPatch.gamesPlayed || 0);
+          player.stats.totalWagered = (player.stats.totalWagered || 0) + (statsPatch.totalWagered || 0);
+          player.stats.netProfit = (player.stats.netProfit || 0) + (statsPatch.netProfit || 0);
+        }
+        return player;
+      });
+    },
+
+    setBalance(username, balance) {
+      if (!this.playersRef) return Promise.resolve();
+      return this.playersRef.child(username).update({ balance: Math.max(0, Math.round(balance)), updatedAt: Date.now() });
+    },
+
+    deletePlayer(username) {
+      if (!this.playersRef) return Promise.resolve();
+      return this.playersRef.child(username).remove();
+    },
+
+    deleteAllPlayers() {
+      if (!this.playersRef) return Promise.resolve();
+      return this.playersRef.remove();
+    },
+
+    importPlayers(playersObj) {
+      if (!this.playersRef) return Promise.resolve();
+      return this.playersRef.update(playersObj);
+    }
+  };
+
+  /** Minimal event bus used to decouple the Room listener from UI modules. */
+  const PubSub = {
+    handlers: {},
+    on(event, fn) {
+      (this.handlers[event] = this.handlers[event] || []).push(fn);
+    },
+    emit(event, payload) {
+      (this.handlers[event] || []).forEach((fn) => fn(payload));
+    }
+  };
+
+  const ConnectionStatus = {
+    dotEl: null,
+    textEl: null,
+
+    init(dotEl, textEl) {
+      this.dotEl = dotEl;
+      this.textEl = textEl;
+    },
+
+    bind(db) {
+      db.ref(".info/connected").on("value", (snap) => {
+        if (snap.val() === true) this.setOnline();
+        else this.setOffline();
+      });
+    },
+
+    setOnline() {
+      if (!this.dotEl) return;
+      this.dotEl.classList.add("is-online");
+      this.textEl.textContent = "Connected to Firebase";
+    },
+
+    setOffline() {
+      if (!this.dotEl) return;
+      this.dotEl.classList.remove("is-online");
+      this.textEl.textContent = "Not connected";
+    }
+  };
+
+  /* =========================================================================
+     4. GLOBAL STATE (active session in this browser tab)
+     ========================================================================= */
+  const State = {
+    username: "",
+    balance: 0,
+    roomCode: "",
+    isHost: false,
+    applyingRemoteUpdate: false,
+
+    setBalance(newBalance, { persist = true } = {}) {
+      this.balance = Math.max(0, Math.round(newBalance));
+      HUD.update();
+      if (persist && this.username && !this.applyingRemoteUpdate) {
+        Room.persistPlayer(this.username, this.balance);
+      }
+    },
+
+    canAfford(amount) {
+      return Number.isFinite(amount) && amount > 0 && amount <= this.balance;
+    },
+
+    debit(amount) {
+      this.setBalance(this.balance - amount);
+    },
+
+    credit(amount) {
+      this.setBalance(this.balance + amount);
+    },
+
+    /** Records the outcome of a round for this player's room-wide stats. */
+    recordRound(wager, payout) {
+      if (!this.username) return;
+      Room.persistPlayer(this.username, this.balance, {
+        gamesPlayed: 1,
+        totalWagered: wager,
+        netProfit: payout - wager
+      });
+    },
+
+    reset() {
+      this.username = "";
+      this.balance = 0;
+    }
+  };
+
+  /* =========================================================================
+     5. DOM CACHE
+     ========================================================================= */
+  const DOM = {
+    // Views
+    viewSetup: document.getElementById("view-setup"),
+    viewAuth: document.getElementById("view-auth"),
+    viewLobby: document.getElementById("view-lobby"),
+
+    // Setup / room connection
+    hostError: document.getElementById("host-error"),
+    btnCreateRoom: document.getElementById("btn-create-room"),
+    hostRoomResult: document.getElementById("host-room-result"),
+    createdRoomCode: document.getElementById("created-room-code"),
+    hostLinkRow: document.getElementById("host-link-row"),
+    hostShareLink: document.getElementById("host-share-link"),
+    btnCopyLink: document.getElementById("btn-copy-link"),
+    btnHostContinue: document.getElementById("btn-host-continue"),
+    inputRoomCode: document.getElementById("input-room-code"),
+    joinError: document.getElementById("join-error"),
+    btnJoinRoom: document.getElementById("btn-join-room"),
+    connectionDot: document.getElementById("connection-dot"),
+    connectionStatusText: document.getElementById("connection-status-text"),
+
+    // Auth / player selection
+    authRoomCode: document.getElementById("auth-room-code"),
+    authRoomCodeFooter: document.getElementById("auth-room-code-footer"),
+    authHostBadge: document.getElementById("auth-host-badge"),
+    playersGrid: document.getElementById("players-grid"),
+    playersEmpty: document.getElementById("players-empty"),
+    playersCount: document.getElementById("players-count"),
+    inputPlayerSearch: document.getElementById("input-player-search"),
+    btnLeaveRoom: document.getElementById("btn-leave-room"),
+
+    // Login form (new player)
+    loginForm: document.getElementById("login-form"),
+    inputUsername: document.getElementById("input-username"),
+    selectStartingChips: document.getElementById("select-starting-chips"),
+    loginError: document.getElementById("login-error"),
+
+    // HUD / top panel
+    displayRoomCode: document.getElementById("display-room-code"),
+    displayAvatar: document.getElementById("display-avatar"),
+    displayUsername: document.getElementById("display-username"),
+    displayBalance: document.getElementById("display-balance"),
+    lobbyHostBadge: document.getElementById("lobby-host-badge"),
+    gameSelector: document.getElementById("game-selector"),
+    btnLogout: document.getElementById("btn-logout"),
+    btnSoundToggle: document.getElementById("btn-sound-toggle"),
+
+    // Notifications & effects
+    notificationList: document.getElementById("notification-list"),
+    celebrationOverlay: document.getElementById("celebration-overlay"),
+
+    // Leaderboard
+    btnOpenLeaderboard: document.getElementById("btn-open-leaderboard"),
+    btnOpenLeaderboardAuth: document.getElementById("btn-open-leaderboard-auth"),
+    leaderboardModal: document.getElementById("leaderboard-modal"),
+    btnLeaderboardClose: document.getElementById("btn-leaderboard-close"),
+    leaderboardList: document.getElementById("leaderboard-list"),
+
+    // Admin panel
+    btnOpenAdmin: document.getElementById("btn-open-admin"),
+    btnOpenAdminLobby: document.getElementById("btn-open-admin-lobby"),
+    adminModal: document.getElementById("admin-modal"),
+    btnAdminClose: document.getElementById("btn-admin-close"),
+    adminLock: document.getElementById("admin-lock"),
+    adminContent: document.getElementById("admin-content"),
+    inputAdminCode: document.getElementById("input-admin-code"),
+    adminLockError: document.getElementById("admin-lock-error"),
+    btnAdminUnlock: document.getElementById("btn-admin-unlock"),
+    adminTotalPlayers: document.getElementById("admin-total-players"),
+    adminTotalChips: document.getElementById("admin-total-chips"),
+    adminTotalRounds: document.getElementById("admin-total-rounds"),
+    adminTableBody: document.getElementById("admin-table-body"),
+    btnAdminExport: document.getElementById("btn-admin-export"),
+    inputAdminImport: document.getElementById("input-admin-import"),
+    btnAdminResetAll: document.getElementById("btn-admin-reset-all"),
+
+    // Game sections
+    gameSections: document.querySelectorAll(".game-section"),
+
+    // Blackjack
+    dealerCards: document.getElementById("dealer-cards"),
+    dealerScore: document.getElementById("dealer-score"),
+    playerCards: document.getElementById("player-cards"),
+    playerScore: document.getElementById("player-score"),
+    inputBlackjackBet: document.getElementById("input-blackjack-bet"),
+    btnBlackjackDeal: document.getElementById("btn-blackjack-deal"),
+    btnBlackjackHit: document.getElementById("btn-blackjack-hit"),
+    btnBlackjackStand: document.getElementById("btn-blackjack-stand"),
+    blackjackResult: document.getElementById("blackjack-result"),
+
+    // Roulette
+    rouletteWheel: document.getElementById("roulette-wheel"),
+    rouletteNumbers: document.getElementById("roulette-numbers"),
+    chipPanel: document.getElementById("chip-panel"),
+    inputRouletteBet: document.getElementById("input-roulette-bet"),
+    btnRouletteSpin: document.getElementById("btn-roulette-spin"),
+    btnRouletteClear: document.getElementById("btn-roulette-clear"),
+    rouletteResult: document.getElementById("roulette-result"),
+
+    // Player Wheel
+    wheelContainer: document.getElementById("wheel-container"),
+    wheelDial: document.getElementById("wheel-dial"),
+    wheelLabels: document.getElementById("wheel-labels"),
+    wheelPointer: document.getElementById("wheel-pointer"),
+    wheelEmptyState: document.getElementById("wheel-empty-state"),
+    btnWheelSpin: document.getElementById("btn-wheel-spin"),
+    btnWheelRestart: document.getElementById("btn-wheel-restart"),
+    wheelPoolCount: document.getElementById("wheel-pool-count"),
+    wheelPoolList: document.getElementById("wheel-pool-list"),
+    wheelResult: document.getElementById("wheel-result"),
+    wheelWinnerModal: document.getElementById("wheel-winner-modal"),
+    wheelWinnerName: document.getElementById("wheel-winner-name"),
+    btnWheelRemove: document.getElementById("btn-wheel-remove"),
+    btnWheelKeep: document.getElementById("btn-wheel-keep"),
+    wheelResumeModal: document.getElementById("wheel-resume-modal"),
+    wheelResumeSubtitle: document.getElementById("wheel-resume-subtitle"),
+    btnWheelResumeRestart: document.getElementById("btn-wheel-resume-restart"),
+    btnWheelResumeContinue: document.getElementById("btn-wheel-resume-continue"),
+
+    // Slots
+    reels: [
+      document.getElementById("reel-1"),
+      document.getElementById("reel-2"),
+      document.getElementById("reel-3")
+    ],
+    reelSymbols: [
+      document.getElementById("reel-1-symbol"),
+      document.getElementById("reel-2-symbol"),
+      document.getElementById("reel-3-symbol")
+    ],
+    inputSlotsBet: document.getElementById("input-slots-bet"),
+    btnSlotsSpin: document.getElementById("btn-slots-spin"),
+    btnSlotsLever: document.getElementById("btn-slots-lever"),
+    slotsResult: document.getElementById("slots-result"),
+
+    // Hi-Lo
+    hiloCurrentCard: document.getElementById("hilo-current-card"),
+    hiloNextCard: document.getElementById("hilo-next-card"),
+    inputHiloBet: document.getElementById("input-hilo-bet"),
+    btnHiloHigher: document.getElementById("btn-hilo-higher"),
+    btnHiloLower: document.getElementById("btn-hilo-lower"),
+    hiloResult: document.getElementById("hilo-result")
+  };
+
+  /* =========================================================================
+     6. SOUND (Web Audio beeps, no external files)
+     ========================================================================= */
+  const Sound = {
+    ctx: null,
+    enabled: true,
+
+    init() {
+      const settings = Storage.loadSettings();
+      this.enabled = settings.soundEnabled !== false;
+      this.updateToggleUI();
+    },
+
+    ensureContext() {
+      if (!this.ctx) {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (AudioCtx) this.ctx = new AudioCtx();
+      }
+      return this.ctx;
+    },
+
+    tone(freq, durationMs, type = "sine", volume = 0.08) {
+      if (!this.enabled) return;
+      const ctx = this.ensureContext();
+      if (!ctx) return;
+      const oscillator = ctx.createOscillator();
+      const gain = ctx.createGain();
+      oscillator.type = type;
+      oscillator.frequency.value = freq;
+      gain.gain.value = volume;
+      oscillator.connect(gain);
+      gain.connect(ctx.destination);
+      oscillator.start();
+      gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + durationMs / 1000);
+      oscillator.stop(ctx.currentTime + durationMs / 1000);
+    },
+
+    win() { this.tone(660, 120); window.setTimeout(() => this.tone(880, 160), 110); },
+    lose() { this.tone(180, 220, "sawtooth", 0.06); },
+    click() { this.tone(440, 60, "square", 0.04); },
+    jackpot() {
+      [523, 659, 784, 1046].forEach((freq, i) => {
+        window.setTimeout(() => this.tone(freq, 180), i * 110);
+      });
+    },
+
+    toggle() {
+      this.enabled = !this.enabled;
+      Storage.saveSettings({ soundEnabled: this.enabled });
+      this.updateToggleUI();
+    },
+
+    updateToggleUI() {
+      DOM.btnSoundToggle.textContent = this.enabled ? "\u{1F50A}" : "\u{1F507}";
+      DOM.btnSoundToggle.setAttribute("aria-pressed", String(this.enabled));
+    }
+  };
+
+  /* =========================================================================
+     7. EFFECTS (celebration overlay for big wins)
+     ========================================================================= */
+  const Effects = {
+    celebrate(message) {
+      Sound.jackpot();
+      const banner = document.createElement("div");
+      banner.className = "celebration-banner";
+      banner.textContent = message;
+      DOM.celebrationOverlay.appendChild(banner);
+      DOM.celebrationOverlay.classList.add("is-active");
+
+      window.setTimeout(() => {
+        banner.classList.add("celebration-banner-exit");
+        banner.addEventListener("animationend", () => {
+          banner.remove();
+          if (!DOM.celebrationOverlay.children.length) {
+            DOM.celebrationOverlay.classList.remove("is-active");
+          }
+        }, { once: true });
+      }, 1400);
+    },
+
+    pulseBalance() {
+      DOM.displayBalance.classList.remove("balance-pulse");
+      // Force reflow so the animation restarts on consecutive clicks.
+      void DOM.displayBalance.offsetWidth;
+      DOM.displayBalance.classList.add("balance-pulse");
+    }
+  };
+
+  /* =========================================================================
+     8. NOTIFICATION SYSTEM (floating toasts)
+     ========================================================================= */
+  const Notify = {
+    TYPES: { SUCCESS: "toast-success", ERROR: "toast-error", WARNING: "toast-warning" },
+    AUTO_DISMISS_MS: 3500,
+
+    show(message, type = Notify.TYPES.WARNING) {
+      const item = document.createElement("li");
+      item.className = `toast ${type}`;
+      item.textContent = message;
+      DOM.notificationList.appendChild(item);
+
+      window.setTimeout(() => {
+        item.classList.add("toast-exit");
+        item.addEventListener("animationend", () => item.remove(), { once: true });
+      }, Notify.AUTO_DISMISS_MS);
+    },
+
+    success(message) { this.show(message, this.TYPES.SUCCESS); },
+    error(message) { this.show(message, this.TYPES.ERROR); },
+    warning(message) { this.show(message, this.TYPES.WARNING); }
+  };
+
+  /* =========================================================================
+     9. HUD (user / balance, synced across the whole app)
+     ========================================================================= */
+  const HUD = {
+    update() {
+      DOM.displayUsername.textContent = State.username || "--";
+      DOM.displayBalance.textContent = State.balance.toLocaleString("en-US");
+      DOM.displayAvatar.textContent = State.username ? State.username.slice(0, 2).toUpperCase() : "--";
+      DOM.displayRoomCode.textContent = State.roomCode || "------";
+      DOM.lobbyHostBadge.hidden = !State.isHost;
+      Effects.pulseBalance();
+    }
+  };
+
+  /* =========================================================================
+     10. INPUT SANITIZATION / VALIDATION HELPERS
+     ========================================================================= */
+  const Validate = {
+    sanitizeUsername(rawValue) {
+      return String(rawValue).trim().replace(/[^A-Za-z0-9_-]/g, "");
+    },
+
+    isValidUsername(value) {
+      return /^[A-Za-z0-9_-]{3,16}$/.test(value);
+    },
+
+    parseBet(inputEl) {
+      const rawValue = String(inputEl.value).trim();
+      const amount = Number.parseInt(rawValue, 10);
+
+      if (rawValue === "" || Number.isNaN(amount)) {
+        Notify.error("Enter a valid numeric bet.");
+        return null;
+      }
+      if (amount <= 0) {
+        Notify.error("The bet must be greater than zero.");
+        return null;
+      }
+      if (!State.canAfford(amount)) {
+        Notify.error("You don't have enough chips for that bet.");
+        return null;
+      }
+      return amount;
+    }
+  };
+
+  /* =========================================================================
+     11. VIEW / ROUTER CONTROLLER (SPA navigation)
+     ========================================================================= */
+  const Router = {
+    showSetup() {
+      DOM.viewLobby.hidden = true;
+      DOM.viewAuth.hidden = true;
+      DOM.viewSetup.hidden = false;
+    },
+
+    showAuth() {
+      DOM.viewSetup.hidden = true;
+      DOM.viewLobby.hidden = true;
+      DOM.viewAuth.hidden = false;
+      DOM.authRoomCode.textContent = State.roomCode || "------";
+      DOM.authRoomCodeFooter.textContent = State.roomCode || "------";
+      DOM.authHostBadge.hidden = !State.isHost;
+      DOM.btnOpenAdmin.hidden = !State.isHost;
+      AuthScreen.render();
+    },
+
+    showLobby() {
+      DOM.viewSetup.hidden = true;
+      DOM.viewAuth.hidden = true;
+      DOM.viewLobby.hidden = false;
+      DOM.btnOpenAdminLobby.hidden = !State.isHost;
+      HUD.update();
+      this.selectGame("blackjack");
+    },
+
+    currentGameKey: null,
+
+    selectGame(gameKey) {
+      const previousKey = this.currentGameKey;
+
+      DOM.gameSections.forEach((section) => {
+        section.hidden = section.dataset.gameSection !== gameKey;
+      });
+
+      DOM.gameSelector.querySelectorAll(".btn-game-select").forEach((btn) => {
+        btn.setAttribute("aria-pressed", String(btn.dataset.game === gameKey));
+      });
+
+      this.currentGameKey = gameKey;
+
+      // Entering the Player Wheel section (from a different section, or for
+      // the first time) is when we decide whether to auto-populate the pool
+      // or ask the player whether to resume their previous pool.
+      if (gameKey === "wheel" && previousKey !== "wheel") {
+        PlayerWheel.onEnter();
+      }
+
+      if (previousKey === "draw" && gameKey !== "draw") LuckyDraw.reset();
+      if (gameKey === "draw" && previousKey !== "draw") LuckyDraw.onEnter();
+    }
+  };
+
+  /* =========================================================================
+     12. CARD / DECK UTILITIES (shared by Blackjack and Hi-Lo)
+     ========================================================================= */
+  const Deck = {
+    SUITS: ["\u2660", "\u2665", "\u2666", "\u2663"],
+    RANKS: ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"],
+
+    createShuffled() {
+      const deck = [];
+      for (const suit of this.SUITS) {
+        for (const rank of this.RANKS) {
+          deck.push({ rank, suit });
+        }
+      }
+      for (let i = deck.length - 1; i > 0; i -= 1) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [deck[i], deck[j]] = [deck[j], deck[i]];
+      }
+      return deck;
+    },
+
+    isRedSuit(suit) {
+      return suit === "\u2665" || suit === "\u2666";
+    },
+
+    numericValue(rank) {
+      if (rank === "A") return 14;
+      if (rank === "K") return 13;
+      if (rank === "Q") return 12;
+      if (rank === "J") return 11;
+      return Number.parseInt(rank, 10);
+    }
+  };
+
+  /* =========================================================================
+     13. BLACKJACK
+     ========================================================================= */
+  const Blackjack = {
+    deck: [],
+    playerHand: [],
+    dealerHand: [],
+    bet: 0,
+    roundActive: false,
+
+    init() {
+      DOM.btnBlackjackDeal.addEventListener("click", () => this.deal());
+      DOM.btnBlackjackHit.addEventListener("click", () => this.hit());
+      DOM.btnBlackjackStand.addEventListener("click", () => this.stand());
+    },
+
+    score(hand) {
+      let total = 0;
+      let aceCount = 0;
+
+      for (const card of hand) {
+        if (card.rank === "A") {
+          total += 11;
+          aceCount += 1;
+        } else if (["K", "Q", "J"].includes(card.rank)) {
+          total += 10;
+        } else {
+          total += Number.parseInt(card.rank, 10);
+        }
+      }
+      while (total > 21 && aceCount > 0) {
+        total -= 10;
+        aceCount -= 1;
+      }
+      return total;
+    },
+
+    renderCard(container, card, isNew) {
+      const cardEl = document.createElement("div");
+      cardEl.className = "card" + (isNew ? " card-deal-in" : "");
+      cardEl.textContent = `${card.rank}${card.suit}`;
+      cardEl.classList.add(Deck.isRedSuit(card.suit) ? "card-red" : "card-black");
+      container.appendChild(cardEl);
+    },
+
+    renderHiddenCard(container) {
+      const cardEl = document.createElement("div");
+      cardEl.className = "card card-back card-deal-in";
+      container.appendChild(cardEl);
+    },
+
+    renderHands(hideDealerHole) {
+      DOM.playerCards.innerHTML = "";
+      DOM.dealerCards.innerHTML = "";
+
+      this.playerHand.forEach((card) => this.renderCard(DOM.playerCards, card, false));
+      DOM.playerScore.textContent = `Score: ${this.score(this.playerHand)}`;
+
+      this.dealerHand.forEach((card, index) => {
+        if (hideDealerHole && index === 1) {
+          this.renderHiddenCard(DOM.dealerCards);
+        } else {
+          this.renderCard(DOM.dealerCards, card, false);
+        }
+      });
+      DOM.dealerScore.textContent = hideDealerHole ? "Score: ?" : `Score: ${this.score(this.dealerHand)}`;
+    },
+
+    setControlsDuringRound(inRound) {
+      DOM.btnBlackjackDeal.disabled = inRound;
+      DOM.btnBlackjackHit.disabled = !inRound;
+      DOM.btnBlackjackStand.disabled = !inRound;
+      DOM.inputBlackjackBet.disabled = inRound;
+    },
+
+    deal() {
+      if (this.roundActive) return;
+
+      const bet = Validate.parseBet(DOM.inputBlackjackBet);
+      if (bet === null) return;
+
+      this.bet = bet;
+      State.debit(bet);
+      Sound.click();
+
+      this.deck = Deck.createShuffled();
+      this.playerHand = [this.deck.pop(), this.deck.pop()];
+      this.dealerHand = [this.deck.pop(), this.deck.pop()];
+      this.roundActive = true;
+
+      DOM.blackjackResult.textContent = "";
+      this.renderHands(true);
+      this.setControlsDuringRound(true);
+
+      if (this.score(this.playerHand) === 21) {
+        this.stand();
+      }
+    },
+
+    hit() {
+      if (!this.roundActive) return;
+
+      this.playerHand.push(this.deck.pop());
+      const playerTotal = this.score(this.playerHand);
+      this.renderHands(true);
+
+      if (playerTotal > 21) {
+        this.finishRound("bust");
+      }
+    },
+
+    stand() {
+      if (!this.roundActive) return;
+
+      while (this.score(this.dealerHand) < 17) {
+        this.dealerHand.push(this.deck.pop());
+      }
+      this.renderHands(false);
+      this.finishRound("compare");
+    },
+
+    finishRound(outcomeType) {
+      const playerTotal = this.score(this.playerHand);
+      const dealerTotal = this.score(this.dealerHand);
+      const isNaturalBlackjack = playerTotal === 21 && this.playerHand.length === 2;
+
+      this.renderHands(false);
+      this.setControlsDuringRound(false);
+      this.roundActive = false;
+
+      let payout = 0;
+
+      if (outcomeType === "bust") {
+        DOM.blackjackResult.textContent = `You busted. Lost ${this.bet} chips.`;
+        Notify.error(`Blackjack: busted with ${playerTotal}. Lost ${this.bet} chips.`);
+        Sound.lose();
+      } else if (isNaturalBlackjack) {
+        payout = Math.round(this.bet * 2.5);
+        State.credit(payout);
+        DOM.blackjackResult.textContent = `Blackjack! You won ${payout} chips.`;
+        Notify.success(`Natural blackjack! Won ${payout} chips.`);
+        Sound.win();
+        if (payout >= CONFIG.BIG_WIN_THRESHOLD) Effects.celebrate(`BLACKJACK! +${payout} chips`);
+      } else if (dealerTotal > 21 || playerTotal > dealerTotal) {
+        payout = this.bet * 2;
+        State.credit(payout);
+        DOM.blackjackResult.textContent = `You won! ${playerTotal} vs ${dealerTotal}. Won ${payout} chips.`;
+        Notify.success(`Blackjack won. Payout: ${payout} chips.`);
+        Sound.win();
+        if (payout >= CONFIG.BIG_WIN_THRESHOLD) Effects.celebrate(`YOU WON! +${payout} chips`);
+      } else if (playerTotal === dealerTotal) {
+        payout = this.bet;
+        State.credit(payout);
+        DOM.blackjackResult.textContent = `Push. Both have ${playerTotal}. Bet returned.`;
+        Notify.warning("Blackjack: push, bet returned.");
+      } else {
+        DOM.blackjackResult.textContent = `Dealer wins, ${dealerTotal} vs ${playerTotal}. Lost ${this.bet} chips.`;
+        Notify.error(`Blackjack lost: ${this.bet} chips.`);
+        Sound.lose();
+      }
+
+      State.recordRound(this.bet, payout);
+    }
+  };
+
+  /* =========================================================================
+     14. ROULETTE
+     ========================================================================= */
+  const Roulette = {
+    RED_NUMBERS: new Set([1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36]),
+    selectedChip: 10,
+    selection: null,
+    isSpinning: false,
+    wheelRotation: 0,
+
+    init() {
+      this.buildNumberBoard();
+      this.bindChipButtons();
+      this.bindOutsideBets();
+      DOM.btnRouletteSpin.addEventListener("click", () => this.spin());
+      DOM.btnRouletteClear.addEventListener("click", () => this.clearSelection());
+      this.updateBetDisplay();
+    },
+
+    colorOf(number) {
+      if (number === 0) return "green";
+      return this.RED_NUMBERS.has(number) ? "red" : "black";
+    },
+
+    buildNumberBoard() {
+      for (let number = 0; number <= 36; number += 1) {
+        const cell = document.createElement("button");
+        cell.type = "button";
+        cell.className = "roulette-number-cell";
+        cell.textContent = String(number);
+        cell.dataset.number = String(number);
+
+        const color = this.colorOf(number);
+        if (color === "red") cell.classList.add("is-red");
+        if (color === "black") cell.classList.add("is-black");
+
+        cell.addEventListener("click", () => this.selectBet({ type: "number", value: number }, cell));
+        DOM.rouletteNumbers.appendChild(cell);
+      }
+    },
+
+    bindChipButtons() {
+      const chipButtons = DOM.chipPanel.querySelectorAll(".chip-btn");
+      chipButtons.forEach((chip) => {
+        chip.addEventListener("click", () => {
+          chipButtons.forEach((c) => c.classList.remove("is-selected"));
+          chip.classList.add("is-selected");
+          this.selectedChip = Number.parseInt(chip.dataset.chipValue, 10);
+          this.updateBetDisplay();
+          Sound.click();
+        });
+      });
+      chipButtons[0]?.classList.add("is-selected");
+    },
+
+    bindOutsideBets() {
+      document.querySelectorAll(".roulette-color-bet").forEach((btn) => {
+        btn.addEventListener("click", () => this.selectBet({ type: "color", value: btn.dataset.color }, btn));
+      });
+      document.querySelectorAll(".roulette-parity-bet").forEach((btn) => {
+        btn.addEventListener("click", () => this.selectBet({ type: "parity", value: btn.dataset.parity }, btn));
+      });
+    },
+
+    selectBet(selection, element) {
+      if (this.isSpinning) return;
+
+      document.querySelectorAll(".roulette-number-cell.is-selected").forEach((el) => el.classList.remove("is-selected"));
+      document.querySelectorAll(".roulette-color-bet.is-active, .roulette-parity-bet.is-active")
+        .forEach((el) => el.classList.remove("is-active"));
+
+      element.classList.add(element.classList.contains("roulette-number-cell") ? "is-selected" : "is-active");
+      this.selection = selection;
+      this.updateBetDisplay();
+      Sound.click();
+    },
+
+    clearSelection() {
+      if (this.isSpinning) return;
+      this.selection = null;
+      document.querySelectorAll(".roulette-number-cell.is-selected").forEach((el) => el.classList.remove("is-selected"));
+      document.querySelectorAll(".roulette-color-bet.is-active, .roulette-parity-bet.is-active")
+        .forEach((el) => el.classList.remove("is-active"));
+      this.updateBetDisplay();
+      DOM.rouletteResult.textContent = "";
+    },
+
+    updateBetDisplay() {
+      if (!this.selection) {
+        DOM.inputRouletteBet.value = `Selection: none (chip ${this.selectedChip})`;
+        return;
+      }
+      const labels = { number: "number", color: "color", parity: "parity" };
+      DOM.inputRouletteBet.value = `${labels[this.selection.type]}: ${this.selection.value} \u2014 chip ${this.selectedChip}`;
+    },
+
+    spin() {
+      if (this.isSpinning) return;
+
+      if (!this.selection) {
+        Notify.error("Choose a number, color or parity before spinning.");
+        return;
+      }
+      if (!State.canAfford(this.selectedChip)) {
+        Notify.error("You don't have enough chips for that bet.");
+        return;
+      }
+
+      State.debit(this.selectedChip);
+      this.isSpinning = true;
+      DOM.btnRouletteSpin.disabled = true;
+      DOM.rouletteResult.textContent = "";
+
+      const winningNumber = Math.floor(Math.random() * 37);
+      this.wheelRotation += 1080 + (winningNumber * 9.73);
+      DOM.rouletteWheel.style.transform = `rotate(${this.wheelRotation}deg)`;
+
+      window.setTimeout(() => this.resolveSpin(winningNumber), 3000);
+    },
+
+    resolveSpin(winningNumber) {
+      const winningColor = this.colorOf(winningNumber);
+      const bet = this.selectedChip;
+      let payout = 0;
+
+      if (this.selection.type === "number" && this.selection.value === winningNumber) {
+        payout = bet * 36;
+      } else if (this.selection.type === "color" && this.selection.value === winningColor) {
+        payout = bet * 2;
+      } else if (this.selection.type === "parity" && winningNumber !== 0) {
+        const isEven = winningNumber % 2 === 0;
+        if ((this.selection.value === "even" && isEven) || (this.selection.value === "odd" && !isEven)) {
+          payout = bet * 2;
+        }
+      }
+
+      const colorLabels = { red: "red", black: "black", green: "green" };
+
+      if (payout > 0) {
+        State.credit(payout);
+        DOM.rouletteResult.textContent = `Winning number ${winningNumber} (${colorLabels[winningColor]}). You won ${payout} chips!`;
+        Notify.success(`Roulette: ${winningNumber} ${colorLabels[winningColor]}. Won ${payout} chips.`);
+        Sound.win();
+        if (payout >= CONFIG.BIG_WIN_THRESHOLD) Effects.celebrate(`STRAIGHT UP! +${payout} chips`);
+      } else {
+        DOM.rouletteResult.textContent = `Winning number ${winningNumber} (${colorLabels[winningColor]}). Lost ${bet} chips.`;
+        Notify.error(`Roulette: ${winningNumber} ${colorLabels[winningColor]}. Lost ${bet} chips.`);
+        Sound.lose();
+      }
+
+      State.recordRound(bet, payout);
+      this.isSpinning = false;
+      DOM.btnRouletteSpin.disabled = false;
+    }
+  };
+
+  /* =========================================================================
+     14.5 PLAYER WHEEL (multiplayer name-elimination roulette)
+     A separate game from the number/color Roulette above: the wheel's
+     slices are the room's own players, pulled live from Firebase via
+     Room.list(). Spinning never touches the database — it only affects
+     an in-memory pool for the current browser tab. Winners can optionally
+     be dropped from that in-memory pool for subsequent spins, but they
+     always remain full room members.
+     ========================================================================= */
+  const PlayerWheel = {
+    pool: [],            // usernames currently active in this tab's wheel pool
+    hasSession: false,   // whether a wheel session has already been started
+    isSpinning: false,
+    rotation: 0,
+    pendingWinner: null,
+
+    init() {
+      DOM.btnWheelSpin.addEventListener("click", () => this.spin());
+      DOM.btnWheelRestart.addEventListener("click", () => this.restartPool());
+
+      DOM.btnWheelRemove.addEventListener("click", () => this.resolveWinner(true));
+      DOM.btnWheelKeep.addEventListener("click", () => this.resolveWinner(false));
+
+      DOM.btnWheelResumeRestart.addEventListener("click", () => this.handleResumeChoice("restart"));
+      DOM.btnWheelResumeContinue.addEventListener("click", () => this.handleResumeChoice("continue"));
+
+      // If the Host deletes a player from the room entirely while the wheel
+      // is idle, quietly drop them from the pool too (never the reverse —
+      // removing someone from the pool must never touch the room roster).
+      PubSub.on("players-updated", () => {
+        if (!this.hasSession || this.isSpinning) return;
+        const roomUsernames = new Set(Room.list().map((p) => p.username));
+        const before = this.pool.length;
+        this.pool = this.pool.filter((name) => roomUsernames.has(name));
+        if (this.pool.length !== before && Router.currentGameKey === "wheel") {
+          this.render();
+        }
+      });
+    },
+
+    /** Called by the Router each time the Player Wheel section is opened. */
+    onEnter() {
+      if (!this.hasSession) {
+        this.startFreshPool();
+        DOM.wheelResult.textContent = "";
+        this.render();
+        return;
+      }
+      // Returning to the wheel later in the same session — ask first,
+      // rather than silently resetting or silently resuming.
+      this.openResumeModal();
+    },
+
+    startFreshPool() {
+      this.pool = Room.list().map((p) => p.username);
+      this.hasSession = true;
+    },
+
+    restartPool() {
+      if (this.isSpinning) return;
+      this.startFreshPool();
+      DOM.wheelResult.textContent = "";
+      this.render();
+      Notify.success("Wheel pool reset to all current room players.");
+    },
+
+    openResumeModal() {
+      const count = this.pool.length;
+      DOM.wheelResumeSubtitle.textContent = count > 0
+        ? `You left the wheel earlier with ${count} player${count === 1 ? "" : "s"} still in the pool. Continue where you left off, or restart with everyone currently in the room?`
+        : "Your previous pool was empty. Restart with everyone currently in the room, or continue with an empty pool.";
+      DOM.wheelResumeModal.hidden = false;
+    },
+
+    handleResumeChoice(choice) {
+      DOM.wheelResumeModal.hidden = true;
+      if (choice === "restart") {
+        this.startFreshPool();
+        Notify.success("Wheel pool reset to all current room players.");
+      } else {
+        // Continue with the prior pool, only dropping anyone who has since
+        // left the room entirely (the pool must never outlive the roster).
+        const roomUsernames = new Set(Room.list().map((p) => p.username));
+        this.pool = this.pool.filter((name) => roomUsernames.has(name));
+      }
+      DOM.wheelResult.textContent = "";
+      this.render();
+    },
+
+    render() {
+      const count = this.pool.length;
+
+      DOM.wheelPoolCount.textContent = `${count} player${count === 1 ? "" : "s"} in the pool`;
+      DOM.wheelPoolList.innerHTML = "";
+      this.pool.forEach((name) => {
+        const chip = document.createElement("li");
+        chip.className = "wheel-pool-chip";
+        chip.textContent = name;
+        DOM.wheelPoolList.appendChild(chip);
+      });
+
+      DOM.wheelEmptyState.hidden = count > 0;
+      DOM.btnWheelSpin.disabled = count < 2;
+
+      DOM.wheelLabels.innerHTML = "";
+      if (count === 0) {
+        DOM.wheelDial.style.background = "var(--color-felt-dark)";
+        return;
+      }
+
+      const sliceAngle = 360 / count;
+      const stops = [];
+      for (let i = 0; i < count; i += 1) {
+        const start = i * sliceAngle;
+        const end = start + sliceAngle;
+        const color = i % 2 === 0 ? "var(--color-felt-light)" : "var(--color-felt-dark)";
+        stops.push(`${color} ${start}deg ${end}deg`);
+      }
+      DOM.wheelDial.style.background = `conic-gradient(${stops.join(", ")})`;
+
+      const radius = DOM.wheelContainer.clientWidth
+        ? DOM.wheelContainer.clientWidth / 2 - 16
+        : 130;
+
+      // Scale the font down a bit as the pool grows so more names stay legible.
+      const fontSizePx = count > 26 ? 10 : count > 18 ? 11 : count > 10 ? 12 : 13;
+
+      this.pool.forEach((name, i) => {
+        const angle = i * sliceAngle + sliceAngle / 2; // clockwise from 12 o'clock
+        const label = document.createElement("div");
+        label.className = "wheel-label";
+        label.textContent = name;
+        label.style.width = `${radius}px`;
+        label.style.fontSize = `${fontSizePx}px`;
+        // Pivoting at the label's own left-center (which sits exactly on the
+        // wheel's center via top/left:50%) means a single rotate() places
+        // each name along its own spoke with no risk of the flip/mirror
+        // artifacts a rotate+translate+counter-rotate chain can produce.
+        label.style.transform = `rotate(${angle - 90}deg)`;
+        DOM.wheelLabels.appendChild(label);
+      });
+    },
+
+    spin() {
+      if (this.isSpinning) return;
+      if (this.pool.length < 2) {
+        Notify.error("Add at least two players to the pool before spinning.");
+        return;
+      }
+
+      this.isSpinning = true;
+      this.pendingWinner = null;
+      DOM.btnWheelSpin.disabled = true;
+      DOM.btnWheelRestart.disabled = true;
+      DOM.wheelResult.textContent = "";
+      DOM.wheelPointer.classList.add("is-spinning");
+      Sound.click();
+
+      const count = this.pool.length;
+      const sliceAngle = 360 / count;
+      const winnerIndex = Math.floor(Math.random() * count);
+
+      // Land the pointer (fixed at the top, 0deg) on the middle of the
+      // winning slice, plus several full turns for a smooth, satisfying spin.
+      const currentMod = ((this.rotation % 360) + 360) % 360;
+      const targetAngle = (360 - (winnerIndex * sliceAngle + sliceAngle / 2)) % 360;
+      let delta = targetAngle - currentMod;
+      if (delta <= 0) delta += 360;
+      this.rotation += 1440 + delta;
+      DOM.wheelDial.style.transform = `rotate(${this.rotation}deg)`;
+
+      window.setTimeout(() => this.resolveSpin(winnerIndex), 3200);
+    },
+
+    resolveSpin(winnerIndex) {
+      const winner = this.pool[winnerIndex];
+      this.pendingWinner = winner;
+      this.isSpinning = false;
+      DOM.btnWheelRestart.disabled = false;
+      DOM.wheelPointer.classList.remove("is-spinning");
+      DOM.wheelResult.textContent = `The wheel landed on ${winner}.`;
+      Sound.win();
+
+      DOM.wheelWinnerName.textContent = winner;
+      DOM.wheelWinnerModal.hidden = false;
+    },
+
+    /** Applies the Keep/Remove choice from the winner modal. Removal only
+     *  ever touches this.pool (the in-tab spin pool) — it never calls
+     *  Room.deletePlayer or otherwise reaches the Firebase player list. */
+    resolveWinner(remove) {
+      DOM.wheelWinnerModal.hidden = true;
+      if (this.pendingWinner && remove) {
+        this.pool = this.pool.filter((name) => name !== this.pendingWinner);
+        Notify.warning(`${this.pendingWinner} was removed from the wheel pool (still a room member).`);
+      } else if (this.pendingWinner) {
+        Notify.success(`${this.pendingWinner} stays in the wheel pool.`);
+      }
+      this.pendingWinner = null;
+      this.render();
+    }
+  };
+
+  /* =========================================================================
+     15. SLOT MACHINE
+     ========================================================================= */
+  const Slots = {
+    SYMBOLS: ["\u{1F352}", "\u{1F34B}", "\u{1F514}", "\u2B50", "7\uFE0F\u20E3", "\u{1F347}"],
+    isSpinning: false,
+
+    init() {
+      DOM.btnSlotsSpin.addEventListener("click", () => this.spin());
+      DOM.btnSlotsLever.addEventListener("click", () => this.spin());
+    },
+
+    randomSymbol() {
+      return this.SYMBOLS[Math.floor(Math.random() * this.SYMBOLS.length)];
+    },
+
+    spin() {
+      if (this.isSpinning) return;
+
+      const bet = Validate.parseBet(DOM.inputSlotsBet);
+      if (bet === null) return;
+
+      State.debit(bet);
+      this.isSpinning = true;
+      DOM.btnSlotsSpin.disabled = true;
+      DOM.btnSlotsLever.disabled = true;
+      DOM.btnSlotsLever.classList.add("lever-pulled");
+      DOM.slotsResult.textContent = "";
+      DOM.reels.forEach((reel) => reel.classList.add("is-spinning"));
+
+      window.setTimeout(() => this.resolveSpin(bet), 700);
+    },
+
+    resolveSpin(bet) {
+      const results = [this.randomSymbol(), this.randomSymbol(), this.randomSymbol()];
+
+      DOM.reels.forEach((reel) => reel.classList.remove("is-spinning"));
+      DOM.btnSlotsLever.classList.remove("lever-pulled");
+      results.forEach((symbol, index) => {
+        DOM.reelSymbols[index].textContent = symbol;
+      });
+
+      const [a, b, c] = results;
+      let payout = 0;
+
+      if (a === b && b === c) {
+        payout = bet * 10;
+      } else if (a === b || b === c || a === c) {
+        payout = bet * 2;
+      }
+
+      if (payout > 0) {
+        State.credit(payout);
+        DOM.slotsResult.textContent = `${results.join(" ")} \u2014 Winning combination! You won ${payout} chips.`;
+        Notify.success(`Slots: won ${payout} chips.`);
+        Sound.win();
+        if (a === b && b === c) Effects.celebrate(`JACKPOT! +${payout} chips`);
+      } else {
+        DOM.slotsResult.textContent = `${results.join(" ")} \u2014 No match. Lost ${bet} chips.`;
+        Notify.error(`Slots: lost ${bet} chips.`);
+        Sound.lose();
+      }
+
+      State.recordRound(bet, payout);
+      this.isSpinning = false;
+      DOM.btnSlotsSpin.disabled = false;
+      DOM.btnSlotsLever.disabled = false;
+    }
+  };
+
+  /* =========================================================================
+     16. HI-LO
+     ========================================================================= */
+  const HiLo = {
+    currentCard: null,
+    isResolving: false,
+
+    init() {
+      this.currentCard = this.drawCard();
+      this.renderCurrentCard();
+      DOM.btnHiloHigher.addEventListener("click", () => this.guess("higher"));
+      DOM.btnHiloLower.addEventListener("click", () => this.guess("lower"));
+    },
+
+    drawCard() {
+      const rank = Deck.RANKS[Math.floor(Math.random() * Deck.RANKS.length)];
+      const suit = Deck.SUITS[Math.floor(Math.random() * Deck.SUITS.length)];
+      return { rank, suit, value: Deck.numericValue(rank) };
+    },
+
+    renderCurrentCard() {
+      DOM.hiloCurrentCard.textContent = `${this.currentCard.rank}${this.currentCard.suit}`;
+      DOM.hiloCurrentCard.classList.toggle("card-red", Deck.isRedSuit(this.currentCard.suit));
+      DOM.hiloCurrentCard.classList.toggle("card-black", !Deck.isRedSuit(this.currentCard.suit));
+      DOM.hiloNextCard.textContent = "?";
+      DOM.hiloNextCard.classList.add("hilo-card-hidden");
+      DOM.hiloNextCard.classList.remove("card-red", "card-black");
+    },
+
+    guess(direction) {
+      if (this.isResolving) return;
+
+      const bet = Validate.parseBet(DOM.inputHiloBet);
+      if (bet === null) return;
+
+      State.debit(bet);
+      this.isResolving = true;
+      DOM.hiloResult.textContent = "";
+
+      const nextCard = this.drawCard();
+      DOM.hiloNextCard.textContent = `${nextCard.rank}${nextCard.suit}`;
+      DOM.hiloNextCard.classList.toggle("card-red", Deck.isRedSuit(nextCard.suit));
+      DOM.hiloNextCard.classList.toggle("card-black", !Deck.isRedSuit(nextCard.suit));
+      DOM.hiloNextCard.classList.remove("hilo-card-hidden");
+
+      window.setTimeout(() => this.resolveGuess(direction, bet, nextCard), 500);
+    },
+
+    resolveGuess(direction, bet, nextCard) {
+      const isHigher = nextCard.value > this.currentCard.value;
+      const isLower = nextCard.value < this.currentCard.value;
+      const guessedCorrectly = (direction === "higher" && isHigher) || (direction === "lower" && isLower);
+      const directionLabel = direction === "higher" ? "higher" : "lower";
+      let payout = 0;
+
+      if (!isHigher && !isLower) {
+        payout = bet;
+        State.credit(payout);
+        DOM.hiloResult.textContent = `Push on ${nextCard.rank}${nextCard.suit}. Bet returned.`;
+        Notify.warning("Hi-Lo: push, bet returned.");
+      } else if (guessedCorrectly) {
+        payout = bet * 2;
+        State.credit(payout);
+        DOM.hiloResult.textContent = `Correct! ${nextCard.rank}${nextCard.suit} was ${directionLabel}. You won ${payout} chips.`;
+        Notify.success(`Hi-Lo: won ${payout} chips.`);
+        Sound.win();
+        if (payout >= CONFIG.BIG_WIN_THRESHOLD) Effects.celebrate(`NICE CALL! +${payout} chips`);
+      } else {
+        DOM.hiloResult.textContent = `Wrong! ${nextCard.rank}${nextCard.suit} was not ${directionLabel}. Lost ${bet} chips.`;
+        Notify.error(`Hi-Lo: lost ${bet} chips.`);
+        Sound.lose();
+      }
+
+      State.recordRound(bet, payout);
+      this.currentCard = nextCard;
+      this.renderCurrentCard();
+      this.isResolving = false;
+    }
+  };
+
+  /* =========================================================================
+     16b. LUCKY DRAW (pick 1-6 winners from the room's live player list)
+     Four visual modes. Winners are chosen up-front with an unbiased shuffle
+     and the animation is then steered to them. Nothing here writes to the
+     database: a draw only reads Room.list().
+     ========================================================================= */
+  const LuckyDraw = {
+    count: 3,
+    mode: "slots",
+    running: false,
+    runId: 0,
+    el: {},
+    CANCEL: Symbol("cancel"),
+    CHIP_COLORS: ["#c0392b", "#1f2933", "#1e7a4c", "#b8860b", "#2b5c9e"],
+    IDLE: {
+      slots: ["\u{1F3B0}", "Vertical reels spin and brake one by one."],
+      bingo: ["\u{1F3B1}", "Spheres tumble in the blower and the tube picks the winners."],
+      cards: ["\u{1F0CF}", "The deck is shuffled, then winning cards are dealt and flipped."],
+      laser: ["\u{1F52E}", "Chips swirl while a laser pulses to lock in each winner."]
+    },
+
+    init() {
+      const $ = (id) => document.getElementById(id);
+      this.el = {
+        stage: $("draw-stage"), podium: $("draw-podium"), result: $("draw-result"),
+        start: $("btn-draw-start"), reset: $("btn-draw-reset"), info: $("draw-player-count")
+      };
+      this.countBtns = Array.from(document.querySelectorAll(".draw-count-btn"));
+      this.modeBtns = Array.from(document.querySelectorAll(".draw-mode-btn"));
+
+      this.countBtns.forEach((btn) => btn.addEventListener("click", () => {
+        if (this.running) return;
+        this.count = Number(btn.dataset.count);
+        this.syncButtons();
+      }));
+      this.modeBtns.forEach((btn) => btn.addEventListener("click", () => {
+        if (this.running) return;
+        this.mode = btn.dataset.drawMode;
+        this.syncButtons();
+        this.reset();
+      }));
+      this.el.start.addEventListener("click", () => this.start());
+      this.el.reset.addEventListener("click", () => this.reset());
+      PubSub.on("players-updated", () => { if (!this.running) this.updateInfo(); });
+
+      this.syncButtons();
+      this.reset();
+    },
+
+    /* ----------------------------- helpers ----------------------------- */
+    names() { return Room.list().map((p) => p.username).filter(Boolean); },
+
+    shuffle(list) {
+      const out = list.slice();
+      for (let i = out.length - 1; i > 0; i -= 1) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [out[i], out[j]] = [out[j], out[i]];
+      }
+      return out;
+    },
+
+    mk(tag, cls, text) {
+      const node = document.createElement(tag);
+      if (cls) node.className = cls;
+      if (text != null) node.textContent = text;
+      return node;
+    },
+
+    short(name, max = 11) { return name.length > max ? name.slice(0, max - 1) + "\u2026" : name; },
+
+    async wait(ms, id) {
+      await new Promise((resolve) => window.setTimeout(resolve, ms));
+      if (id !== this.runId) throw this.CANCEL;
+    },
+
+    /** rAF loop; fn(dt, elapsed) returns true when finished. Rejects if cancelled. */
+    frames(id, fn) {
+      return new Promise((resolve, reject) => {
+        const t0 = performance.now();
+        let last = t0;
+        const tick = (now) => {
+          if (id !== this.runId) { reject(this.CANCEL); return; }
+          const dt = Math.min(now - last, 50);
+          last = now;
+          if (fn(dt, now - t0)) { resolve(); return; }
+          window.requestAnimationFrame(tick);
+        };
+        window.requestAnimationFrame(tick);
+      });
+    },
+
+    makeCanvas(h) {
+      const w = Math.max(260, Math.min(this.el.stage.clientWidth - 32, 480));
+      const dpr = window.devicePixelRatio || 1;
+      const canvas = document.createElement("canvas");
+      canvas.className = "draw-canvas";
+      canvas.width = Math.round(w * dpr);
+      canvas.height = Math.round(h * dpr);
+      canvas.style.width = w + "px";
+      canvas.style.height = h + "px";
+      const ctx = canvas.getContext("2d");
+      ctx.scale(dpr, dpr);
+      this.el.stage.replaceChildren(canvas);
+      return { ctx, w, h };
+    },
+
+    drawChip(ctx, x, y, r, name, color, glow) {
+      ctx.save();
+      if (glow) { ctx.shadowColor = "#f4c430"; ctx.shadowBlur = 20; }
+      ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fillStyle = color; ctx.fill();
+      ctx.shadowBlur = 0;
+      const lw = Math.max(3, r * 0.22);
+      ctx.lineWidth = lw; ctx.strokeStyle = "rgba(255,255,255,.9)"; ctx.setLineDash([r * 0.35, r * 0.3]);
+      ctx.beginPath(); ctx.arc(x, y, r - lw / 2, 0, Math.PI * 2); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.beginPath(); ctx.arc(x, y, r * 0.68, 0, Math.PI * 2);
+      ctx.fillStyle = "rgba(0,0,0,.3)"; ctx.fill();
+      ctx.lineWidth = 1.5; ctx.strokeStyle = "rgba(255,255,255,.55)"; ctx.stroke();
+      ctx.fillStyle = "#fff"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+      ctx.font = `700 ${Math.max(8, r * 0.4)}px "Segoe UI", Arial, sans-serif`;
+      ctx.fillText(this.short(name), x, y, r * 1.25);
+      ctx.restore();
+    },
+
+    /* ------------------------------ state ------------------------------ */
+    syncButtons() {
+      this.countBtns.forEach((b) => b.setAttribute("aria-pressed", String(Number(b.dataset.count) === this.count)));
+      this.modeBtns.forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.drawMode === this.mode)));
+    },
+
+    setBusy(busy) {
+      this.countBtns.concat(this.modeBtns).forEach((b) => { b.disabled = busy; });
+      this.el.start.disabled = busy || this.names().length === 0;
+    },
+
+    updateInfo() {
+      const n = this.names().length;
+      this.el.info.textContent = n ? `${n} player${n === 1 ? "" : "s"} in the pool` : "No players in this room yet.";
+      this.el.start.disabled = this.running || n === 0;
+    },
+
+    renderIdle() {
+      const [icon, text] = this.IDLE[this.mode];
+      const box = this.mk("div", "draw-idle");
+      box.append(this.mk("div", "draw-idle-icon", icon), this.mk("p", "", text));
+      this.el.stage.replaceChildren(box);
+    },
+
+    onEnter() { if (!this.running) this.updateInfo(); },
+
+    reset() {
+      this.runId += 1;
+      this.running = false;
+      this.setBusy(false);
+      this.el.podium.replaceChildren();
+      this.el.result.textContent = "";
+      this.renderIdle();
+      this.updateInfo();
+    },
+
+    announce(name, rank) {
+      const item = this.mk("div", "podium-item");
+      item.setAttribute("role", "listitem");
+      item.append(this.mk("span", "podium-rank", String(rank + 1)), this.mk("span", "podium-name", name));
+      this.el.podium.appendChild(item);
+      Sound.win();
+    },
+
+    async start() {
+      if (this.running) return;
+      const names = this.names();
+      if (!names.length) { Notify.error("No players in this room yet."); return; }
+      const n = Math.min(this.count, names.length);
+      if (n < this.count) Notify.warning(`Only ${names.length} player(s) available \u2014 drawing ${n}.`);
+
+      this.runId += 1;
+      const id = this.runId;
+      this.running = true;
+      this.setBusy(true);
+      this.el.podium.replaceChildren();
+      this.el.result.textContent = "";
+
+      const winners = this.shuffle(names).slice(0, n);
+      const runner = { slots: this.runSlots, bingo: this.runBingo, cards: this.runCards, laser: this.runLaser }[this.mode];
+      try {
+        await runner.call(this, names, winners, id);
+        this.el.result.textContent = `\u{1F389} ${n === 1 ? "Winner" : "Winners"}: ${winners.join(", ")}`;
+        Sound.jackpot();
+      } catch (err) {
+        if (err !== this.CANCEL) { console.error(err); Notify.error("The draw was interrupted."); }
+      } finally {
+        if (id === this.runId) { this.running = false; this.setBusy(false); this.updateInfo(); }
+      }
+    },
+
+    /* ------------------- MODE 1: NAME SLOT MACHINE ------------------- */
+    async runSlots(names, winners, id) {
+      const H = 52;
+      const box = this.mk("div", "reels");
+      const reels = winners.map((winner, k) => {
+        const target = 22 + k * 5;
+        const reel = this.mk("div", "reel is-spinning");
+        const strip = this.mk("div", "reel-strip");
+        for (let i = 0; i < target + 4; i += 1) {
+          strip.appendChild(this.mk("div", "reel-item", i === target ? winner : names[Math.floor(Math.random() * names.length)]));
+        }
+        reel.append(strip, this.mk("div", "reel-window"));
+        box.appendChild(reel);
+        return { reel, strip, winner, k, dist: (target - 1) * H, dur: 2400 + k * 650, done: false, lastRow: -1 };
+      });
+      this.el.stage.replaceChildren(box);
+
+      const OVER = 26, A = 0.8;
+      await this.frames(id, (dt, t) => {
+        let all = true;
+        reels.forEach((r) => {
+          if (r.done) return;
+          const p = t / r.dur;
+          let y;
+          if (p >= 1) {
+            y = r.dist;
+            r.done = true;
+            r.reel.classList.remove("is-spinning");
+            r.reel.classList.add("is-done");
+            this.announce(r.winner, r.k);
+          } else if (p < A) {
+            const q = p / A;
+            y = (r.dist + OVER) * (1 - Math.pow(1 - q, 4));   // fast spin, long brake, small overshoot
+          } else {
+            const s = (p - A) / (1 - A);
+            y = r.dist + OVER * Math.exp(-4 * s) * Math.cos(10 * s);   // damped spring = physics bounce
+            r.reel.classList.remove("is-spinning");
+          }
+          r.strip.style.transform = `translate3d(0,${-y}px,0)`;
+          const row = Math.floor(y / H);
+          if (r.k === 0 && row !== r.lastRow) { r.lastRow = row; Sound.tone(260 + (row % 5) * 40, 30, "square", 0.02); }
+          if (!r.done) all = false;
+        });
+        return all;
+      });
+    },
+
+    /* ------------------ MODE 2: SPHERE LOTTERY / BINGO ------------------ */
+    async runBingo(names, winners, id) {
+      const { ctx, w, h } = this.makeCanvas(420);
+      const R = Math.min(w / 2 - 8, (h - 56) / 2), cx = w / 2, cy = h - R - 6;
+      const mouthY = cy - R, tubeTop = 8;
+      const r = Math.max(11, Math.min(26, R * Math.sqrt(0.38 / names.length)));
+      const gap = Math.asin(Math.min(0.9, (r + 5) / R));
+      const palette = ["#e0483e", "#f4c430", "#2e8b57", "#e8e8e8", "#3b6fb6"];
+      const balls = this.shuffle(names).map((name, i) => {
+        const a = Math.random() * Math.PI * 2, d = Math.sqrt(Math.random()) * (R - r - 4);
+        return { name, x: cx + Math.cos(a) * d, y: cy + Math.sin(a) * d, vx: (Math.random() - 0.5) * 200, vy: (Math.random() - 0.5) * 200, color: palette[i % palette.length], mode: "free" };
+      });
+
+      const step = (dt, blow) => {
+        const s = dt / 1000;
+        const free = balls.filter((b) => b.mode === "free");
+        free.forEach((b) => {
+          b.vy += 420 * s;
+          if (b.y > cy + R * 0.2) b.vy -= blow * 1500 * s;          // air jet from the bottom
+          b.vx += (Math.random() - 0.5) * blow * 1200 * s;
+          const sp = Math.hypot(b.vx, b.vy);
+          if (sp > 620) { b.vx *= 620 / sp; b.vy *= 620 / sp; }
+          b.x += b.vx * s; b.y += b.vy * s;
+        });
+        for (let i = 0; i < free.length; i += 1) {
+          const a = free[i];
+          const dx = a.x - cx, dy = a.y - cy, d = Math.hypot(dx, dy) || 1;
+          if (d > R - r) {
+            const nx = dx / d, ny = dy / d;
+            a.x = cx + nx * (R - r); a.y = cy + ny * (R - r);
+            const vn = a.vx * nx + a.vy * ny;
+            if (vn > 0) { a.vx -= 1.85 * vn * nx; a.vy -= 1.85 * vn * ny; }
+          }
+          for (let j = i + 1; j < free.length; j += 1) {
+            const b = free[j];
+            const ex = b.x - a.x, ey = b.y - a.y, dist = Math.hypot(ex, ey) || 0.01;
+            if (dist < 2 * r) {
+              const nx = ex / dist, ny = ey / dist, ov = (2 * r - dist) / 2;
+              a.x -= nx * ov; a.y -= ny * ov; b.x += nx * ov; b.y += ny * ov;
+              const rel = (b.vx - a.vx) * nx + (b.vy - a.vy) * ny;
+              if (rel < 0) { const imp = -rel * 0.9; a.vx -= imp * nx; a.vy -= imp * ny; b.vx += imp * nx; b.vy += imp * ny; }
+            }
+          }
+        }
+      };
+
+      const drawBall = (b) => {
+        ctx.beginPath(); ctx.arc(b.x, b.y, r, 0, Math.PI * 2); ctx.fillStyle = b.color; ctx.fill();
+        const g = ctx.createRadialGradient(b.x - r * 0.35, b.y - r * 0.35, r * 0.1, b.x, b.y, r);
+        g.addColorStop(0, "rgba(255,255,255,.75)"); g.addColorStop(0.4, "rgba(255,255,255,0)"); g.addColorStop(1, "rgba(0,0,0,.35)");
+        ctx.fillStyle = g; ctx.fill();
+        ctx.beginPath(); ctx.arc(b.x, b.y, r * 0.68, 0, Math.PI * 2); ctx.fillStyle = "rgba(255,255,255,.92)"; ctx.fill();
+        ctx.fillStyle = "#14171c"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+        ctx.font = `700 ${Math.max(8, r * 0.4)}px "Segoe UI", Arial, sans-serif`;
+        ctx.fillText(this.short(b.name, 9), b.x, b.y, r * 1.2);
+      };
+
+      const draw = (banner) => {
+        ctx.clearRect(0, 0, w, h);
+        ctx.lineWidth = 3; ctx.strokeStyle = "rgba(233,196,106,.85)";
+        ctx.beginPath();
+        ctx.moveTo(cx - r - 5, mouthY); ctx.lineTo(cx - r - 5, tubeTop);
+        ctx.moveTo(cx + r + 5, mouthY); ctx.lineTo(cx + r + 5, tubeTop);
+        ctx.stroke();
+        const g = ctx.createRadialGradient(cx - R * 0.3, cy - R * 0.3, R * 0.1, cx, cy, R);
+        g.addColorStop(0, "rgba(255,255,255,.14)"); g.addColorStop(1, "rgba(255,255,255,.03)");
+        ctx.fillStyle = g; ctx.beginPath(); ctx.arc(cx, cy, R, 0, Math.PI * 2); ctx.fill();
+        ctx.lineWidth = 4; ctx.strokeStyle = "#b8860b";
+        ctx.beginPath(); ctx.arc(cx, cy, R, -Math.PI / 2 + gap, Math.PI * 1.5 - gap); ctx.stroke();
+        balls.forEach(drawBall);
+        if (banner) {
+          ctx.save();
+          ctx.fillStyle = "#f4c430"; ctx.shadowColor = "rgba(244,196,48,.8)"; ctx.shadowBlur = 12;
+          ctx.textAlign = "left"; ctx.textBaseline = "middle";
+          ctx.font = '700 20px "Segoe UI", Arial, sans-serif';
+          const x = cx + r + 16;
+          ctx.fillText("\u2605 " + banner, x, tubeTop + 18, Math.max(60, w - x - 8));
+          ctx.restore();
+        }
+      };
+
+      let blow = 0.5;
+      for (let k = 0; k < winners.length; k += 1) {
+        const ball = balls.find((b) => b.name === winners[k]);
+        let phase = "blow", pt = 0, banner = null;
+        await this.frames(id, (dt) => {
+          pt += dt;
+          if (phase === "blow") {
+            blow = 1;
+            if (Math.floor(pt / 130) !== Math.floor((pt - dt) / 130)) Sound.tone(200 + Math.random() * 220, 40, "triangle", 0.03);
+            if (pt > 1700) { phase = "pull"; pt = 0; ball.mode = "pull"; blow = 0.5; }
+          } else if (phase === "pull") {
+            const dx = cx - ball.x, dy = mouthY + r - ball.y, d = Math.hypot(dx, dy);
+            if (d < 6) { phase = "tube"; pt = 0; ball.x = cx; }
+            else { const sp = 240 * dt / 1000; ball.x += (dx / d) * Math.min(sp, d); ball.y += (dy / d) * Math.min(sp, d); }
+          } else if (phase === "tube") {
+            ball.y -= 200 * dt / 1000;
+            if (ball.y <= tubeTop + r + 2) { ball.y = tubeTop + r + 2; phase = "show"; pt = 0; banner = winners[k]; ball.mode = "show"; this.announce(winners[k], k); }
+          } else if (pt > 1100) {
+            return true;
+          }
+          step(dt, blow);
+          draw(banner);
+          return false;
+        });
+        balls.splice(balls.indexOf(ball), 1);
+      }
+    },
+
+    /* ---------------------- MODE 3: CARD DEALER ---------------------- */
+    async runCards(names, winners, id) {
+      const area = this.mk("div", "deal-area");
+      const deck = this.mk("div", "deck");
+      const shown = Math.min(names.length, 14);
+      for (let i = 0; i < shown; i += 1) {
+        const mini = this.mk("div", "deck-card");
+        mini.style.setProperty("--i", String(i));
+        mini.style.transform = `translate(${i * 1.5}px, ${-i * 1.5}px)`;
+        mini.style.animationDelay = `${(i % 5) * 60}ms`;
+        deck.appendChild(mini);
+      }
+      const row = this.mk("div", "deal-row");
+      area.append(this.mk("p", "deal-label", `${names.length} player card${names.length === 1 ? "" : "s"} in the deck`), deck, row);
+      this.el.stage.replaceChildren(area);
+
+      deck.classList.add("is-shuffling");
+      for (let i = 0; i < 8; i += 1) { Sound.tone(300 + Math.random() * 200, 40, "square", 0.025); await this.wait(220, id); }
+      deck.classList.remove("is-shuffling");
+
+      const suits = Deck.SUITS;
+      const cards = winners.map((winner, k) => {
+        const card = this.mk("div", "deal-card");
+        const inner = this.mk("div", "deal-inner");
+        const back = this.mk("div", "deal-face deal-back", "\u2660");
+        const front = this.mk("div", "deal-face deal-front");
+        const suit = suits[Math.floor(Math.random() * suits.length)];
+        const red = suit === "\u2665" || suit === "\u2666";
+        front.classList.toggle("is-red", red);
+        front.append(this.mk("span", "deal-suit", suit), this.mk("span", "deal-name", winner), this.mk("span", "deal-tag", "WINNER"));
+        inner.append(back, front);
+        card.appendChild(inner);
+        row.appendChild(card);
+        return card;
+      });
+
+      const dr = deck.getBoundingClientRect();
+      cards.forEach((card, i) => {
+        const cr = card.getBoundingClientRect();
+        const dx = dr.left + dr.width / 2 - (cr.left + cr.width / 2);
+        const dy = dr.top + dr.height / 2 - (cr.top + cr.height / 2);
+        card.animate(
+          [{ transform: `translate(${dx}px, ${dy}px) rotate(-10deg) scale(.6)` }, { transform: "none" }],
+          { duration: 650, delay: i * 260, easing: "cubic-bezier(.2,.9,.3,1)", fill: "backwards" }
+        );
+        window.setTimeout(() => { if (id === this.runId) Sound.click(); }, i * 260 + 200);
+      });
+      await this.wait(cards.length * 260 + 700, id);
+
+      for (let i = 0; i < cards.length; i += 1) {
+        await this.wait(i === cards.length - 1 && cards.length > 1 ? 1100 : 650, id);
+        cards[i].classList.add("is-flipped");
+        await this.wait(450, id);
+        cards[i].classList.add("is-winner");
+        this.announce(winners[i], i);
+      }
+      await this.wait(500, id);
+    },
+
+    /* ------------------ MODE 4: CHIP RAIN / LASER PULSE ------------------ */
+    async runLaser(names, winners, id) {
+      const { ctx, w, h } = this.makeCanvas(440);
+      const cx = w / 2, cy = h * 0.42, RX = w / 2 - 34, RY = h * 0.34;
+      const r = Math.max(13, Math.min(27, Math.min(RX, RY) * Math.sqrt(0.5 / names.length) * 1.5));
+      const slotR = Math.max(14, Math.min(26, (w - 30) / (2 * winners.length) - 6));
+      const slotY = h - slotR - 24;
+      const slotX = (k) => 20 + (w - 40) * (k + 0.5) / winners.length;
+      const src = { x: cx, y: 8 };
+      const chips = this.shuffle(names).map((name, i) => ({
+        name, a: Math.random() * Math.PI * 2, ro: 0.25 + Math.random() * 0.7, dir: Math.random() < 0.5 ? -1 : 1,
+        w0: 0.7 + Math.random() * 0.8, color: this.CHIP_COLORS[i % this.CHIP_COLORS.length],
+        delay: Math.random() * 700, mode: "orbit", x: cx, y: -60, slot: -1
+      }));
+      let time = 0;
+
+      const beam = (tx, ty, flash) => {
+        ctx.save();
+        ctx.globalCompositeOperation = "lighter";
+        const g = ctx.createLinearGradient(src.x, src.y, tx, ty);
+        g.addColorStop(0, `rgba(255,240,170,${0.5 + flash * 0.4})`); g.addColorStop(1, "rgba(255,200,60,.08)");
+        ctx.fillStyle = g;
+        const ang = Math.atan2(ty - src.y, tx - src.x) + Math.PI / 2, half = r * (0.9 + flash);
+        ctx.beginPath();
+        ctx.moveTo(src.x - 2, src.y); ctx.lineTo(src.x + 2, src.y);
+        ctx.lineTo(tx + Math.cos(ang) * half, ty + Math.sin(ang) * half);
+        ctx.lineTo(tx - Math.cos(ang) * half, ty - Math.sin(ang) * half);
+        ctx.closePath(); ctx.fill();
+        const sg = ctx.createRadialGradient(tx, ty, 0, tx, ty, r * 2.2);
+        sg.addColorStop(0, `rgba(255,240,170,${0.5 + flash * 0.35})`); sg.addColorStop(1, "rgba(255,240,170,0)");
+        ctx.fillStyle = sg; ctx.beginPath(); ctx.arc(tx, ty, r * 2.2, 0, Math.PI * 2); ctx.fill();
+        ctx.restore();
+        ctx.fillStyle = "#f4c430"; ctx.beginPath(); ctx.arc(src.x, src.y, 6, 0, Math.PI * 2); ctx.fill();
+      };
+
+      const render = (dt, target, flash, ring) => {
+        time += dt;
+        ctx.clearRect(0, 0, w, h);
+        for (let k = 0; k < winners.length; k += 1) {
+          ctx.save(); ctx.setLineDash([5, 5]); ctx.lineWidth = 2; ctx.strokeStyle = "rgba(233,196,106,.5)";
+          ctx.beginPath(); ctx.arc(slotX(k), slotY, slotR, 0, Math.PI * 2); ctx.stroke(); ctx.restore();
+        }
+        chips.forEach((c) => {
+          if (c.mode === "orbit") {
+            c.a += c.dir * c.w0 / (0.45 + c.ro) * dt / 1000;
+            const e = Math.min(1, Math.max(0, (time - c.delay) / 750));
+            c.x = cx + Math.cos(c.a) * c.ro * RX;
+            c.y = cy + Math.sin(c.a) * c.ro * RY * 0.9 - Math.pow(1 - e, 3) * (h + 60);   // chip rain intro
+            this.drawChip(ctx, c.x, c.y, r, c.name, c.color, false);
+          } else if (c.mode === "fly") {
+            this.drawChip(ctx, c.x, c.y, r + (slotR - r) * c.p, c.name, c.color, true);
+          } else {
+            this.drawChip(ctx, slotX(c.slot), slotY, slotR, c.name, c.color, true);
+          }
+        });
+        if (target) {
+          beam(target.x, target.y, flash);
+          if (ring) {
+            ctx.save(); ctx.lineWidth = 3; ctx.strokeStyle = "#f4c430"; ctx.shadowColor = "#f4c430"; ctx.shadowBlur = 16;
+            ctx.beginPath(); ctx.arc(target.x, target.y, r + 5, 0, Math.PI * 2); ctx.stroke(); ctx.restore();
+          }
+        }
+      };
+
+      await this.frames(id, (dt, t) => { render(dt, null, 0, false); return t > 1300; });   // let the rain settle
+
+      const PULSE = 280, LOCK = 750, FLY = 850;
+      for (let k = 0; k < winners.length; k += 1) {
+        const wc = chips.find((c) => c.name === winners[k]);
+        const decoys = this.shuffle(chips.filter((c) => c !== wc && c.mode === "orbit")).slice(0, 5);
+        const seq = decoys.concat(wc), scan = seq.length * PULSE;
+        let lastIdx = -1, locked = false;
+        await this.frames(id, (dt, t) => {
+          if (t < scan) {
+            const idx = Math.floor(t / PULSE), ph = (t % PULSE) / PULSE;
+            if (idx !== lastIdx) { lastIdx = idx; Sound.tone(500 + idx * 90, 70, "sawtooth", 0.03); }
+            render(dt, seq[idx], ph < 0.25 ? (1 - ph / 0.25) * 0.6 : 0, false);
+          } else if (t < scan + LOCK) {
+            if (!locked) { locked = true; Sound.tone(880, 220, "triangle", 0.06); }
+            render(dt, wc, 0.5 + 0.5 * Math.sin((t - scan) / 60), true);
+          } else {
+            const p = Math.min(1, (t - scan - LOCK) / FLY), e = p < 0.5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2;
+            if (wc.mode !== "fly") { wc.mode = "fly"; wc.fx = wc.x; wc.fy = wc.y; }
+            wc.p = e;
+            wc.x = wc.fx + (slotX(k) - wc.fx) * e;
+            wc.y = wc.fy + (slotY - wc.fy) * e - Math.sin(p * Math.PI) * 40;
+            render(dt, null, 0, false);
+            if (p >= 1) { wc.mode = "slot"; wc.slot = k; this.announce(winners[k], k); return true; }
+          }
+          return false;
+        });
+        await this.frames(id, (dt, t) => { render(dt, null, 0, false); return t > 300; });
+      }
+    }
+  };
+
+  /* =========================================================================
+     17. SETUP SCREEN (Create room / Join by code)
+     ========================================================================= */
+  const SetupScreen = {
+    init() {
+      ConnectionStatus.init(DOM.connectionDot, DOM.connectionStatusText);
+
+      DOM.btnCreateRoom.addEventListener("click", () => this.handleCreateRoom());
+      DOM.btnHostContinue.addEventListener("click", () => Router.showAuth());
+      DOM.btnCopyLink.addEventListener("click", () => this.copyLink());
+      DOM.btnJoinRoom.addEventListener("click", () => this.handleJoinRoom());
+      DOM.inputRoomCode.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") this.handleJoinRoom();
+      });
+      DOM.inputRoomCode.addEventListener("input", () => {
+        DOM.inputRoomCode.value = DOM.inputRoomCode.value.toUpperCase().replace(/[^A-Z0-9]/g, "");
+      });
+
+      this.ensureConnected();
+
+      const { room } = LinkUtils.readParams();
+      if (room) {
+        DOM.inputRoomCode.value = room;
+        DOM.inputRoomCode.focus();
+      }
+    },
+
+    /** Connects to the hardcoded Firebase project (once). */
+    ensureConnected() {
+      if (Room.isConfigured()) return true;
+      try {
+        Room.connect(CONFIG.FIREBASE_CONFIG);
+        return true;
+      } catch (err) {
+        console.error(err);
+        return false;
+      }
+    },
+
+    async handleCreateRoom() {
+      DOM.hostError.textContent = "";
+      if (!this.ensureConnected()) {
+        DOM.hostError.textContent = "Could not reach Firebase. Check your internet connection and reload.";
+        return;
+      }
+
+      DOM.btnCreateRoom.disabled = true;
+      DOM.btnCreateRoom.textContent = "Creating\u2026";
+
+      try {
+        const code = await Room.createRoom();
+        State.roomCode = code;
+        State.isHost = true;
+
+        DOM.createdRoomCode.textContent = code;
+        DOM.hostRoomResult.hidden = false;
+        DOM.hostShareLink.value = LinkUtils.buildShareLink(code);
+        DOM.hostLinkRow.hidden = false;
+        DOM.btnHostContinue.hidden = false;
+        Notify.success(`Room ${code} created. You are the Host.`);
+      } catch (err) {
+        console.error(err);
+        DOM.hostError.textContent = err.message || "Could not create the room. Please try again.";
+      } finally {
+        DOM.btnCreateRoom.disabled = false;
+        DOM.btnCreateRoom.textContent = "Create Room";
+      }
+    },
+
+    copyLink() {
+      DOM.hostShareLink.select();
+      try {
+        navigator.clipboard?.writeText(DOM.hostShareLink.value);
+        Notify.success("Link copied to clipboard.");
+      } catch (err) {
+        document.execCommand("copy");
+      }
+    },
+
+    async handleJoinRoom() {
+      DOM.joinError.textContent = "";
+      const code = String(DOM.inputRoomCode.value || "").trim().toUpperCase();
+      if (!code) {
+        DOM.joinError.textContent = "Enter a room code.";
+        return;
+      }
+      if (!this.ensureConnected()) {
+        DOM.joinError.textContent = "Could not reach Firebase. Check your internet connection and reload.";
+        return;
+      }
+
+      DOM.btnJoinRoom.disabled = true;
+      DOM.btnJoinRoom.textContent = "Joining\u2026";
+
+      try {
+        const meta = await Room.joinRoom(code);
+        State.roomCode = Room.code;
+        State.isHost = meta.hostDeviceId === Storage.getDeviceId();
+        Notify.success(`Connected to room ${Room.code}.`);
+        Router.showAuth();
+      } catch (err) {
+        console.error(err);
+        DOM.joinError.textContent = err.message || "Could not join that room.";
+      } finally {
+        DOM.btnJoinRoom.disabled = false;
+        DOM.btnJoinRoom.textContent = "Join Room";
+      }
+    }
+  };
+
+  /* =========================================================================
+     18. AUTH SCREEN (player selection / creation inside a room)
+     ========================================================================= */
+  const AuthScreen = {
+    searchTerm: "",
+
+    init() {
+      DOM.loginForm.addEventListener("submit", (event) => this.handleCreatePlayer(event));
+      DOM.inputPlayerSearch.addEventListener("input", (event) => {
+        this.searchTerm = event.target.value.trim().toLowerCase();
+        this.render();
+      });
+      DOM.btnLeaveRoom.addEventListener("click", () => this.leaveRoom());
+      PubSub.on("players-updated", () => {
+        if (!DOM.viewAuth.hidden) this.render();
+      });
+    },
+
+    render() {
+      const allPlayers = Room.list().sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
+      const filtered = this.searchTerm
+        ? allPlayers.filter((p) => p.username.toLowerCase().includes(this.searchTerm))
+        : allPlayers;
+
+      DOM.playersCount.textContent = String(allPlayers.length);
+      DOM.playersGrid.innerHTML = "";
+      DOM.playersEmpty.hidden = allPlayers.length > 0;
+      DOM.playersEmpty.textContent = (allPlayers.length > 0 && filtered.length === 0)
+        ? "No players match your search."
+        : "No players have joined this room yet. Create the first profile on the right \u2192";
+
+      filtered.forEach((player) => {
+        DOM.playersGrid.appendChild(this.buildPlayerCard(player));
+      });
+    },
+
+    buildPlayerCard(player) {
+      const card = document.createElement("article");
+      card.className = "player-card";
+      card.setAttribute("role", "listitem");
+
+      const avatar = document.createElement("span");
+      avatar.className = "player-avatar";
+      avatar.textContent = player.username.slice(0, 2).toUpperCase();
+
+      const info = document.createElement("div");
+      info.className = "player-info";
+      const nameEl = document.createElement("span");
+      nameEl.className = "player-name";
+      nameEl.textContent = player.username;
+      const balanceEl = document.createElement("span");
+      balanceEl.className = "player-balance";
+      balanceEl.textContent = `${(player.balance || 0).toLocaleString("en-US")} chips`;
+      info.append(nameEl, balanceEl);
+
+      const actions = document.createElement("div");
+      actions.className = "player-actions";
+
+      const continueBtn = document.createElement("button");
+      continueBtn.type = "button";
+      continueBtn.className = "btn btn-small btn-primary";
+      continueBtn.textContent = "Enter";
+      continueBtn.addEventListener("click", () => this.loginAs(player.username));
+
+      actions.append(continueBtn);
+      card.append(avatar, info, actions);
+      return card;
+    },
+
+    loginAs(username) {
+      const player = Room.get(username);
+      if (!player) {
+        Notify.error("That player no longer exists in this room.");
+        this.render();
+        return;
+      }
+      State.username = player.username;
+      State.balance = player.balance || 0;
+      HUD.update();
+      Router.showLobby();
+      Notify.success(`Welcome back, ${player.username}.`);
+    },
+
+    handleCreatePlayer(event) {
+      event.preventDefault();
+
+      const cleanUsername = Validate.sanitizeUsername(DOM.inputUsername.value);
+
+      if (!Validate.isValidUsername(cleanUsername)) {
+        DOM.loginError.textContent = "Username must be 3-16 letters, numbers, hyphens or underscores.";
+        return;
+      }
+
+      if (Room.exists(cleanUsername)) {
+        DOM.loginError.textContent = "A player with that name already exists in this room. Pick another, or enter from the list.";
+        return;
+      }
+
+      DOM.loginError.textContent = "";
+      const startingChips = Number.parseInt(DOM.selectStartingChips.value, 10);
+      const submitBtn = DOM.loginForm.querySelector("#btn-login-submit");
+      submitBtn.disabled = true;
+
+      Room.createPlayer(cleanUsername, startingChips)
+        .then((result) => {
+          submitBtn.disabled = false;
+          if (!result.committed) {
+            DOM.loginError.textContent = "That username was just taken by someone else. Try another.";
+            return;
+          }
+          State.username = cleanUsername;
+          State.balance = startingChips;
+          HUD.update();
+
+          DOM.loginForm.reset();
+          Router.showLobby();
+          Notify.success(`Welcome to Casino Campus, ${cleanUsername}!`);
+        })
+        .catch((err) => {
+          submitBtn.disabled = false;
+          console.error(err);
+          DOM.loginError.textContent = "Could not create the player. Check your connection and try again.";
+        });
+    },
+
+    leaveRoom() {
+      Room.disconnect();
+      State.reset();
+      State.roomCode = "";
+      State.isHost = false;
+      Admin.unlocked = false;
+      Router.showSetup();
+    }
+  };
+
+  /* =========================================================================
+     19. LEADERBOARD
+     ========================================================================= */
+  const Leaderboard = {
+    init() {
+      DOM.btnOpenLeaderboard.addEventListener("click", () => this.open());
+      DOM.btnOpenLeaderboardAuth.addEventListener("click", () => this.open());
+      DOM.btnLeaderboardClose.addEventListener("click", () => this.close());
+      DOM.leaderboardModal.addEventListener("click", (event) => {
+        if (event.target === DOM.leaderboardModal) this.close();
+      });
+      PubSub.on("players-updated", () => {
+        if (!DOM.leaderboardModal.hidden) this.renderList();
+      });
+    },
+
+    open() {
+      this.renderList();
+      DOM.leaderboardModal.hidden = false;
+    },
+
+    renderList() {
+      const ranked = Room.list()
+        .sort((a, b) => (b.balance || 0) - (a.balance || 0))
+        .slice(0, CONFIG.LEADERBOARD_LIMIT);
+
+      DOM.leaderboardList.innerHTML = "";
+
+      if (ranked.length === 0) {
+        const empty = document.createElement("li");
+        empty.className = "leaderboard-empty";
+        empty.textContent = "No players registered yet.";
+        DOM.leaderboardList.appendChild(empty);
+      } else {
+        ranked.forEach((player, index) => {
+          const item = document.createElement("li");
+          item.className = "leaderboard-item";
+          if (player.username === State.username) item.classList.add("is-current-player");
+
+          const rank = document.createElement("span");
+          rank.className = "leaderboard-rank";
+          rank.textContent = ["\u{1F947}", "\u{1F948}", "\u{1F949}"][index] || `#${index + 1}`;
+
+          const name = document.createElement("span");
+          name.className = "leaderboard-name";
+          name.textContent = player.username;
+
+          const balance = document.createElement("span");
+          balance.className = "leaderboard-balance";
+          balance.textContent = `${(player.balance || 0).toLocaleString("en-US")} chips`;
+
+          item.append(rank, name, balance);
+          DOM.leaderboardList.appendChild(item);
+        });
+      }
+    },
+
+    close() {
+      DOM.leaderboardModal.hidden = true;
+    }
+  };
+
+  /* =========================================================================
+     20. ADMINISTRATOR PANEL (Host-only)
+     ========================================================================= */
+  const Admin = {
+    unlocked: false,
+
+    init() {
+      DOM.btnOpenAdmin.addEventListener("click", () => this.open());
+      DOM.btnOpenAdminLobby.addEventListener("click", () => this.open());
+      DOM.btnAdminClose.addEventListener("click", () => this.close());
+      DOM.adminModal.addEventListener("click", (event) => {
+        if (event.target === DOM.adminModal) this.close();
+      });
+      DOM.btnAdminUnlock.addEventListener("click", () => this.tryUnlock());
+      DOM.inputAdminCode.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") this.tryUnlock();
+      });
+      DOM.btnAdminExport.addEventListener("click", () => this.exportData());
+      DOM.inputAdminImport.addEventListener("change", (event) => this.importData(event));
+      DOM.btnAdminResetAll.addEventListener("click", () => this.resetAll());
+      PubSub.on("players-updated", () => {
+        if (this.unlocked && !DOM.adminModal.hidden) this.renderTable();
+      });
+    },
+
+    open() {
+      // Defense in depth: even if the button were somehow revealed, only the
+      // device that created this room may unlock the panel.
+      if (!State.isHost) {
+        Notify.error("Only this room's Host device can open the Administrator Panel.");
+        return;
+      }
+      DOM.adminModal.hidden = false;
+      DOM.inputAdminCode.value = "";
+      DOM.adminLockError.textContent = "";
+      if (this.unlocked) {
+        DOM.adminLock.hidden = true;
+        DOM.adminContent.hidden = false;
+        this.renderTable();
+      } else {
+        DOM.adminLock.hidden = false;
+        DOM.adminContent.hidden = true;
+        DOM.inputAdminCode.focus();
+      }
+    },
+
+    close() {
+      DOM.adminModal.hidden = true;
+    },
+
+    tryUnlock() {
+      if (DOM.inputAdminCode.value === CONFIG.ADMIN_CODE) {
+        this.unlocked = true;
+        DOM.adminLock.hidden = true;
+        DOM.adminContent.hidden = false;
+        this.renderTable();
+      } else {
+        DOM.adminLockError.textContent = "Incorrect PIN.";
+      }
+    },
+
+    renderTable() {
+      const players = Room.list().sort((a, b) => (b.balance || 0) - (a.balance || 0));
+      let totalChips = 0;
+      let totalRounds = 0;
+
+      DOM.adminTableBody.innerHTML = "";
+
+      players.forEach((player) => {
+        totalChips += player.balance || 0;
+        totalRounds += player.stats?.gamesPlayed || 0;
+
+        const row = document.createElement("tr");
+
+        const nameCell = document.createElement("td");
+        nameCell.textContent = player.username;
+
+        const balanceCell = document.createElement("td");
+        balanceCell.textContent = (player.balance || 0).toLocaleString("en-US");
+
+        const roundsCell = document.createElement("td");
+        roundsCell.textContent = String(player.stats?.gamesPlayed || 0);
+
+        const netCell = document.createElement("td");
+        const net = player.stats?.netProfit || 0;
+        netCell.textContent = `${net >= 0 ? "+" : ""}${net.toLocaleString("en-US")}`;
+        netCell.classList.add(net >= 0 ? "net-positive" : "net-negative");
+
+        const actionsCell = document.createElement("td");
+        const resetBtn = document.createElement("button");
+        resetBtn.type = "button";
+        resetBtn.className = "btn btn-small btn-secondary";
+        resetBtn.textContent = "Reset chips";
+        resetBtn.addEventListener("click", () => this.resetPlayerBalance(player.username));
+
+        const deleteBtn = document.createElement("button");
+        deleteBtn.type = "button";
+        deleteBtn.className = "btn btn-small btn-danger";
+        deleteBtn.textContent = "Delete";
+        deleteBtn.addEventListener("click", () => this.deletePlayer(player.username));
+
+        actionsCell.append(resetBtn, deleteBtn);
+        row.append(nameCell, balanceCell, roundsCell, netCell, actionsCell);
+        DOM.adminTableBody.appendChild(row);
+      });
+
+      DOM.adminTotalPlayers.textContent = String(players.length);
+      DOM.adminTotalChips.textContent = totalChips.toLocaleString("en-US");
+      DOM.adminTotalRounds.textContent = String(totalRounds);
+    },
+
+    resetPlayerBalance(username) {
+      const player = Room.get(username);
+      if (!player) return;
+      const amount = window.prompt(`New chip balance for "${username}":`, "1000");
+      if (amount === null) return;
+      const parsed = Number.parseInt(amount, 10);
+      if (Number.isNaN(parsed) || parsed < 0) {
+        Notify.error("Invalid amount.");
+        return;
+      }
+      Room.setBalance(username, parsed).then(() => {
+        if (State.username === username) {
+          State.applyingRemoteUpdate = true;
+          State.balance = parsed;
+          HUD.update();
+          State.applyingRemoteUpdate = false;
+        }
+        this.renderTable();
+        Notify.success(`Balance for "${username}" updated.`);
+      });
+    },
+
+    deletePlayer(username) {
+      const confirmed = window.confirm(`Permanently delete "${username}"?`);
+      if (!confirmed) return;
+      Room.deletePlayer(username).then(() => {
+        if (State.username === username) {
+          handleLogout();
+        }
+        this.renderTable();
+        Notify.warning(`Player "${username}" deleted.`);
+      });
+    },
+
+    exportData() {
+      const payload = {
+        exportedAt: new Date().toISOString(),
+        roomCode: State.roomCode,
+        players: Room.playersCache
+      };
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `casino-campus-backup-${Date.now()}.json`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+      Notify.success("Backup exported.");
+    },
+
+    importData(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const parsed = JSON.parse(String(reader.result));
+          const incoming = parsed.players && typeof parsed.players === "object" ? parsed.players : parsed;
+          if (!incoming || typeof incoming !== "object") throw new Error("Invalid format");
+
+          Room.importPlayers(incoming).then(() => {
+            this.renderTable();
+            Notify.success("Backup imported successfully.");
+          });
+        } catch (err) {
+          Notify.error("That file doesn't have a valid format.");
+        }
+      };
+      reader.readAsText(file);
+      event.target.value = "";
+    },
+
+    resetAll() {
+      const confirmed = window.confirm("This will delete ALL players saved in this room. Continue?");
+      if (!confirmed) return;
+      Room.deleteAllPlayers().then(() => {
+        this.renderTable();
+        Notify.warning("All players were deleted.");
+        handleLogout();
+      });
+    }
+  };
+
+  /* =========================================================================
+     21. LOGIN / LOGOUT FLOW
+     ========================================================================= */
+  function handleLogout() {
+    State.reset();
+    HUD.update();
+    Router.showAuth();
+  }
+
+  /* =========================================================================
+     22. APP BOOTSTRAP
+     ========================================================================= */
+  function bindGameNavigation() {
+    DOM.gameSelector.querySelectorAll(".btn-game-select").forEach((btn) => {
+      btn.addEventListener("click", () => Router.selectGame(btn.dataset.game));
+    });
+  }
+
+  /**
+   * Keeps the active player's own balance in sync with the room in real
+   * time — this is what lets an Administrator Panel action (or another of
+   * that player's own devices) update a player's HUD live, without them
+   * having to do anything.
+   */
+  function bindRemoteBalanceSync() {
+    PubSub.on("players-updated", (players) => {
+      if (!State.username) return;
+      const remote = players[State.username];
+      if (!remote) return;
+      const remoteBalance = remote.balance || 0;
+      if (remoteBalance !== State.balance) {
+        State.applyingRemoteUpdate = true;
+        State.balance = remoteBalance;
+        HUD.update();
+        State.applyingRemoteUpdate = false;
+      }
+    });
+  }
+
+  function init() {
+    Sound.init();
+
+    DOM.btnLogout.addEventListener("click", handleLogout);
+    DOM.btnSoundToggle.addEventListener("click", () => Sound.toggle());
+    bindGameNavigation();
+    bindRemoteBalanceSync();
+
+    SetupScreen.init();
+    AuthScreen.init();
+    Leaderboard.init();
+    Admin.init();
+
+    Blackjack.init();
+    Roulette.init();
+    PlayerWheel.init();
+    LuckyDraw.init();
+    Slots.init();
+    HiLo.init();
+
+    Router.showSetup();
+    HUD.update();
+  }
+
+  document.addEventListener("DOMContentLoaded", init);
+})();
+  </script>
+</body>
+</html>
