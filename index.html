@@ -745,8 +745,8 @@ button {
 
 .roulette-wheel-container {
   position: relative;
-  width: 200px;
-  height: 200px;
+  width: 280px;
+  height: 280px;
   flex-shrink: 0;
 }
 
@@ -754,22 +754,33 @@ button {
   width: 100%;
   height: 100%;
   border-radius: 50%;
-  background: conic-gradient(
-    var(--color-red) 0deg 20deg, var(--color-black) 20deg 40deg,
-    var(--color-red) 40deg 60deg, var(--color-black) 60deg 80deg,
-    var(--color-red) 80deg 100deg, var(--color-black) 100deg 120deg,
-    var(--color-red) 120deg 140deg, var(--color-black) 140deg 160deg,
-    var(--color-red) 160deg 180deg, var(--color-black) 180deg 200deg,
-    var(--color-red) 200deg 220deg, var(--color-black) 220deg 240deg,
-    var(--color-red) 240deg 260deg, var(--color-black) 260deg 280deg,
-    var(--color-red) 280deg 300deg, var(--color-black) 300deg 320deg,
-    var(--color-red) 320deg 340deg, var(--color-black) 340deg 350deg,
-    var(--color-green) 350deg 360deg
-  );
+  background: var(--color-black);
   border: 6px solid var(--color-gold-dark);
   box-shadow: var(--shadow-strong), inset 0 0 20px rgba(0, 0, 0, 0.5);
   transition: transform 3s cubic-bezier(0.15, 0.85, 0.25, 1);
   position: relative;
+  overflow: hidden;
+}
+
+.roulette-wheel-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.rw-slice { stroke: var(--color-gold-dark); stroke-width: 0.4; }
+.rw-red { fill: var(--color-red); }
+.rw-black { fill: var(--color-black); }
+.rw-green { fill: var(--color-green); }
+.rw-label {
+  fill: #fff;
+  font-family: var(--font-body, sans-serif);
+  font-size: 7.6px;
+  font-weight: 700;
+  text-anchor: middle;
+  dominant-baseline: central;
+  pointer-events: none;
+  user-select: none;
 }
 
 .roulette-wheel::after {
@@ -1401,8 +1412,8 @@ button {
     font-size: 1.3rem;
   }
   .roulette-wheel-container {
-    width: 160px;
-    height: 160px;
+    width: 230px;
+    height: 230px;
   }
 }
 
@@ -1660,6 +1671,47 @@ button, input { touch-action: manipulation; }
   .deal-inner { transition-duration: 0.01s; }
 }
 
+
+/* ===== UPGRADE: overscroll containment, feedback fx, new games ===== */
+.modal, .modal-overlay, .admin-modal, .game-selector, .draw-stage, .draw-history-list, select, textarea,
+[class*="scroll"], [class*="dropdown"], [class*="menu"], [class*="list"], [role="listbox"] { overscroll-behavior: contain; }
+.modal, .modal-overlay { -webkit-overflow-scrolling: touch; }
+.modal-overlay { overflow-y: auto; }
+.draw-stage, .xg-stage, .chest-grid { position: relative; }
+.fx-spark { position: absolute; width: 6px; height: 6px; border-radius: 50%; background: var(--color-gold-strong); box-shadow: 0 0 8px var(--color-gold); pointer-events: none; z-index: 5; }
+@keyframes fx-shake { 0%,100% { transform: translate(0,0); } 20% { transform: translate(-3px,2px); } 40% { transform: translate(3px,-2px); } 60% { transform: translate(-2px,-1px); } 80% { transform: translate(2px,1px); } }
+.fx-shake { animation: fx-shake 0.28s linear; }
+.xg-stage { display: flex; justify-content: center; align-items: center; background: radial-gradient(ellipse at center, var(--color-felt-light), var(--color-felt-dark)); border: 2px solid var(--color-gold-dark); border-radius: var(--radius-lg); padding: 0.75rem; margin: 1rem auto; max-width: 520px; min-height: 120px; overflow: hidden; }
+.xg-canvas { display: block; width: 100%; height: auto; }
+.xg-controls { display: flex; flex-wrap: wrap; gap: 0.45rem; justify-content: center; align-items: center; margin: 0.5rem 0; }
+.xg-bet-label { font-size: 0.85rem; color: var(--color-text-muted); display: inline-flex; gap: 0.4rem; align-items: center; }
+.xg-bet { width: 90px; padding: 0.5rem; border-radius: var(--radius-sm); border: 1px solid var(--color-border); background: var(--color-surface-alt); color: var(--color-text); }
+.xg-chipbtn { min-width: 58px; flex-direction: column; line-height: 1.1; }
+.xg-chipbtn small { display: block; font-size: 0.68rem; opacity: 0.8; }
+.pd-row { display: flex; gap: 0.5rem; justify-content: center; flex-wrap: wrap; width: 100%; }
+.pd-die { width: 58px; height: 68px; border-radius: 12px; border: 3px solid var(--color-gold-dark); background: #f7f2e6; color: #14171c; font-size: 1.5rem; font-weight: 800; cursor: pointer; }
+.pd-die.is-held { outline: 3px solid var(--color-gold-strong); transform: translateY(-6px); background: #fff4c2; }
+.pd-die.pd-roll { animation: fx-shake 0.3s linear; }
+.pd-dealer { width: 100%; text-align: center; font-size: 0.85rem; color: var(--color-text-muted); }
+.pd-dealer .pd-die { width: 40px; height: 46px; font-size: 1rem; cursor: default; display: inline-block; margin: 0 2px; }
+.chest-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(64px, 1fr)); gap: 0.5rem; width: 100%; }
+.chest { aspect-ratio: 1; font-size: 1.8rem; border-radius: 12px; border: 2px solid var(--color-gold-dark); background: linear-gradient(135deg, #6b4423, #3a2412); cursor: pointer; transition: transform 0.2s; }
+.chest:hover:not(.open) { transform: scale(1.06); }
+.chest.open { background: #f7f2e6; color: #14171c; font-size: 0.72rem; font-weight: 700; cursor: default; overflow: hidden; padding: 2px; overflow-wrap: anywhere; }
+.chest.win { background: linear-gradient(135deg, var(--color-gold-strong), var(--color-gold-dark)); }
+.roles-matrix { display: grid; gap: 0.5rem; width: 100%; }
+.roles-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; position: relative; }
+.roles-cell { background: var(--color-surface); border: 2px solid var(--color-gold-dark); border-radius: var(--radius-sm); padding: 0.6rem; text-align: center; font-weight: 700; min-height: 42px; overflow: hidden; text-overflow: ellipsis; }
+.roles-cell.landed { background: linear-gradient(135deg, var(--color-gold-strong), var(--color-gold-dark)); color: var(--color-text-inverse); }
+.podium-role { font-size: 0.72rem; opacity: 0.85; margin-left: 0.3rem; }
+.draw-history { max-width: 520px; margin: 1.25rem auto 0; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 0.75rem 1rem; }
+.draw-history-head { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; }
+.draw-history-head h3 { margin: 0; font-size: 0.95rem; color: var(--color-gold); }
+.draw-history-list { list-style: none; margin: 0.5rem 0 0; padding: 0; max-height: 200px; overflow-y: auto; display: grid; gap: 0.35rem; }
+.draw-history-list li { font-size: 0.82rem; padding: 0.4rem 0.55rem; background: var(--color-surface-alt); border-radius: var(--radius-sm); }
+.draw-history-list time { color: var(--color-text-muted); margin-right: 0.4rem; }
+.draw-history-empty { color: var(--color-text-muted); }
+@media (prefers-reduced-motion: reduce) { .fx-shake, .pd-die.pd-roll { animation: none; } }
   </style>
 </head>
 <body>
@@ -1856,6 +1908,10 @@ button, input { touch-action: manipulation; }
         <button type="button" class="btn btn-game-select" id="nav-draw" data-game="draw" aria-pressed="false">&#127873; Lucky Draw</button>
         <button type="button" class="btn btn-game-select" id="nav-slots" data-game="slots" aria-pressed="false">&#127920; Slot Machine</button>
         <button type="button" class="btn btn-game-select" id="nav-hilo" data-game="hilo" aria-pressed="false">&#128256; Hi-Lo</button>
+        <button type="button" class="btn btn-game-select" id="nav-craps" data-game="craps" aria-pressed="false">&#127922; Craps</button>
+        <button type="button" class="btn btn-game-select" id="nav-crash" data-game="crash" aria-pressed="false">&#128640; Crash</button>
+        <button type="button" class="btn btn-game-select" id="nav-pokerdice" data-game="pokerdice" aria-pressed="false">&#127183; Poker Dice</button>
+        <button type="button" class="btn btn-game-select" id="nav-moneywheel" data-game="moneywheel" aria-pressed="false">&#128176; Money Wheel</button>
       </nav>
 
       <div class="top-panel-actions">
@@ -2009,6 +2065,10 @@ button, input { touch-action: manipulation; }
           <button type="button" class="btn btn-game-select draw-mode-btn" data-draw-mode="bingo" aria-pressed="false">&#127921; Bingo Blower</button>
           <button type="button" class="btn btn-game-select draw-mode-btn" data-draw-mode="cards" aria-pressed="false">&#127183; Card Dealer</button>
           <button type="button" class="btn btn-game-select draw-mode-btn" data-draw-mode="laser" aria-pressed="false">&#128302; Chip Laser</button>
+          <button type="button" class="btn btn-game-select draw-mode-btn" data-draw-mode="bracket" aria-pressed="false">&#127942; 1v1 Bracket</button>
+          <button type="button" class="btn btn-game-select draw-mode-btn" data-draw-mode="plinko" aria-pressed="false">&#128309; Plinko</button>
+          <button type="button" class="btn btn-game-select draw-mode-btn" data-draw-mode="chests" aria-pressed="false">&#127873; Mystery Chests</button>
+          <button type="button" class="btn btn-game-select draw-mode-btn" data-draw-mode="roles" aria-pressed="false">&#129513; Roles Matrix</button>
         </div>
         <div class="draw-row">
           <button type="button" id="btn-draw-start" class="btn btn-primary">&#127922; Draw Winners</button>
@@ -2020,6 +2080,10 @@ button, input { touch-action: manipulation; }
       <div id="draw-stage" class="draw-stage"></div>
       <div id="draw-podium" class="draw-podium" role="list" aria-label="Winners"></div>
       <p id="draw-result" class="game-result" role="status" aria-live="polite"></p>
+      <div class="draw-history" aria-label="Recent winners">
+        <div class="draw-history-head"><h3>&#127942; Recent Winners</h3><button type="button" id="btn-history-clear" class="btn btn-secondary">Clear</button></div>
+        <ol id="draw-history-list" class="draw-history-list"><li class="draw-history-empty">No draws yet this session.</li></ol>
+      </div>
     </section>
 
     <!-- ============================= -->
@@ -2088,6 +2152,11 @@ button, input { touch-action: manipulation; }
 
       <p id="hilo-result" class="game-result" role="status" aria-live="polite"></p>
     </section>
+
+    <section id="game-craps" class="game-section" data-game-section="craps" hidden></section>
+    <section id="game-crash" class="game-section" data-game-section="crash" hidden></section>
+    <section id="game-pokerdice" class="game-section" data-game-section="pokerdice" hidden></section>
+    <section id="game-moneywheel" class="game-section" data-game-section="moneywheel" hidden></section>
 
   </section>
 
@@ -3137,13 +3206,60 @@ button, input { touch-action: manipulation; }
     isSpinning: false,
     wheelRotation: 0,
 
+    // Standard European wheel order, clockwise, starting at 0.
+    WHEEL_ORDER: [0, 32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23, 10,
+      5, 24, 16, 33, 1, 20, 14, 31, 9, 22, 18, 29, 7, 28, 12, 35, 3, 26],
+
     init() {
+      this.buildWheel();
       this.buildNumberBoard();
       this.bindChipButtons();
       this.bindOutsideBets();
       DOM.btnRouletteSpin.addEventListener("click", () => this.spin());
       DOM.btnRouletteClear.addEventListener("click", () => this.clearSelection());
       this.updateBetDisplay();
+    },
+
+    /* Draws the wheel as SVG: slice i is centred at i * step degrees clockwise
+       from the top when the wheel is unrotated, so slot 0 (the green 0) sits
+       directly under the pointer at rest. */
+    buildWheel() {
+      const NS = "http://www.w3.org/2000/svg";
+      const count = this.WHEEL_ORDER.length;
+      const step = 360 / count;
+      const cx = 100, cy = 100, radius = 100, labelRadius = 80;
+      const pt = (deg, r) => {
+        const rad = (deg * Math.PI) / 180;
+        return [cx + r * Math.sin(rad), cy - r * Math.cos(rad)];
+      };
+
+      const svg = document.createElementNS(NS, "svg");
+      svg.setAttribute("viewBox", "0 0 200 200");
+      svg.setAttribute("class", "roulette-wheel-svg");
+      svg.setAttribute("aria-hidden", "true");
+
+      this.WHEEL_ORDER.forEach((number, i) => {
+        const a0 = (i - 0.5) * step;
+        const a1 = (i + 0.5) * step;
+        const [x0, y0] = pt(a0, radius);
+        const [x1, y1] = pt(a1, radius);
+
+        const slice = document.createElementNS(NS, "path");
+        slice.setAttribute("d", `M ${cx} ${cy} L ${x0.toFixed(3)} ${y0.toFixed(3)} A ${radius} ${radius} 0 0 1 ${x1.toFixed(3)} ${y1.toFixed(3)} Z`);
+        slice.setAttribute("class", `rw-slice rw-${this.colorOf(number)}`);
+        svg.appendChild(slice);
+
+        const label = document.createElementNS(NS, "text");
+        label.setAttribute("x", String(cx));
+        label.setAttribute("y", String(cy - labelRadius));
+        label.setAttribute("transform", `rotate(${(i * step).toFixed(4)} ${cx} ${cy})`);
+        label.setAttribute("class", "rw-label");
+        label.textContent = String(number);
+        svg.appendChild(label);
+      });
+
+      DOM.rouletteWheel.textContent = "";
+      DOM.rouletteWheel.appendChild(svg);
     },
 
     colorOf(number) {
@@ -3240,11 +3356,22 @@ button, input { touch-action: manipulation; }
       DOM.btnRouletteSpin.disabled = true;
       DOM.rouletteResult.textContent = "";
 
-      const winningNumber = Math.floor(Math.random() * 37);
-      this.wheelRotation += 1080 + (winningNumber * 9.73);
+      // Pick the winning slot first, then rotate the wheel so that exact slot
+      // ends up under the pointer (top, 0deg). Slot i is centred at i * step
+      // degrees, so the wheel must finish at -(i * step + jitter) mod 360.
+      const count = this.WHEEL_ORDER.length;
+      const step = 360 / count;
+      const slotIndex = Math.floor(Math.random() * count);
+      const winningNumber = this.WHEEL_ORDER[slotIndex];
+
+      const jitter = (Math.random() - 0.5) * step * 0.7; // stay inside the slice
+      const targetAngle = (((-(slotIndex * step + jitter)) % 360) + 360) % 360;
+      const currentAngle = ((this.wheelRotation % 360) + 360) % 360;
+      const delta = (((targetAngle - currentAngle) % 360) + 360) % 360;
+      this.wheelRotation += 360 * 4 + delta;
       DOM.rouletteWheel.style.transform = `rotate(${this.wheelRotation}deg)`;
 
-      window.setTimeout(() => this.resolveSpin(winningNumber), 3000);
+      window.setTimeout(() => this.resolveSpin(winningNumber), 3100);
     },
 
     resolveSpin(winningNumber) {
@@ -3819,9 +3946,10 @@ button, input { touch-action: manipulation; }
       this.el.result.textContent = "";
 
       const winners = this.shuffle(names).slice(0, n);
-      const runner = { slots: this.runSlots, bingo: this.runBingo, cards: this.runCards, laser: this.runLaser }[this.mode];
+      const runner = { slots: this.runSlots, bingo: this.runBingo, cards: this.runCards, laser: this.runLaser, bracket: this.runBracket, plinko: this.runPlinko, chests: this.runChests, roles: this.runRoles }[this.mode];
       try {
         await runner.call(this, names, winners, id);
+        this.logDraw(winners);
         this.el.result.textContent = `\u{1F389} ${n === 1 ? "Winner" : "Winners"}: ${winners.join(", ")}`;
         Sound.jackpot();
       } catch (err) {
@@ -4656,6 +4784,388 @@ button, input { touch-action: manipulation; }
   }
 
   /* =========================================================================
+     21b. EXTRA — feedback FX, new casino games, new Lucky Draw modes
+     ========================================================================= */
+  const Extra = (() => {
+    const $ = (s) => document.querySelector(s);
+    const mk = (t, c, x) => { const n = document.createElement(t); if (c) n.className = c; if (x != null) n.textContent = x; return n; };
+    const rnd = (a, b) => a + Math.random() * (b - a);
+    const pick = (a) => a[Math.floor(Math.random() * a.length)];
+    const shuffle = (a) => LuckyDraw.shuffle(a);
+    const RM = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const buzz = (ms) => { if (!RM) try { navigator.vibrate && navigator.vibrate(ms); } catch (e) { /* unsupported */ } };
+    const shake = (el, ms = 25) => { if (RM) return; el.classList.remove("fx-shake"); void el.offsetWidth; el.classList.add("fx-shake"); buzz(ms); };
+
+    /** DOM spark burst inside a position:relative host. */
+    const domBurst = (host, x, y, n = 14) => {
+      if (RM) return;
+      for (let i = 0; i < n; i += 1) {
+        const s = mk("i", "fx-spark"); s.style.left = x + "px"; s.style.top = y + "px"; host.append(s);
+        const a = rnd(0, 6.283), d = rnd(30, 95);
+        s.animate([{ transform: "translate(0,0) scale(1)", opacity: 1 }, { transform: `translate(${Math.cos(a) * d}px,${Math.sin(a) * d + 20}px) scale(.2)`, opacity: 0 }],
+          { duration: rnd(450, 800), easing: "cubic-bezier(.2,.8,.4,1)" }).onfinish = () => s.remove();
+      }
+    };
+
+    /** Canvas particle system. */
+    class Particles {
+      constructor() { this.list = []; }
+      burst(x, y, n = 16, color = "#f4c430") {
+        for (let i = 0; i < n; i += 1) { const a = rnd(0, 6.283), s = rnd(60, 260); this.list.push({ x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s - 60, life: 1, color, r: rnd(1.5, 3.5) }); }
+      }
+      draw(ctx, dt) {
+        const s = dt / 1000;
+        this.list = this.list.filter((p) => (p.life -= s * 1.6) > 0);
+        this.list.forEach((p) => { p.vy += 500 * s; p.x += p.vx * s; p.y += p.vy * s; ctx.globalAlpha = Math.max(0, p.life); ctx.fillStyle = p.color; ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, 6.283); ctx.fill(); });
+        ctx.globalAlpha = 1;
+      }
+      get active() { return this.list.length > 0; }
+    }
+
+    const canvas = (host, w, h) => {
+      const c = mk("canvas", "xg-canvas"), d = window.devicePixelRatio || 1;
+      c.width = w * d; c.height = h * d; c.style.maxWidth = w + "px"; c.style.aspectRatio = `${w}/${h}`;
+      const ctx = c.getContext("2d"); ctx.scale(d, d); host.replaceChildren(c);
+      return { c, ctx, w, h };
+    };
+    const loop = (fn) => {
+      let last = performance.now(), on = true;
+      const t = (now) => { if (!on) return; const dt = Math.min(now - last, 40); last = now; if (fn(dt, now) === false) { on = false; return; } requestAnimationFrame(t); };
+      requestAnimationFrame(t);
+      return () => { on = false; };
+    };
+    const felt = (ctx, w, h) => { ctx.fillStyle = "#0b3d2e"; ctx.fillRect(0, 0, w, h); };
+
+    const shell = (key, title, hint) => {
+      const sec = $("#game-" + key);
+      const p = mk("p", "modal-subtitle", hint); p.style.textAlign = "center";
+      const stage = mk("div", "xg-stage"), ctl = mk("div", "xg-controls"), res = mk("p", "game-result");
+      res.setAttribute("role", "status"); res.setAttribute("aria-live", "polite");
+      const bet = mk("input", "xg-bet"); bet.type = "number"; bet.min = 1; bet.value = 10; bet.setAttribute("aria-label", "Bet amount");
+      const lab = mk("label", "xg-bet-label", "Bet"); lab.append(bet);
+      sec.append(mk("h2", "", title), p, stage, ctl, res);
+      return { sec, stage, ctl, res, bet, lab };
+    };
+    const btn = (label, cls = "btn btn-primary", fn) => { const b = mk("button", cls, label); b.type = "button"; if (fn) b.addEventListener("click", fn); return b; };
+
+    const settle = (g, name, bet, payout, msg) => {
+      if (payout > 0) State.credit(payout);
+      State.recordRound(bet, payout);
+      const net = payout - bet;
+      g.res.textContent = `${msg} ${net > 0 ? "You won " + payout + " chips." : net === 0 ? "Bet returned." : "Lost " + bet + " chips."}`;
+      if (net > 0) { Notify.success(`${name}: won ${payout} chips.`); Sound.win(); if (payout >= CONFIG.BIG_WIN_THRESHOLD) Effects.celebrate(`${name.toUpperCase()}! +${payout} chips`); }
+      else if (net < 0) { Notify.error(`${name}: lost ${bet} chips.`); Sound.lose(); } else Notify.warning(`${name}: push.`);
+    };
+
+    /* ------------------------------ CRAPS ------------------------------ */
+    const PIPS = { 1: [[0, 0]], 2: [[-1, -1], [1, 1]], 3: [[-1, -1], [0, 0], [1, 1]], 4: [[-1, -1], [1, -1], [-1, 1], [1, 1]], 5: [[-1, -1], [1, -1], [0, 0], [-1, 1], [1, 1]], 6: [[-1, -1], [1, -1], [-1, 0], [1, 0], [-1, 1], [1, 1]] };
+    const drawDie = (ctx, x, y, size, rot, face, lift) => {
+      ctx.save(); ctx.fillStyle = "rgba(0,0,0,.35)"; ctx.beginPath(); ctx.ellipse(x, y + size * 0.62, size * (0.5 - lift * 0.1), size * 0.12, 0, 0, 6.283); ctx.fill(); ctx.restore();
+      ctx.save(); ctx.translate(x, y); ctx.rotate(rot); ctx.fillStyle = "#f7f2e6"; ctx.strokeStyle = "#b8860b"; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.roundRect(-size / 2, -size / 2, size, size, 10); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = "#14171c"; PIPS[face].forEach(([px, py]) => { ctx.beginPath(); ctx.arc(px * size * 0.26, py * size * 0.26, size * 0.075, 0, 6.283); ctx.fill(); });
+      ctx.restore();
+    };
+    const craps = () => {
+      const g = shell("craps", "Craps / Dice Betting", "Pick a total (2–12) or an outcome, then roll. 7 loses High/Low.");
+      const PAY = { 2: 30, 3: 15, 4: 10, 5: 8, 6: 6, 7: 5, 8: 6, 9: 8, 10: 10, 11: 15, 12: 30 };
+      const types = [...Object.keys(PAY).map((n) => ({ label: n, mult: PAY[n], win: (t) => t === Number(n) })),
+        { label: "Even", mult: 2, win: (t) => t % 2 === 0 }, { label: "Odd", mult: 2, win: (t) => t % 2 === 1 },
+        { label: "Low 2-6", mult: 2, win: (t) => t < 7 }, { label: "High 8-12", mult: 2, win: (t) => t > 7 }];
+      let sel = types[5], busy = false; const bs = [];
+      const cv = canvas(g.stage, 360, 200); const { ctx, w, h } = cv, P = new Particles();
+      const still = (a, b) => { felt(ctx, w, h); drawDie(ctx, 110, h - 50, 64, 0, a, 0); drawDie(ctx, 250, h - 50, 64, 0, b, 0); };
+      still(3, 4);
+      const grid = mk("div", "xg-controls");
+      types.forEach((t) => { const b = btn("", "btn btn-game-select xg-chipbtn"); b.append(t.label, Object.assign(mk("small"), { textContent: t.mult + "x" })); b.setAttribute("aria-pressed", String(t === sel)); b.addEventListener("click", () => { if (busy) return; sel = t; bs.forEach((x, i) => x.setAttribute("aria-pressed", String(types[i] === t))); }); bs.push(b); grid.append(b); });
+      const go = btn("🎲 Roll Dice", "btn btn-primary", () => {
+        if (busy) return; const bet = Validate.parseBet(g.bet); if (bet === null) return;
+        State.debit(bet); busy = true; go.disabled = true; g.res.textContent = "";
+        const fin = [1 + Math.floor(Math.random() * 6), 1 + Math.floor(Math.random() * 6)];
+        const dice = [0, 1].map((i) => ({ x: 110 + i * 140, y: -40 - i * 30, vy: 0, rot: rnd(0, 6), vr: rnd(-12, 12), face: 1 + Math.floor(Math.random() * 6), n: 0, done: false, fin: fin[i] }));
+        const floor = h - 50;
+        loop((dt) => {
+          const s = dt / 1000; felt(ctx, w, h);
+          dice.forEach((d) => {
+            if (!d.done) {
+              d.vy += 1800 * s; d.y += d.vy * s; d.rot += d.vr * s;
+              if (d.y > floor) {
+                d.y = floor; d.vy *= -0.55; d.vr *= 0.6; d.n += 1; P.burst(d.x, floor + 28, 8, "#fff");
+                if (d.n === 1) shake(g.stage, 30);
+                if (d.n >= 3 || Math.abs(d.vy) < 120) { d.done = true; d.vy = 0; d.rot = 0; d.face = d.fin; } else d.face = 1 + Math.floor(Math.random() * 6);
+              } else if (Math.random() < 0.25) d.face = 1 + Math.floor(Math.random() * 6);
+            }
+            drawDie(ctx, d.x, d.y, 64, d.rot, d.face, Math.max(0, (floor - d.y) / 200));
+          });
+          P.draw(ctx, dt);
+          if (dice.every((d) => d.done) && !P.active) {
+            const tot = fin[0] + fin[1], win = sel.win(tot);
+            settle(g, "Craps", bet, win ? bet * sel.mult : 0, `Rolled ${fin[0]} + ${fin[1]} = ${tot}.`);
+            busy = false; go.disabled = false; return false;
+          }
+        });
+      });
+      g.ctl.append(g.lab, go); g.ctl.before(grid);
+    };
+
+    /* ------------------------------- CRASH ------------------------------ */
+    const crash = () => {
+      const g = shell("crash", "Crash / The Rocket", "The multiplier climbs from 1.00x. Cash out before the rocket explodes!");
+      const { ctx, w, h } = canvas(g.stage, 360, 240), P = new Particles();
+      let run = false, bet = 0, m = 1, t = 0, cashed = 0, crashAt = 2, exploded = false, jolt = 0;
+      const out = btn("💰 Cash Out", "btn btn-secondary"), go = btn("🚀 Launch");
+      out.disabled = true;
+      const pos = (tt, xm, ym) => [30 + (tt / xm) * (w - 50), h - 24 - ((Math.exp(0.18 * tt) - 1) / (ym - 1)) * (h - 50)];
+      const frame = (dt) => {
+        if (run && !exploded) {
+          t += dt / 1000; m = Math.exp(0.18 * t);
+          if (m >= crashAt) {
+            m = crashAt; exploded = true; const [x, y] = pos(t, Math.max(6, t * 1.15), Math.max(2, m * 1.25));
+            P.burst(x, y, 40, "#e0483e"); P.burst(x, y, 30, "#f4c430"); jolt = 6; buzz(80); shake(g.stage, 80);
+            if (!cashed) settle(g, "Crash", bet, 0, `💥 Crashed at ${m.toFixed(2)}x.`);
+            else g.res.textContent += ` (Rocket crashed at ${m.toFixed(2)}x)`;
+            out.disabled = true;
+          }
+        }
+        const xm = Math.max(6, t * 1.15), ym = Math.max(2, m * 1.25);
+        ctx.save(); felt(ctx, w, h);
+        if (jolt > 0.2) { ctx.translate(rnd(-jolt, jolt), rnd(-jolt, jolt)); jolt *= 0.85; }
+        ctx.strokeStyle = "#f4c430"; ctx.lineWidth = 3; ctx.beginPath();
+        for (let i = 0; i <= 40; i += 1) { const [x, y] = pos(t * i / 40, xm, ym); i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }
+        ctx.stroke();
+        const [rx, ry] = pos(t, xm, ym); ctx.font = "28px serif"; ctx.textAlign = "center"; ctx.fillText(exploded ? "💥" : "🚀", rx, ry);
+        ctx.fillStyle = exploded ? "#e0483e" : cashed ? "#2e8b57" : "#eef2f5"; ctx.font = "700 44px sans-serif"; ctx.fillText(m.toFixed(2) + "x", w / 2, h / 2);
+        if (cashed) { ctx.font = "600 15px sans-serif"; ctx.fillText(`Cashed out @ ${cashed.toFixed(2)}x`, w / 2, h / 2 + 26); }
+        P.draw(ctx, dt); ctx.restore();
+        if (exploded && !P.active) { run = false; go.disabled = false; return false; }
+      };
+      go.addEventListener("click", () => {
+        if (run) return; const b = Validate.parseBet(g.bet); if (b === null) return;
+        State.debit(b); bet = b; run = true; exploded = false; cashed = 0; t = 0; m = 1; g.res.textContent = "";
+        crashAt = Math.min(100, Math.max(1, Math.floor(96 / (1 - Math.random())) / 100));
+        go.disabled = true; out.disabled = false; loop(frame);
+      });
+      out.addEventListener("click", () => {
+        if (!run || exploded || cashed) return; cashed = m; out.disabled = true;
+        const payout = Math.floor(bet * m); const [x, y] = pos(t, Math.max(6, t * 1.15), Math.max(2, m * 1.25));
+        P.burst(x, y, 24, "#2e8b57"); shake(g.stage, 20);
+        settle(g, "Crash", bet, payout, `Cashed out at ${m.toFixed(2)}x.`);
+      });
+      frame(0); g.ctl.append(g.lab, go, out);
+    };
+
+    /* ---------------------------- POKER DICE ---------------------------- */
+    const FACES = ["A", "K", "Q", "J", "10", "9"];
+    const evalHand = (v) => {
+      const c = {}; v.forEach((x) => { c[x] = (c[x] || 0) + 1; });
+      const grp = Object.entries(c).map(([f, n]) => [n, 6 - Number(f)]).sort((a, b) => b[0] - a[0] || b[1] - a[1]);
+      const pat = grp.map((x) => x[0]).join(""), u = [...new Set(v)].sort((a, b) => a - b);
+      const straight = u.length === 5 && u[4] - u[0] === 4;
+      const [cat, name] = pat === "5" ? [7, "Five of a Kind"] : pat === "41" ? [6, "Four of a Kind"] : pat === "32" ? [5, "Full House"] : straight ? [4, "Straight"] : pat === "311" ? [3, "Three of a Kind"] : pat === "221" ? [2, "Two Pair"] : pat === "2111" ? [1, "One Pair"] : [0, "High Card"];
+      return { cat, name, score: cat * 1e6 + grp.reduce((a, x) => a * 10 + x[1], 0) };
+    };
+    const pokerDice = () => {
+      const g = shell("pokerdice", "Poker Dice", "Roll 5 dice, hold what you like, reroll once, and beat the dealer's hand. Full House or better pays 3x.");
+      const row = mk("div", "pd-row"), dealer = mk("div", "pd-dealer"); g.stage.style.flexDirection = "column"; g.stage.style.gap = "0.75rem"; g.stage.append(row, dealer);
+      let vals = [], held = [false, false, false, false, false], phase = "idle", bet = 0;
+      const dice = [0, 1, 2, 3, 4].map((i) => { const d = btn("?", "pd-die"); d.addEventListener("click", () => { if (phase !== "rolled") return; held[i] = !held[i]; d.classList.toggle("is-held", held[i]); }); row.append(d); return d; });
+      const r6 = () => Math.floor(Math.random() * 6);
+      const paint = (changed) => dice.forEach((d, i) => { d.textContent = FACES[vals[i]]; d.classList.toggle("is-held", held[i]); if (changed.includes(i)) { d.classList.remove("pd-roll"); void d.offsetWidth; d.classList.add("pd-roll"); } });
+      const deal = btn("🎲 Roll", "btn btn-primary", () => {
+        if (phase !== "idle") return; const b = Validate.parseBet(g.bet); if (b === null) return;
+        State.debit(b); bet = b; vals = [0, 1, 2, 3, 4].map(r6); held = held.map(() => false); phase = "rolled"; g.res.textContent = ""; dealer.textContent = "";
+        paint([0, 1, 2, 3, 4]); buzz(20); again.disabled = stand.disabled = false; deal.disabled = true;
+      });
+      const finish = () => {
+        phase = "idle"; again.disabled = stand.disabled = true; deal.disabled = false;
+        let dv = [0, 1, 2, 3, 4].map(r6); const cnt = {}; dv.forEach((x) => { cnt[x] = (cnt[x] || 0) + 1; });
+        const top = Number(Object.entries(cnt).sort((a, b) => b[1] - a[1])[0][0]); dv = dv.map((x) => (cnt[top] > 1 && x !== top ? r6() : x));
+        const me = evalHand(vals), dl = evalHand(dv);
+        dealer.replaceChildren(document.createTextNode(`Dealer: ${dl.name} `), ...dv.map((x) => mk("span", "pd-die", FACES[x])));
+        const win = me.score > dl.score, tie = me.score === dl.score;
+        if (win) { domBurst(g.stage, g.stage.clientWidth / 2, 40, 18); shake(g.stage, 25); }
+        settle(g, "Poker Dice", bet, win ? bet * (me.cat >= 5 ? 3 : 2) : tie ? bet : 0, `You: ${me.name} vs Dealer: ${dl.name}.`);
+      };
+      const again = btn("🔁 Reroll Unheld", "btn btn-secondary", () => { if (phase !== "rolled") return; const ch = []; vals = vals.map((v, i) => { if (held[i]) return v; ch.push(i); return r6(); }); paint(ch); buzz(20); window.setTimeout(finish, 500); phase = "wait"; });
+      const stand = btn("✋ Stand", "btn btn-secondary", () => { if (phase === "rolled") finish(); });
+      again.disabled = stand.disabled = true; g.ctl.append(g.lab, deal, again, stand);
+      vals = [0, 1, 2, 3, 4]; paint([]); dice.forEach((d) => { d.textContent = "?"; });
+    };
+
+    /* ---------------------------- MONEY WHEEL --------------------------- */
+    const moneyWheel = () => {
+      const g = shell("moneywheel", "Money Wheel", "Stake chips on one or more multipliers, then spin. A hit pays stake × (multiplier + 1).");
+      const SL = [1, 2, 1, 5, 1, 2, 1, 10, 1, 2, 1, 5, 1, 20, 1, 2, 1, 5, 1, 2, 1, 10, 1, 2], A = 6.283185307 / SL.length;
+      const COL = { 1: "#2b5c9e", 2: "#1e7a4c", 5: "#b8860b", 10: "#a8302a", 20: "#7b3fa0" };
+      const { ctx, w, h } = canvas(g.stage, 300, 340), P = new Particles();
+      const bets = { 1: 0, 2: 0, 5: 0, 10: 0, 20: 0 }; let th = 0, spinning = false, jolt = 0;
+      const draw = (dt = 16) => {
+        ctx.save(); felt(ctx, w, h); if (jolt > 0.2) { ctx.translate(rnd(-jolt, jolt), rnd(-jolt, jolt)); jolt *= 0.8; }
+        ctx.translate(w / 2, 175); ctx.rotate(th);
+        SL.forEach((v, i) => { ctx.beginPath(); ctx.moveTo(0, 0); ctx.arc(0, 0, 135, i * A, (i + 1) * A); ctx.fillStyle = COL[v]; ctx.globalAlpha = i % 2 ? 0.85 : 1; ctx.fill(); ctx.globalAlpha = 1; ctx.strokeStyle = "#f7f2e6"; ctx.lineWidth = 1.5; ctx.stroke(); ctx.save(); ctx.rotate((i + 0.5) * A); ctx.fillStyle = "#fff"; ctx.font = "700 13px sans-serif"; ctx.textAlign = "right"; ctx.fillText(v + "x", 125, 5); ctx.restore(); });
+        ctx.beginPath(); ctx.arc(0, 0, 18, 0, 6.283); ctx.fillStyle = "#f4c430"; ctx.fill(); ctx.restore();
+        ctx.save(); ctx.fillStyle = "#e0483e"; ctx.beginPath(); ctx.moveTo(w / 2 - 12, 4); ctx.lineTo(w / 2 + 12, 4); ctx.lineTo(w / 2, 46); ctx.fill(); P.draw(ctx, dt); ctx.restore();
+      };
+      draw();
+      const idx = () => Math.floor((((-1.5707963 - th) / A) % SL.length + SL.length) % SL.length);
+      const chips = Object.keys(bets).map((k) => { const b = btn("", "btn btn-game-select xg-chipbtn"); b.append(k + "x", mk("small", "", "0")); b.addEventListener("click", () => { if (spinning) return; const s = Validate.parseBet(g.bet); if (s === null) return; State.debit(s); bets[k] += s; b.lastChild.textContent = bets[k]; }); return b; });
+      const spin = btn("🎡 Spin", "btn btn-primary", () => {
+        if (spinning) return; const total = Object.values(bets).reduce((a, b) => a + b, 0);
+        if (!total) { Notify.error("Place a stake on at least one multiplier."); return; }
+        spinning = true; spin.disabled = true; g.res.textContent = "";
+        const target = Math.floor(Math.random() * SL.length), th0 = th, dur = 4500;
+        const th1 = -1.5707963 - (target + rnd(0.2, 0.8)) * A - 6.283185307 * 6; let t0 = null, lastI = idx();
+        loop((dt, now) => {
+          t0 = t0 || now; const p = Math.min(1, (now - t0) / dur), e = 1 - (1 - p) ** 3; th = th0 + (th1 - th0) * e;
+          const i = idx(); if (i !== lastI) { lastI = i; P.burst(w / 2, 46, 3, "#fff"); jolt = 1.2; buzz(6); }
+          draw(dt);
+          if (p >= 1) {
+            const v = SL[idx()], payout = bets[v] * (v + 1);
+            P.burst(w / 2, 46, 30, "#f4c430"); shake(g.stage, 40);
+            settle(g, "Money Wheel", total, payout, `Wheel landed on ${v}x.`);
+            Object.keys(bets).forEach((k, n) => { bets[k] = 0; chips[n].lastChild.textContent = "0"; });
+            spinning = false; spin.disabled = false; return false;
+          }
+        });
+      });
+      g.ctl.append(g.lab); chips.forEach((c) => g.ctl.append(c)); g.ctl.append(spin);
+    };
+
+    /* ------------------- LUCKY DRAW: history + fx + modes ------------------ */
+    const MODE_LABEL = { slots: "Slot Reels", bingo: "Bingo Blower", cards: "Card Dealer", laser: "Chip Laser", bracket: "1v1 Bracket", plinko: "Plinko", chests: "Mystery Chests", roles: "Roles Matrix" };
+    const ROLES = ["Leader", "Speaker", "Evaluator", "Writer", "Timekeeper", "Reporter"];
+    const installDraw = () => {
+      const history = [], listEl = $("#draw-history-list");
+      const renderHistory = () => {
+        listEl.replaceChildren();
+        if (!history.length) { listEl.append(mk("li", "draw-history-empty", "No draws yet this session.")); return; }
+        history.forEach((h) => { const li = mk("li"); li.append(mk("time", "", h.time), document.createTextNode(`${h.mode}: ${h.names.join(", ")}`)); listEl.append(li); });
+      };
+      $("#btn-history-clear").addEventListener("click", () => { history.length = 0; renderHistory(); });
+      const origAnnounce = LuckyDraw.announce;
+      Object.assign(LuckyDraw.IDLE, { bracket: ["🏆", "Random 1v1 knockout matches until a champion emerges."], plinko: ["🔵", "Named chips drop through pegs into the golden selection bins."], chests: ["🎁", "Tap the chests to reveal the selected players."], roles: ["🧩", "Winners are matched with team roles by a slot matrix."] });
+      Object.assign(LuckyDraw, {
+        logDraw(names) { history.unshift({ time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }), mode: MODE_LABEL[this.mode], names: names.slice() }); if (history.length > 15) history.pop(); renderHistory(); },
+        /* Contact feedback: every time a name lands in a selection zone, burst + shake + vibrate. */
+        announce(name, rank) {
+          origAnnounce.call(this, name, rank);
+          const s = this.el.stage, r = s.getBoundingClientRect(), k = rank || 0;
+          domBurst(s, r.width / 2 + (k % 3 - 1) * 50, this.mode === "bingo" ? 40 : r.height - 70, 16); shake(s, 30);
+        },
+
+        async runBracket(names, winners, id) {
+          const pool = shuffle(names).slice(0, 16);
+          if (pool.length < 2) { winners.splice(0, winners.length, pool[0]); this.announce(pool[0], 0); return; }
+          const size = 2 ** Math.ceil(Math.log2(pool.length)), byes = size - pool.length, slots = []; let pi = 0;
+          for (let m = 0; m < size / 2; m += 1) slots.push(pool[pi++], m < byes ? null : pool[pi++]);
+          const rounds = [], losers = []; let cur = slots;
+          while (cur.length > 1) {
+            const nxt = [], ms = [];
+            for (let m = 0; m < cur.length / 2; m += 1) { const a = cur[2 * m], b = cur[2 * m + 1], win = !b ? a : !a ? b : Math.random() < 0.5 ? a : b; if (a && b) losers.push({ n: win === a ? b : a, r: rounds.length }); ms.push({ bye: !a || !b, win }); nxt.push(win); }
+            rounds.push(ms); cur = nxt;
+          }
+          const place = [cur[0], ...losers.sort((x, y) => y.r - x.r).map((l) => l.n)];
+          const show = [slots]; rounds.forEach((r) => show.push(new Array(r.length).fill(null)));
+          const { ctx, w, h } = this.makeCanvas(420), R = show.length, cw = (w - 8) / R, P = new Particles(); let hi = null, jolt = 0;
+          const stop = loop((dt) => {
+            ctx.save(); felt(ctx, w, h); if (jolt > 0.2) { ctx.translate(rnd(-jolt, jolt), rnd(-jolt, jolt)); jolt *= 0.85; }
+            show.forEach((col, r) => col.forEach((nm, i) => {
+              const ch = h / col.length, x = 4 + r * cw, bw = cw - 8, bh = Math.min(26, ch - 6), y = (i + 0.5) * ch - bh / 2, on = hi && ((hi.r === r && (i >> 1) === hi.m) || (hi.r + 1 === r && i === hi.m && nm));
+              ctx.fillStyle = r === R - 1 && nm ? "#f4c430" : nm ? "#12523f" : "rgba(0,0,0,.25)"; ctx.strokeStyle = on ? "#f4c430" : "#2a3542"; ctx.lineWidth = on ? 3 : 1;
+              ctx.beginPath(); ctx.roundRect(x, y, bw, bh, 6); ctx.fill(); ctx.stroke();
+              ctx.fillStyle = r === R - 1 && nm ? "#10151a" : nm ? "#fff" : "#6b7785"; ctx.font = `600 ${Math.max(9, Math.min(12, bw / 7))}px sans-serif`; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+              ctx.fillText(nm ? this.short(nm, Math.max(4, Math.floor(bw / 7))) : r === 0 ? "BYE" : "?", x + bw / 2, y + bh / 2);
+            }));
+            P.draw(ctx, dt); ctx.restore();
+          });
+          try {
+            for (let r = 0; r < rounds.length; r += 1) {
+              for (let m = 0; m < rounds[r].length; m += 1) {
+                const mt = rounds[r][m]; hi = { r, m };
+                if (!mt.bye) await this.wait(700, id);
+                show[r + 1][m] = mt.win;
+                if (!mt.bye) { P.burst(4 + (r + 1) * cw + cw / 2, (m + 0.5) * (h / show[r + 1].length), 14, "#f4c430"); jolt = 3.5; buzz(15); Sound.win(); }
+              }
+              await this.wait(300, id);
+            }
+            hi = null; await this.wait(500, id);
+          } finally { stop(); }
+          winners.splice(0, winners.length, ...place.slice(0, winners.length));
+          for (let k = 0; k < winners.length; k += 1) { this.announce(winners[k], k); await this.wait(350, id); }
+        },
+
+        async runPlinko(names, winners, id) {
+          const pool = shuffle(names).slice(0, 20), { ctx, w, h } = this.makeCanvas(460), P = new Particles();
+          const B = 7, bw = w / B, floorY = h - 46, pegs = [], N = winners.length;
+          for (let r = 0; r < 8; r += 1) { const y = 70 + r * ((floorY - 110) / 7); for (let i = 0; i <= B; i += 1) { const x = (i + (r % 2 ? 0.5 : 0)) * bw; if (x <= w) pegs.push({ x, y, f: 0 }); } }
+          const queue = pool.slice(), chips = [], cnt = new Array(B).fill(0), landed = [], chosen = []; let spawnT = 0, jolt = 0, idx = 0;
+          await this.frames(id, (dt) => {
+            spawnT += dt; if (queue.length && spawnT > 320) { spawnT = 0; const nm = queue.shift(); chips.push({ name: nm, x: rnd(w * 0.35, w * 0.65), y: 12, vx: rnd(-30, 30), vy: 0, r: 11, st: 0, color: this.CHIP_COLORS[idx++ % 5], bin: 0 }); }
+            for (let sub = 0; sub < 3; sub += 1) {
+              const s = dt / 3000;
+              chips.forEach((c) => {
+                if (c.st) return; c.vy += 1000 * s; c.x += c.vx * s; c.y += c.vy * s;
+                if (c.x < c.r) { c.x = c.r; c.vx = Math.abs(c.vx) * 0.6; } if (c.x > w - c.r) { c.x = w - c.r; c.vx = -Math.abs(c.vx) * 0.6; }
+                pegs.forEach((p) => {
+                  const dx = c.x - p.x, dy = c.y - p.y, d = Math.hypot(dx, dy), min = c.r + 4;
+                  if (d < min && d > 0) { const nx = dx / d, ny = dy / d; c.x = p.x + nx * min; c.y = p.y + ny * min; const vn = c.vx * nx + c.vy * ny; if (vn < 0) { c.vx -= 1.55 * vn * nx; c.vy -= 1.55 * vn * ny; c.vx += rnd(-20, 20); p.f = 1; P.burst(p.x, p.y, 2, "#fff"); jolt = Math.max(jolt, 0.7); } }
+                });
+                if (c.y + c.r >= floorY) {
+                  c.st = 1; c.bin = Math.max(0, Math.min(B - 1, Math.floor(c.x / bw))); c.x = (c.bin + 0.5) * bw + rnd(-8, 8); c.y = h - 18 - cnt[c.bin] * 5; cnt[c.bin] += 1; landed.push(c);
+                  if (c.bin >= 2 && c.bin <= 4 && chosen.length < N) { chosen.push(c.name); this.announce(c.name, chosen.length - 1); P.burst(c.x, floorY, 24, "#f4c430"); jolt = 4; buzz(30); }
+                }
+              });
+            }
+            ctx.save(); felt(ctx, w, h); if (jolt > 0.15) { ctx.translate(rnd(-jolt, jolt), rnd(-jolt, jolt)); jolt *= 0.85; }
+            for (let i = 0; i < B; i += 1) { ctx.fillStyle = i >= 2 && i <= 4 ? "rgba(244,196,48,.22)" : "rgba(0,0,0,.25)"; ctx.fillRect(i * bw, floorY, bw, h - floorY); ctx.fillStyle = "#e9c46a"; ctx.font = "16px sans-serif"; ctx.textAlign = "center"; ctx.fillText(i >= 2 && i <= 4 ? "★" : "·", (i + 0.5) * bw, floorY + 16); ctx.strokeStyle = "#b8860b"; ctx.beginPath(); ctx.moveTo(i * bw, floorY); ctx.lineTo(i * bw, h); ctx.stroke(); }
+            pegs.forEach((p) => { p.f = Math.max(0, p.f - dt / 200); ctx.fillStyle = p.f > 0 ? "#f4c430" : "#cfd8dc"; ctx.beginPath(); ctx.arc(p.x, p.y, 4 + p.f * 2, 0, 6.283); ctx.fill(); });
+            chips.forEach((c) => this.drawChip(ctx, c.x, c.y, c.r, c.name, c.color, c.st && c.bin >= 2 && c.bin <= 4));
+            P.draw(ctx, dt); ctx.restore();
+            return landed.length === pool.length && !P.active;
+          });
+          const rest = landed.filter((c) => !chosen.includes(c.name)).sort((a, b) => Math.abs(a.bin - 3) - Math.abs(b.bin - 3));
+          while (chosen.length < N && rest.length) { const c = rest.shift(); chosen.push(c.name); this.announce(c.name, chosen.length - 1); await this.wait(350, id); }
+          winners.splice(0, winners.length, ...chosen);
+        },
+
+        async runChests(names, winners, id) {
+          const N = winners.length, total = Math.min(24, Math.max(9, names.length, N)), contents = shuffle([...winners, ...new Array(total - N).fill(null)]);
+          const grid = mk("div", "chest-grid"); let found = 0; const order = [];
+          contents.forEach((c) => {
+            const b = btn("🎁", "chest", () => {
+              if (b.classList.contains("open") || found >= N || id !== this.runId) return;
+              b.classList.add("open"); const r = b.getBoundingClientRect(), g = grid.getBoundingClientRect();
+              if (c) { b.classList.add("win"); b.textContent = c; found += 1; order.push(c); this.announce(c, found - 1); domBurst(grid, r.left - g.left + r.width / 2, r.top - g.top + r.height / 2, 18); }
+              else { b.textContent = "🍀"; domBurst(grid, r.left - g.left + r.width / 2, r.top - g.top + r.height / 2, 5); buzz(10); }
+            });
+            b.setAttribute("aria-label", "Mystery chest"); grid.append(b);
+          });
+          this.el.stage.replaceChildren(grid); Notify.warning(`Tap the chests — ${N} hide a winner.`);
+          while (found < N) await this.wait(200, id);
+          winners.splice(0, winners.length, ...order);
+        },
+
+        async runRoles(names, winners, id) {
+          const roles = shuffle(winners.map((_, i) => ROLES[i] || "Member" + (i - ROLES.length + 1)));
+          const mat = mk("div", "roles-matrix"), rows = winners.map(() => { const row = mk("div", "roles-row"), a = mk("div", "roles-cell", "???"), b = mk("div", "roles-cell", "—"); row.append(a, b); mat.append(row); return { a, b }; });
+          this.el.stage.replaceChildren(mat);
+          for (let k = 0; k < winners.length; k += 1) {
+            rows[k].a.textContent = winners[k]; this.announce(winners[k], k);
+            let d = 40; const end = performance.now() + 1100;
+            while (performance.now() < end) { rows[k].b.textContent = pick(ROLES); await this.wait(d, id); d *= 1.12; }
+            rows[k].b.textContent = roles[k]; rows[k].a.classList.add("landed"); rows[k].b.classList.add("landed");
+            const r = rows[k].b.getBoundingClientRect(), s = mat.getBoundingClientRect(); domBurst(this.el.stage, r.left - this.el.stage.getBoundingClientRect().left + r.width / 2, r.top - this.el.stage.getBoundingClientRect().top + r.height / 2, 14);
+            const pod = this.el.podium.children[k]; if (pod) pod.append(mk("span", "podium-role", "· " + roles[k]));
+            void s; await this.wait(300, id);
+          }
+        }
+      });
+    };
+
+    return { init() { craps(); crash(); pokerDice(); moneyWheel(); installDraw(); } };
+  })();
+
+  /* =========================================================================
      22. APP BOOTSTRAP
      ========================================================================= */
   function bindGameNavigation() {
@@ -4704,6 +5214,7 @@ button, input { touch-action: manipulation; }
     LuckyDraw.init();
     Slots.init();
     HiLo.init();
+    Extra.init();
 
     Router.showSetup();
     HUD.update();
