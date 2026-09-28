@@ -1712,6 +1712,125 @@ button, input { touch-action: manipulation; }
 .draw-history-list time { color: var(--color-text-muted); margin-right: 0.4rem; }
 .draw-history-empty { color: var(--color-text-muted); }
 @media (prefers-reduced-motion: reduce) { .fx-shake, .pd-die.pd-roll { animation: none; } }
+
+/* ===== Upgrade: roulette, shop, chat, jackpot ===== */
+.roulette-wheel { transition: none; will-change: transform; }
+.roulette-wheel::after { content: none; }
+.rw-slice { stroke-width: 0.5; }
+.rw-label { font-size: 9.4px; }
+.rw-win { stroke: #fff3b0; stroke-width: 2; filter: drop-shadow(0 0 3px #f4c430); }
+.cosmetic-badge { font-size: 1rem; margin-left: .35rem; }
+.top-panel-avatar.bd-gold { box-shadow: 0 0 0 3px #f4c430, 0 0 14px rgba(244,196,48,.6); }
+.top-panel-avatar.bd-emerald { box-shadow: 0 0 0 3px #2ecc8f, 0 0 14px rgba(46,204,143,.6); }
+.top-panel-avatar.bd-ruby { box-shadow: 0 0 0 3px #e0483e, 0 0 14px rgba(224,72,62,.6); }
+.shop-body { display: grid; gap: 1rem; margin-top: .75rem; }
+.shop-section h3 { margin: 0 0 .4rem; color: var(--color-gold); font-size: .95rem; }
+.shop-item { display: flex; align-items: center; gap: .7rem; padding: .45rem .6rem; border: 1px solid var(--color-border); border-radius: var(--radius-sm); background: var(--color-surface-alt); margin-bottom: .4rem; }
+.shop-item .si-icon { width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; background: var(--color-felt); font-size: 1.3rem; }
+.shop-item .si-name { flex: 1; font-weight: 600; }
+.jackpot-bar { display: flex; align-items: center; gap: .7rem; margin: .5rem 1rem; padding: .45rem .8rem; border: 1px solid var(--color-gold-dark); border-radius: var(--radius-md); background: linear-gradient(90deg, rgba(184,134,11,.18), rgba(11,61,46,.4)); font-size: .85rem; }
+.jp-title { color: var(--color-gold); font-weight: 700; white-space: nowrap; }
+.jp-track { flex: 1; height: 8px; border-radius: 99px; background: rgba(0,0,0,.45); overflow: hidden; min-width: 60px; }
+.jp-track i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--color-gold-dark), var(--color-gold-strong)); transition: width .5s ease; }
+.jp-count { white-space: nowrap; color: var(--color-text-muted); }
+.jp-flash { position: fixed; inset: 0; pointer-events: none; opacity: 0; z-index: 90; background: radial-gradient(circle, rgba(244,196,48,.55), transparent 70%); }
+.jp-flash.is-on { animation: jpflash 2.4s ease-out; }
+@keyframes jpflash { 0%,30% { opacity: 1; } 15% { opacity: .35; } 100% { opacity: 0; } }
+.react-layer { position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 80; }
+.float-react { position: absolute; bottom: -10px; font-size: 2.2rem; animation: floatup 2.8s ease-out forwards; }
+@keyframes floatup { 0% { transform: translateY(0) scale(.6); opacity: 0; } 12% { opacity: 1; transform: translateY(-8vh) scale(1.15); } 100% { transform: translateY(-78vh) translateX(var(--dx, 0)) scale(1); opacity: 0; } }
+.chat-toggle { position: fixed; right: 16px; bottom: 16px; z-index: 70; width: 54px; height: 54px; border-radius: 50%; border: 2px solid var(--color-gold-dark); background: var(--color-felt); color: #fff; font-size: 1.5rem; cursor: pointer; box-shadow: var(--shadow-soft); }
+.chat-unread { position: absolute; top: -4px; right: -4px; background: var(--color-red); color: #fff; font-size: .7rem; border-radius: 99px; padding: 1px 6px; }
+.chat-panel { position: fixed; right: 0; top: 0; bottom: 0; width: 320px; z-index: 75; display: flex; flex-direction: column; background: var(--color-surface); border-left: 2px solid var(--color-gold-dark); box-shadow: var(--shadow-strong); }
+.chat-panel[hidden] { display: none; }
+.chat-head { display: flex; justify-content: space-between; align-items: center; padding: .7rem .9rem; border-bottom: 1px solid var(--color-border); color: var(--color-gold); position: relative; }
+.chat-head .modal-close { position: static; }
+.chat-log { flex: 1; overflow-y: auto; padding: .6rem .8rem; display: flex; flex-direction: column; gap: .35rem; }
+.chat-msg { font-size: .88rem; word-break: break-word; }
+.chat-msg .mu { color: var(--color-gold); margin: 0 .3rem; }
+.chat-msg.mine .mu { color: #7be0b0; }
+.react-bar { display: flex; gap: .3rem; padding: .4rem .8rem; border-top: 1px solid var(--color-border); }
+.react-bar .btn { flex: 1; font-size: 1.15rem; }
+.chat-input-row { display: flex; gap: .4rem; padding: .5rem .8rem .8rem; }
+.chat-input-row input { flex: 1; min-width: 0; padding: .5rem .6rem; border-radius: var(--radius-sm); border: 1px solid var(--color-border); background: var(--color-bg-alt); color: var(--color-text); }
+@media (max-width: 640px) {
+  .chat-panel { top: auto; width: 100%; height: 65vh; border-left: 0; border-top: 2px solid var(--color-gold-dark); }
+  .jackpot-bar { margin: .5rem; flex-wrap: wrap; }
+}
+
+/* ===== VIP LUXURY THEME LAYER ===== */
+:root{--color-bg:#07080a;--color-bg-alt:#0c0e11;--color-felt:#0a4a36;--color-felt-dark:#052d21;--color-felt-light:#0f6248;
+--color-gold:#e8c97a;--color-gold-strong:#f5d27a;--color-gold-dark:#9c7422;--color-surface:rgba(22,25,30,.72);--color-surface-alt:#1b1f26;--color-border:#2d3038;
+--neon:0 0 0 1px rgba(232,201,122,.35),0 0 18px rgba(232,201,122,.18);--font-body:"Avenir Next","Segoe UI",system-ui,sans-serif;--font-display:"Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif}
+body{background:radial-gradient(ellipse 60% 40% at 15% 0%,rgba(245,210,122,.10),transparent 70%),radial-gradient(ellipse 50% 40% at 90% 10%,rgba(30,180,130,.09),transparent 70%),
+radial-gradient(ellipse at bottom,rgba(10,74,54,.45),transparent 60%),repeating-linear-gradient(90deg,rgba(255,255,255,.012) 0 1px,transparent 1px 3px),var(--color-bg)}
+h1,h2,h3,.brand,.modal h2{font-family:var(--font-display);letter-spacing:.02em}
+.btn{transition:transform .15s,box-shadow .2s,background .2s,border-color .2s;position:relative;overflow:hidden}
+.btn:focus-visible,.input-field:focus-visible{outline:2px solid var(--color-gold);outline-offset:2px}
+.btn:active:not(:disabled){transform:scale(.97)}
+.btn-primary{background:linear-gradient(160deg,#fbe39a 0%,#e0b64c 45%,#8f6a1c 100%);box-shadow:inset 0 1px 0 rgba(255,255,255,.55),0 6px 18px rgba(224,182,76,.28)}
+.btn-primary::after{content:"";position:absolute;inset:0;background:linear-gradient(105deg,transparent 40%,rgba(255,255,255,.45) 50%,transparent 60%);transform:translateX(-120%);transition:transform .6s}
+.btn-primary:hover:not(:disabled)::after{transform:translateX(120%)}
+.btn-secondary,.btn-ghost,.btn-game-select{backdrop-filter:blur(8px);background:rgba(255,255,255,.04)}
+.btn-game-select[aria-pressed="true"]{background:radial-gradient(circle at 50% 0,var(--color-felt-light),var(--color-felt-dark));box-shadow:var(--neon),inset 0 0 12px rgba(0,0,0,.5);color:var(--color-gold-strong)}
+.input-field{background:rgba(0,0,0,.45);box-shadow:inset 0 2px 6px rgba(0,0,0,.5)}
+.game-section,.modal,.modal-content,.card,.panel{background-image:linear-gradient(145deg,rgba(255,255,255,.05),rgba(255,255,255,0) 40%);backdrop-filter:blur(14px);border:1px solid rgba(232,201,122,.16);box-shadow:var(--shadow-strong),inset 0 1px 0 rgba(255,255,255,.06)}
+.game-section{background-color:rgba(12,14,17,.6);border-radius:var(--radius-lg)}
+.celebration-banner{font-family:var(--font-display);background:linear-gradient(180deg,#fff2bf,#e0b64c 55%,#8f6a1c);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 18px rgba(245,210,122,.7))}
+.spark{position:fixed;width:6px;height:6px;border-radius:50%;pointer-events:none;z-index:9999;background:radial-gradient(#fff,#f5d27a 60%,transparent);animation:spark 1s ease-out forwards}
+@keyframes spark{to{transform:translate(var(--sx),var(--sy)) scale(0);opacity:0}}
+@media (prefers-reduced-motion:reduce){.spark,.btn-primary::after{display:none}}
+/* Black Widow table */
+.bw-table{background:radial-gradient(ellipse at 50% 35%,var(--color-felt-light),var(--color-felt) 55%,var(--color-felt-dark));border:6px solid #1a1206;border-radius:28px;box-shadow:0 0 0 2px var(--color-gold-dark),inset 0 0 60px rgba(0,0,0,.65),var(--shadow-strong);padding:1rem;margin:1rem 0}
+.bw-pot{text-align:center;font-family:var(--font-display);font-size:1.6rem;color:var(--color-gold-strong);text-shadow:0 0 14px rgba(245,210,122,.5)}
+.bw-seats{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:.8rem;margin-top:.8rem}
+.bw-seat{background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:.6rem;transition:box-shadow .3s,opacity .3s}
+.bw-seat.turn{box-shadow:var(--neon);border-color:var(--color-gold)}.bw-seat.out{opacity:.4}.bw-seat.win{box-shadow:0 0 24px rgba(245,210,122,.8)}
+.bw-name{font-weight:700;font-size:.9rem;margin-bottom:.4rem}.bw-hand{display:flex;gap:4px;flex-wrap:wrap}
+.bw-card{width:34px;height:48px;border-radius:5px;background:#f7f3e8;color:#14171c;font-weight:700;font-size:.85rem;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.05;box-shadow:0 3px 8px rgba(0,0,0,.5)}
+.bw-card.red{color:#c0281e}.bw-card.wild{box-shadow:0 0 0 2px var(--color-gold-strong),0 0 14px rgba(245,210,122,.8)}
+.bw-card.back{background:repeating-linear-gradient(45deg,#3a0d14 0 4px,#5b1420 4px 8px);border:2px solid var(--color-gold-dark)}
+.bw-actions{display:flex;gap:.5rem;flex-wrap:wrap;justify-content:center;margin-top:1rem}
+.bw-info{text-align:center;color:var(--color-text-muted);font-size:.9rem;margin:.4rem 0}
+
+/* ===== CARD-BACK FIX + VIP LIGHTING LAYER ===== */
+:root{--glow-gold:0 0 0 1px rgba(245,210,122,.5),0 0 16px rgba(245,210,122,.32),0 0 44px rgba(245,210,122,.14);--glow-emerald:0 0 28px rgba(30,200,140,.24),0 0 70px rgba(16,150,105,.14);--brushed:repeating-linear-gradient(90deg,rgba(255,255,255,.08) 0 1px,rgba(0,0,0,.07) 1px 2px,rgba(255,255,255,.03) 2px 4px)}
+/* Root cause of the "empty green box": the luxury layer's `.card{background-image:...;border:...}` was declared after `.card-back`
+   and replaced its stripes/border. `.card.card-back` (higher specificity) restores and upgrades the pattern. */
+.card{backdrop-filter:none}
+.card.card-back{background-color:var(--color-felt-dark);background-image:linear-gradient(135deg,rgba(255,255,255,.12),transparent 45%),repeating-linear-gradient(-45deg,transparent 0 11px,rgba(245,210,122,.38) 11px 12px),repeating-linear-gradient(45deg,var(--color-felt-dark) 0 6px,var(--color-felt-light) 6px 12px);border:2px solid var(--color-gold);box-shadow:inset 0 0 0 3px var(--color-felt-dark),inset 0 0 0 4px rgba(245,210,122,.65),0 4px 10px rgba(0,0,0,.55),0 0 12px rgba(245,210,122,.25);position:relative;overflow:hidden;color:var(--color-gold-strong)}
+.card.card-back::after{content:"\2660";display:grid;place-items:center;width:26px;height:26px;border-radius:50%;background:radial-gradient(circle,var(--color-felt-dark) 58%,transparent 60%);border:1px solid var(--color-gold);font-size:.95rem;line-height:1;box-shadow:0 0 8px rgba(245,210,122,.55)}
+/* atmospheric margin light */
+body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(ellipse 42% 60% at 0% 50%,rgba(245,210,122,.11),transparent 72%),radial-gradient(ellipse 42% 60% at 100% 50%,rgba(30,200,140,.11),transparent 72%),radial-gradient(ellipse 80% 28% at 50% 100%,rgba(245,210,122,.08),transparent 72%);animation:vip-breathe 7s ease-in-out infinite}
+@keyframes vip-breathe{0%,100%{opacity:.7}50%{opacity:1}}
+/* panels */
+.game-section{border:1px solid rgba(245,210,122,.3);box-shadow:var(--shadow-strong),0 0 0 1px rgba(0,0,0,.6),var(--glow-gold),var(--glow-emerald),inset 0 1px 0 rgba(255,255,255,.12),inset 0 0 50px rgba(16,150,105,.07)}
+.auth-panel,.top-panel,.modal,.chip-panel,.wheel-pool-panel,.draw-history,.jackpot-bar{border:1px solid rgba(245,210,122,.26);box-shadow:var(--shadow-soft),0 0 0 1px rgba(0,0,0,.5),0 0 18px rgba(245,210,122,.14),0 0 40px rgba(20,190,130,.08),inset 0 1px 0 rgba(255,255,255,.1),inset 0 -1px 0 rgba(0,0,0,.5)}
+/* tables: dark rim + brass rim + highlight + gold/emerald halos, brushed-metal sheen on top */
+.blackjack-table,.hilo-table,.bw-table,.draw-stage,.slots-machine,.roulette-board-wrapper{box-shadow:inset 0 0 60px rgba(0,0,0,.6),inset 0 0 0 2px rgba(245,210,122,.35),0 0 0 3px #2a2114,0 0 0 5px #b58a2c,0 0 0 6px rgba(255,236,170,.6),0 0 26px 6px rgba(245,210,122,.28),0 0 70px 14px rgba(20,190,130,.18),0 22px 40px rgba(0,0,0,.55)}
+.blackjack-table,.hilo-table,.bw-table{position:relative;margin-left:8px;margin-right:8px}
+.blackjack-table::after,.hilo-table::after,.bw-table::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;background:var(--brushed),linear-gradient(115deg,rgba(255,255,255,.10),transparent 35%,transparent 65%,rgba(245,210,122,.08));mix-blend-mode:soft-light}
+.roulette-wheel,.wheel-dial{box-shadow:var(--shadow-strong),inset 0 0 20px rgba(0,0,0,.5),0 0 28px rgba(245,210,122,.35),0 0 64px rgba(20,190,130,.2)}
+@media (prefers-reduced-motion:reduce){body::before{animation:none}}
+/* Black Widow Poker: cards, seats, phase banner */
+.bw-actions [hidden]{display:none!important}
+.bw-phase{width:max-content;margin:0 auto .3rem;padding:.15rem .9rem;border:1px solid var(--color-gold-dark);border-radius:99px;font-size:.75rem;letter-spacing:.14em;text-transform:uppercase;color:var(--color-gold-strong);background:rgba(0,0,0,.4);box-shadow:var(--neon)}
+.bw-seat{box-shadow:inset 0 0 0 1px rgba(245,210,122,.08),0 4px 14px rgba(0,0,0,.4)}
+.bw-seat.turn{box-shadow:var(--neon),0 0 26px rgba(245,210,122,.35)}
+.bw-seat.win{box-shadow:0 0 0 2px var(--color-gold-strong),0 0 30px rgba(245,210,122,.85)}
+.bw-tag{display:inline-block;margin-left:.3rem;padding:0 .4rem;border-radius:99px;font-size:.66rem;font-weight:600;letter-spacing:.04em;color:var(--color-gold);border:1px solid rgba(232,201,122,.35);background:rgba(0,0,0,.35)}
+.bw-hand{min-height:56px}
+.bw-card{position:relative;width:38px;height:54px;border:1px solid #cfc7b2;font-size:.9rem;transition:transform .15s,box-shadow .2s}
+.bw-card b{font-size:1em}.bw-card i{font-style:normal;font-size:1.3em}
+.bw-seat.me .bw-card{width:54px;height:76px;font-size:1.1rem}
+.bw-card.deal{animation:card-deal .3s ease both}
+.bw-card.pick{cursor:pointer}.bw-card.pick:hover{transform:translateY(-4px)}
+.bw-card.sel{transform:translateY(-12px);box-shadow:0 0 0 2px var(--color-gold-strong),0 12px 18px rgba(0,0,0,.6)}
+.bw-card.wild{background:linear-gradient(160deg,#fffbe8,#f3e6b3);box-shadow:0 0 0 2px var(--color-gold-strong),0 0 16px rgba(245,210,122,.85)}
+.bw-card.wild::after{content:"WILD";position:absolute;bottom:2px;font-size:.42rem;font-weight:800;letter-spacing:.06em;color:#7a5410}
+.bw-card.back{background-color:#2a070d;background-image:linear-gradient(135deg,rgba(255,255,255,.12),transparent 45%),repeating-linear-gradient(-45deg,transparent 0 7px,rgba(245,210,122,.35) 7px 8px),repeating-linear-gradient(45deg,#4a0f19 0 4px,#6b1826 4px 8px);border:2px solid var(--color-gold);color:var(--color-gold-strong);box-shadow:inset 0 0 0 2px #2a070d,inset 0 0 0 3px rgba(245,210,122,.55),0 3px 8px rgba(0,0,0,.6),0 0 10px rgba(245,210,122,.2);overflow:hidden}
+.bw-card.back::after{content:"\2660";font-size:.9em;text-shadow:0 0 6px rgba(245,210,122,.8)}
+@media (max-width:640px){.bw-seats{grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}.bw-seat.me .bw-card{width:46px;height:64px}}
   </style>
 </head>
 <body>
@@ -1892,6 +2011,7 @@ button, input { touch-action: manipulation; }
           <span class="top-panel-label">Player</span>
           <span id="display-username" class="top-panel-value">--</span>
           <span id="lobby-host-badge" class="role-badge" hidden>HOST</span>
+          <span id="display-badge" class="cosmetic-badge" hidden></span>
         </div>
       </div>
 
@@ -1912,15 +2032,44 @@ button, input { touch-action: manipulation; }
         <button type="button" class="btn btn-game-select" id="nav-crash" data-game="crash" aria-pressed="false">&#128640; Crash</button>
         <button type="button" class="btn btn-game-select" id="nav-pokerdice" data-game="pokerdice" aria-pressed="false">&#127183; Poker Dice</button>
         <button type="button" class="btn btn-game-select" id="nav-moneywheel" data-game="moneywheel" aria-pressed="false">&#128176; Money Wheel</button>
+        <button type="button" class="btn btn-game-select" id="nav-blackwidow" data-game="blackwidow" aria-pressed="false">&#128375; Black Widow Poker</button>
       </nav>
 
       <div class="top-panel-actions">
         <button type="button" id="btn-sound-toggle" class="btn btn-icon" aria-pressed="true" aria-label="Mute sound">&#128266;</button>
         <button type="button" id="btn-open-leaderboard" class="btn btn-secondary">&#127942;</button>
         <button type="button" id="btn-open-admin-lobby" class="btn btn-secondary" hidden>&#9881;</button>
+        <button type="button" id="btn-open-shop" class="btn btn-secondary" title="Profile Shop">&#128717; Shop</button>
         <button type="button" id="btn-logout" class="btn btn-secondary">Leave</button>
       </div>
     </header>
+
+    <!-- Community Jackpot Vault -->
+    <div id="jackpot-bar" class="jackpot-bar" title="2% of every wager feeds the shared vault. When it fills, all active players share it!">
+      <span class="jp-title">&#128142; Community Vault</span>
+      <div class="jp-track"><i id="jp-fill"></i></div>
+      <span class="jp-count"><b id="jp-amount">0</b> / <span id="jp-target">500</span></span>
+    </div>
+    <div id="jp-flash" class="jp-flash" aria-hidden="true"></div>
+    <div id="react-layer" class="react-layer" aria-hidden="true"></div>
+
+    <!-- Room chat + floating reactions -->
+    <button type="button" id="btn-chat-toggle" class="chat-toggle" aria-label="Toggle room chat">&#128172;<span id="chat-unread" class="chat-unread" hidden>0</span></button>
+    <aside id="chat-panel" class="chat-panel" hidden aria-label="Room chat">
+      <div class="chat-head"><b>Room Chat</b><button type="button" id="btn-chat-close" class="modal-close" aria-label="Close chat">&#10005;</button></div>
+      <div id="chat-log" class="chat-log" aria-live="polite"></div>
+      <div id="react-bar" class="react-bar">
+        <button type="button" class="btn btn-small" data-react="&#128079;">&#128079;</button>
+        <button type="button" class="btn btn-small" data-react="&#128514;">&#128514;</button>
+        <button type="button" class="btn btn-small" data-react="&#128561;">&#128561;</button>
+        <button type="button" class="btn btn-small" data-react="&#128293;">&#128293;</button>
+        <button type="button" class="btn btn-small" data-react="&#128142;">&#128142;</button>
+      </div>
+      <div class="chat-input-row">
+        <input id="chat-input" type="text" maxlength="200" placeholder="Say something..." autocomplete="off">
+        <button type="button" id="btn-chat-send" class="btn btn-primary btn-small">Send</button>
+      </div>
+    </aside>
 
     <!-- ============================= -->
     <!-- GAME SECTION: BLACKJACK       -->
@@ -2157,12 +2306,41 @@ button, input { touch-action: manipulation; }
     <section id="game-crash" class="game-section" data-game-section="crash" hidden></section>
     <section id="game-pokerdice" class="game-section" data-game-section="pokerdice" hidden></section>
     <section id="game-moneywheel" class="game-section" data-game-section="moneywheel" hidden></section>
+    <section id="game-blackwidow" class="game-section" data-game-section="blackwidow" hidden aria-labelledby="bw-heading">
+      <h2 id="bw-heading">Black Widow Poker</h2>
+      <p class="bw-info">5-card draw &middot; the Queen of Spades (&ldquo;Black Widow&rdquo;) is wild &middot; blinds 5 / 10 &middot; raises of 10 (max 3 per round) &middot; swap up to 3 cards</p>
+      <div class="bw-table">
+        <div class="bw-phase" id="bw-phase">Waiting for players</div>
+        <div class="bw-pot" id="bw-pot">Pot 0</div>
+        <div class="bw-info" id="bw-status">Take a seat to play.</div>
+        <div class="bw-seats" id="bw-seats"></div>
+      </div>
+      <div class="bw-actions">
+        <button type="button" class="btn btn-secondary" id="bw-join">Take a seat</button>
+        <button type="button" class="btn btn-primary" id="bw-deal">Deal hand</button>
+        <button type="button" class="btn btn-danger" id="bw-fold" disabled>Fold</button>
+        <button type="button" class="btn btn-action" id="bw-call" disabled>Check</button>
+        <button type="button" class="btn btn-primary" id="bw-raise" disabled>Raise 10</button>
+        <button type="button" class="btn btn-primary" id="bw-draw" hidden disabled>Stand pat</button>
+        <button type="button" class="btn btn-ghost" id="bw-kick" hidden>Skip idle player</button>
+        <button type="button" class="btn btn-ghost" id="bw-leave">Leave</button>
+      </div>
+    </section>
 
   </section>
 
   <!-- ============================= -->
   <!-- MODAL: LEADERBOARD            -->
   <!-- ============================= -->
+  <div id="shop-modal" class="modal-overlay" hidden>
+    <div class="modal" role="dialog" aria-labelledby="shop-title">
+      <button type="button" class="modal-close" id="btn-shop-close" aria-label="Close">&#10005;</button>
+      <h2 id="shop-title">&#128717; Profile Shop</h2>
+      <p class="modal-subtitle">Balance: <b id="shop-balance">0</b> chips &middot; unlock avatars, borders and chat badges</p>
+      <div id="shop-body" class="shop-body"></div>
+    </div>
+  </div>
+
   <div id="leaderboard-modal" class="modal-overlay" hidden>
     <div class="modal" role="dialog" aria-labelledby="leaderboard-title">
       <button type="button" class="modal-close" id="btn-leaderboard-close" aria-label="Close">&#10005;</button>
@@ -2621,10 +2799,11 @@ button, input { touch-action: manipulation; }
     /** Records the outcome of a round for this player's room-wide stats. */
     recordRound(wager, payout) {
       if (!this.username) return;
+      const fee = Jackpot.rake(wager); // 2% vault contribution, taken from the player
       Room.persistPlayer(this.username, this.balance, {
         gamesPlayed: 1,
         totalWagered: wager,
-        netProfit: payout - wager
+        netProfit: payout - wager - fee
       });
     },
 
@@ -2904,6 +3083,7 @@ button, input { touch-action: manipulation; }
       DOM.displayAvatar.textContent = State.username ? State.username.slice(0, 2).toUpperCase() : "--";
       DOM.displayRoomCode.textContent = State.roomCode || "------";
       DOM.lobbyHostBadge.hidden = !State.isHost;
+      Cosmetics.applyHud();
       Effects.pulseBalance();
     }
   };
@@ -2967,6 +3147,7 @@ button, input { touch-action: manipulation; }
       DOM.viewLobby.hidden = false;
       DOM.btnOpenAdminLobby.hidden = !State.isHost;
       HUD.update();
+      Social.start();
       this.selectGame("blackjack");
     },
 
@@ -3220,46 +3401,59 @@ button, input { touch-action: manipulation; }
       this.updateBetDisplay();
     },
 
-    /* Draws the wheel as SVG: slice i is centred at i * step degrees clockwise
-       from the top when the wheel is unrotated, so slot 0 (the green 0) sits
-       directly under the pointer at rest. */
+    /* Draws the wheel as SVG. Slot i is centred at i * step degrees clockwise
+       from 12 o'clock when the wheel is unrotated, so the green 0 sits under
+       the pointer at rest. Every European number (0-36) is printed in its pocket. */
     buildWheel() {
       const NS = "http://www.w3.org/2000/svg";
-      const count = this.WHEEL_ORDER.length;
-      const step = 360 / count;
-      const cx = 100, cy = 100, radius = 100, labelRadius = 80;
+      const count = this.WHEEL_ORDER.length, step = 360 / count, cx = 100, cy = 100;
       const pt = (deg, r) => {
         const rad = (deg * Math.PI) / 180;
-        return [cx + r * Math.sin(rad), cy - r * Math.cos(rad)];
+        return [(cx + r * Math.sin(rad)).toFixed(3), (cy - r * Math.cos(rad)).toFixed(3)];
       };
-
-      const svg = document.createElementNS(NS, "svg");
-      svg.setAttribute("viewBox", "0 0 200 200");
-      svg.setAttribute("class", "roulette-wheel-svg");
-      svg.setAttribute("aria-hidden", "true");
-
+      const el = (name, attrs) => {
+        const n = document.createElementNS(NS, name);
+        Object.entries(attrs).forEach(([k, v]) => n.setAttribute(k, v));
+        return n;
+      };
+      const svg = el("svg", { viewBox: "0 0 200 200", class: "roulette-wheel-svg", "aria-hidden": "true" });
+      svg.appendChild(el("circle", { cx, cy, r: 100, fill: "#b8860b" }));
+      const R1 = 95, R0 = 52;
       this.WHEEL_ORDER.forEach((number, i) => {
-        const a0 = (i - 0.5) * step;
-        const a1 = (i + 0.5) * step;
-        const [x0, y0] = pt(a0, radius);
-        const [x1, y1] = pt(a1, radius);
-
-        const slice = document.createElementNS(NS, "path");
-        slice.setAttribute("d", `M ${cx} ${cy} L ${x0.toFixed(3)} ${y0.toFixed(3)} A ${radius} ${radius} 0 0 1 ${x1.toFixed(3)} ${y1.toFixed(3)} Z`);
-        slice.setAttribute("class", `rw-slice rw-${this.colorOf(number)}`);
-        svg.appendChild(slice);
-
-        const label = document.createElementNS(NS, "text");
-        label.setAttribute("x", String(cx));
-        label.setAttribute("y", String(cy - labelRadius));
-        label.setAttribute("transform", `rotate(${(i * step).toFixed(4)} ${cx} ${cy})`);
-        label.setAttribute("class", "rw-label");
+        const [ax, ay] = pt((i - 0.5) * step, R1), [bx, by] = pt((i + 0.5) * step, R1);
+        const [cx2, cy2] = pt((i + 0.5) * step, R0), [dx, dy] = pt((i - 0.5) * step, R0);
+        svg.appendChild(el("path", {
+          d: `M ${dx} ${dy} L ${ax} ${ay} A ${R1} ${R1} 0 0 1 ${bx} ${by} L ${cx2} ${cy2} A ${R0} ${R0} 0 0 0 ${dx} ${dy} Z`,
+          class: `rw-slice rw-${this.colorOf(number)}`, "data-n": String(number)
+        }));
+        const label = el("text", { x: cx, y: cy - 81, transform: `rotate(${(i * step).toFixed(4)} ${cx} ${cy})`, class: "rw-label" });
         label.textContent = String(number);
         svg.appendChild(label);
       });
-
+      svg.appendChild(el("circle", { cx, cy, r: R0 - 2, fill: "#1a130a", stroke: "#e9c46a", "stroke-width": 2 }));
+      svg.appendChild(el("circle", { cx, cy, r: 9, fill: "#e9c46a" }));
       DOM.rouletteWheel.textContent = "";
       DOM.rouletteWheel.appendChild(svg);
+    },
+
+    /* Reads the pocket that is under the top pointer for a given rotation. This
+       is the single source of truth: the payout uses this number, so the
+       picture and the result cannot disagree. */
+    numberAtPointer(rotation) {
+      const count = this.WHEEL_ORDER.length, step = 360 / count;
+      const a = (((-rotation) % 360) + 360) % 360;
+      return this.WHEEL_ORDER[Math.round(a / step) % count];
+    },
+
+    animateTo(from, to, ms, done) {
+      const t0 = performance.now(), el = DOM.rouletteWheel;
+      const tick = (now) => {
+        const p = Math.min(1, (now - t0) / ms), e = 1 - Math.pow(1 - p, 4);
+        this.wheelRotation = p < 1 ? from + (to - from) * e : to;
+        el.style.transform = `rotate(${this.wheelRotation}deg)`;
+        if (p < 1) window.requestAnimationFrame(tick); else done();
+      };
+      window.requestAnimationFrame(tick);
     },
 
     colorOf(number) {
@@ -3341,37 +3535,31 @@ button, input { touch-action: manipulation; }
 
     spin() {
       if (this.isSpinning) return;
-
-      if (!this.selection) {
-        Notify.error("Choose a number, color or parity before spinning.");
-        return;
-      }
-      if (!State.canAfford(this.selectedChip)) {
-        Notify.error("You don't have enough chips for that bet.");
-        return;
-      }
+      if (!this.selection) { Notify.error("Choose a number, color or parity before spinning."); return; }
+      if (!State.canAfford(this.selectedChip)) { Notify.error("You don't have enough chips for that bet."); return; }
 
       State.debit(this.selectedChip);
       this.isSpinning = true;
       DOM.btnRouletteSpin.disabled = true;
       DOM.rouletteResult.textContent = "";
+      DOM.rouletteWheel.querySelectorAll(".rw-win").forEach((n) => n.classList.remove("rw-win"));
 
-      // Pick the winning slot first, then rotate the wheel so that exact slot
-      // ends up under the pointer (top, 0deg). Slot i is centred at i * step
-      // degrees, so the wheel must finish at -(i * step + jitter) mod 360.
-      const count = this.WHEEL_ORDER.length;
-      const step = 360 / count;
+      // Choose the slot, then rotate so that slot's centre (+ small jitter that
+      // stays inside the pocket) ends exactly under the pointer.
+      const count = this.WHEEL_ORDER.length, step = 360 / count;
       const slotIndex = Math.floor(Math.random() * count);
-      const winningNumber = this.WHEEL_ORDER[slotIndex];
+      const jitter = (Math.random() - 0.5) * step * 0.6;
+      const cur = ((this.wheelRotation % 360) + 360) % 360;
+      const target = (((-(slotIndex * step + jitter)) % 360) + 360) % 360;
+      const delta = (((target - cur) % 360) + 360) % 360;
+      const from = this.wheelRotation, to = from + 360 * 5 + delta;
+      const reduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const winningNumber = this.numberAtPointer(to);
 
-      const jitter = (Math.random() - 0.5) * step * 0.7; // stay inside the slice
-      const targetAngle = (((-(slotIndex * step + jitter)) % 360) + 360) % 360;
-      const currentAngle = ((this.wheelRotation % 360) + 360) % 360;
-      const delta = (((targetAngle - currentAngle) % 360) + 360) % 360;
-      this.wheelRotation += 360 * 4 + delta;
-      DOM.rouletteWheel.style.transform = `rotate(${this.wheelRotation}deg)`;
-
-      window.setTimeout(() => this.resolveSpin(winningNumber), 3100);
+      this.animateTo(from, to, reduced ? 500 : 4600, () => {
+        DOM.rouletteWheel.querySelector(`[data-n="${winningNumber}"]`)?.classList.add("rw-win");
+        this.resolveSpin(winningNumber);
+      });
     },
 
     resolveSpin(winningNumber) {
@@ -4778,6 +4966,7 @@ button, input { touch-action: manipulation; }
      21. LOGIN / LOGOUT FLOW
      ========================================================================= */
   function handleLogout() {
+    Social.stop();
     State.reset();
     HUD.update();
     Router.showAuth();
@@ -5168,6 +5357,469 @@ button, input { touch-action: manipulation; }
   /* =========================================================================
      22. APP BOOTSTRAP
      ========================================================================= */
+  /* =========================================================================
+     21c. SHOP, ROOM CHAT + REACTIONS, COMMUNITY JACKPOT VAULT
+     All three live under rooms/{code}/... in the same hardcoded Firebase DB.
+     ========================================================================= */
+  const CATALOG = {
+    avatar: [
+      { id: "fox", icon: "\u{1F98A}", name: "Fox", price: 300 }, { id: "robot", icon: "\u{1F916}", name: "Robot", price: 450 },
+      { id: "dragon", icon: "\u{1F409}", name: "Dragon", price: 600 }, { id: "unicorn", icon: "\u{1F984}", name: "Unicorn", price: 800 },
+      { id: "crown", icon: "\u{1F451}", name: "Crown", price: 1000 }
+    ],
+    border: [
+      { id: "gold", icon: "\u{1F7E1}", name: "Gold Border", price: 250, css: "bd-gold" },
+      { id: "emerald", icon: "\u{1F7E2}", name: "Emerald Border", price: 400, css: "bd-emerald" },
+      { id: "ruby", icon: "\u{1F534}", name: "Ruby Border", price: 500, css: "bd-ruby" }
+    ],
+    badge: [
+      { id: "roller", icon: "\u2660\uFE0F", name: "High Roller", price: 200 }, { id: "lucky", icon: "\u{1F340}", name: "Lucky", price: 350 },
+      { id: "diamond", icon: "\u{1F48E}", name: "Diamond", price: 700 }
+    ]
+  };
+  const SLOT_LABEL = { avatar: "Avatars", border: "Gold & Colored Borders", badge: "Chat Badges" };
+  const findItem = (slot, id) => (CATALOG[slot] || []).find((i) => i.id === id) || null;
+
+  const Cosmetics = {
+    of(username) { return (Room.get(username) || {}).cosmetics || {}; },
+    owns(username, slot, id) { const c = this.of(username); return !!(c.owned && c.owned[`${slot}:${id}`]); },
+    icon(username, slot) { const i = findItem(slot, this.of(username)[slot]); return i ? i.icon : ""; },
+    applyHud() {
+      const av = document.getElementById("display-avatar"), bd = document.getElementById("display-badge");
+      if (!av || !State.username) return;
+      const c = this.of(State.username), a = findItem("avatar", c.avatar), b = findItem("border", c.border), g = findItem("badge", c.badge);
+      av.textContent = a ? a.icon : State.username.slice(0, 2).toUpperCase();
+      av.className = "top-panel-avatar" + (b ? " " + b.css : "");
+      bd.hidden = !g; bd.textContent = g ? g.icon : "";
+    },
+    async buy(slot, id) {
+      const item = findItem(slot, id), u = State.username;
+      if (!item || !u || !Room.playersRef) return;
+      const res = await Room.playersRef.child(u).transaction((p) => {
+        if (!p) return p;
+        const c = (p.cosmetics = p.cosmetics || {}); c.owned = c.owned || {};
+        if (c.owned[`${slot}:${id}`] || (p.balance || 0) < item.price) return;
+        p.balance -= item.price; c.owned[`${slot}:${id}`] = true; c[slot] = id; p.updatedAt = Date.now();
+        return p;
+      });
+      if (res.committed) { Sound.win(); Notify.success(`Unlocked ${item.name}!`); } else Notify.error("Not enough chips, or already owned.");
+    },
+    equip(slot, id) {
+      if (!State.username || !Room.playersRef) return;
+      if (id && !this.owns(State.username, slot, id)) return;
+      Room.playersRef.child(State.username).child("cosmetics").child(slot).set(id || null);
+    }
+  };
+
+  const Shop = {
+    init() {
+      const modal = document.getElementById("shop-modal");
+      document.getElementById("btn-open-shop").addEventListener("click", () => { modal.hidden = false; this.render(); });
+      document.getElementById("btn-shop-close").addEventListener("click", () => { modal.hidden = true; });
+      modal.addEventListener("click", (e) => { if (e.target === modal) modal.hidden = true; });
+      PubSub.on("players-updated", () => { Cosmetics.applyHud(); if (!modal.hidden) this.render(); });
+    },
+    render() {
+      const body = document.getElementById("shop-body"), c = Cosmetics.of(State.username);
+      document.getElementById("shop-balance").textContent = State.balance.toLocaleString("en-US");
+      body.textContent = "";
+      Object.keys(CATALOG).forEach((slot) => {
+        const sec = document.createElement("div"); sec.className = "shop-section";
+        const h = document.createElement("h3"); h.textContent = SLOT_LABEL[slot]; sec.appendChild(h);
+        CATALOG[slot].forEach((item) => {
+          const owned = Cosmetics.owns(State.username, slot, item.id), on = c[slot] === item.id;
+          const row = document.createElement("div"); row.className = "shop-item";
+          const ic = document.createElement("span"); ic.className = "si-icon"; ic.textContent = item.icon;
+          const nm = document.createElement("span"); nm.className = "si-name"; nm.textContent = item.name;
+          const bt = document.createElement("button"); bt.type = "button"; bt.className = "btn btn-small " + (owned ? "btn-secondary" : "btn-primary");
+          if (!owned) { bt.textContent = `${item.price} chips`; bt.disabled = !State.canAfford(item.price); bt.addEventListener("click", () => Cosmetics.buy(slot, item.id)); }
+          else { bt.textContent = on ? "Unequip" : "Equip"; bt.addEventListener("click", () => Cosmetics.equip(slot, on ? null : item.id)); }
+          row.append(ic, nm, bt); sec.appendChild(row);
+        });
+        body.appendChild(sec);
+      });
+    }
+  };
+
+  const Chat = {
+    open: false, unread: 0, last: 0, chatQ: null, reactQ: null, chatRef: null, reactRef: null,
+    $(id) { return document.getElementById(id); },
+    init() {
+      const panel = this.$("chat-panel");
+      const toggle = (v) => { this.open = v; panel.hidden = !v; if (v) { this.unread = 0; this.badge(); this.$("chat-input").focus(); this.scroll(); } };
+      this.$("btn-chat-toggle").addEventListener("click", () => toggle(!this.open));
+      this.$("btn-chat-close").addEventListener("click", () => toggle(false));
+      this.$("btn-chat-send").addEventListener("click", () => this.send());
+      this.$("chat-input").addEventListener("keydown", (e) => { if (e.key === "Enter") this.send(); });
+      this.$("react-bar").querySelectorAll("[data-react]").forEach((b) => b.addEventListener("click", () => this.react(b.dataset.react)));
+    },
+    badge() { const u = this.$("chat-unread"); u.hidden = !this.unread; u.textContent = String(this.unread); },
+    scroll() { const l = this.$("chat-log"); l.scrollTop = l.scrollHeight; },
+    start() {
+      this.stop();
+      if (!Room.db || !Room.code) return;
+      const base = Room.db.ref(`rooms/${Room.code}`);
+      this.chatRef = base.child("chat"); this.reactRef = base.child("reactions");
+      this.$("chat-log").textContent = "";
+      this.chatQ = this.chatRef.limitToLast(60);
+      this.chatQ.on("child_added", (s) => this.addMsg(s.val()));
+      let live = false;
+      this.reactQ = this.reactRef.limitToLast(1);
+      this.reactQ.on("child_added", (s) => { const v = s.val(); if (live && v && v.e) this.float(v.e); });
+      this.reactQ.once("value").then(() => { live = true; });
+    },
+    stop() {
+      if (this.chatQ) this.chatQ.off(); if (this.reactQ) this.reactQ.off();
+      this.chatQ = this.reactQ = this.chatRef = this.reactRef = null;
+    },
+    addMsg(m) {
+      if (!m || !m.t) return;
+      const d = document.createElement("div"); d.className = "chat-msg" + (m.u === State.username ? " mine" : "");
+      const u = document.createElement("b"); u.className = "mu"; u.textContent = `${m.a || ""} ${m.u}${m.b ? " " + m.b : ""}`.trim();
+      const t = document.createElement("span"); t.textContent = m.t;
+      d.append(u, t);
+      const log = this.$("chat-log"); log.appendChild(d);
+      while (log.children.length > 100) log.removeChild(log.firstChild);
+      if (this.open) this.scroll(); else if (m.u !== State.username) { this.unread += 1; this.badge(); }
+    },
+    send() {
+      const inp = this.$("chat-input"), t = inp.value.trim().slice(0, 200), now = Date.now();
+      if (!t || !this.chatRef || !State.username || now - this.last < 600) return;
+      this.last = now; inp.value = "";
+      this.chatRef.push({ u: State.username, t, a: Cosmetics.icon(State.username, "avatar"), b: Cosmetics.icon(State.username, "badge"), ts: window.firebase.database.ServerValue.TIMESTAMP });
+    },
+    react(e) {
+      const now = Date.now();
+      if (!this.reactRef || now - this.last < 350) return;
+      this.last = now;
+      const r = this.reactRef.push({ e, u: State.username, ts: window.firebase.database.ServerValue.TIMESTAMP });
+      window.setTimeout(() => r.remove().catch(() => {}), 8000);
+    },
+    float(e) {
+      const layer = this.$("react-layer");
+      if (layer.children.length > 40) return;
+      const n = document.createElement("span"); n.className = "float-react"; n.textContent = e;
+      n.style.left = (8 + Math.random() * 84) + "%"; n.style.setProperty("--dx", ((Math.random() - 0.5) * 120) + "px");
+      n.addEventListener("animationend", () => n.remove()); layer.appendChild(n);
+    }
+  };
+
+  const Jackpot = {
+    RATE: 0.02, TARGET: 500, ref: null, pool: 0, ready: false, lastId: null, paying: false, cb: null,
+    start() {
+      this.stop();
+      if (!Room.db || !Room.code) return;
+      this.ref = Room.db.ref(`rooms/${Room.code}/jackpot`);
+      document.getElementById("jp-target").textContent = String(this.TARGET);
+      this.cb = (s) => {
+        const v = s.val() || {}, ev = v.lastWin;
+        this.pool = v.pool || 0; this.render();
+        if (ev && ev.id !== this.lastId) { if (this.ready) this.flash(ev); this.lastId = ev.id; }
+        this.ready = true;
+        if (this.pool >= this.TARGET) this.payout();
+      };
+      this.ref.on("value", this.cb);
+    },
+    stop() { if (this.ref && this.cb) this.ref.off("value", this.cb); this.ref = this.cb = null; this.ready = false; this.lastId = null; this.pool = 0; this.render(); },
+    render() {
+      const f = document.getElementById("jp-fill"), a = document.getElementById("jp-amount");
+      if (f) f.style.width = Math.min(100, (this.pool / this.TARGET) * 100) + "%";
+      if (a) a.textContent = this.pool.toLocaleString("en-US");
+    },
+    /** Takes the vault fee out of the wager's player (only if affordable) and adds it to the pool. */
+    rake(wager) {
+      const fee = Math.max(1, Math.round((Number(wager) || 0) * this.RATE));
+      if (!this.ref || State.balance < fee) return 0;
+      State.balance -= fee; HUD.update();
+      this.ref.child("pool").transaction((p) => (p || 0) + fee);
+      return fee;
+    },
+    /** Race-safe: only the client whose transaction commits pays winners. */
+    async payout() {
+      if (this.paying || !this.ref) return;
+      this.paying = true;
+      try {
+        const cutoff = Date.now() - 10 * 60 * 1000;
+        const winners = Room.list().filter((p) => (p.updatedAt || 0) >= cutoff).map((p) => p.username);
+        if (!winners.length) return;
+        const id = Date.now() + "-" + Math.random().toString(36).slice(2, 7);
+        const res = await this.ref.transaction((v) => {
+          if (!v || (v.pool || 0) < this.TARGET) return;
+          return { pool: 0, lastWin: { id, amount: v.pool, winners, ts: Date.now() } };
+        });
+        if (!res.committed) return;
+        const share = Math.floor(res.snapshot.val().lastWin.amount / winners.length);
+        winners.forEach((u) => Room.playersRef.child(u).child("balance").transaction((b) => (b == null ? b : b + share)));
+      } finally { this.paying = false; }
+    },
+    flash(ev) {
+      const share = Math.floor(ev.amount / (ev.winners || [1]).length), f = document.getElementById("jp-flash");
+      f.classList.remove("is-on"); void f.offsetWidth; f.classList.add("is-on");
+      Effects.celebrate(`\u{1F48E} VAULT OPENED! ${ev.amount} chips shared`);
+      for (let i = 0; i < 14; i += 1) window.setTimeout(() => Chat.float("\u{1F48E}"), i * 120);
+      if ((ev.winners || []).includes(State.username)) Notify.success(`Vault payout: +${share} chips for you!`);
+    }
+  };
+
+  const Social = {
+    init() { Shop.init(); Chat.init(); },
+    start() { Chat.start(); Jackpot.start(); },
+    stop() { Chat.stop(); Jackpot.stop(); }
+  };
+
+
+  /* =========================================================================
+     BLACK WIDOW POKER — player vs player, synced at rooms/<code>/bw
+     ========================================================================= */
+  const BW = {
+    SB: 5, BB: 10, RAISE: 10, MAX_RAISES: 3, MAX_SEATS: 6, MAX_DRAW: 3, IDLE_MS: 45000,
+    ref: null, cb: null, tick: null, g: { phase: "lobby" }, hid: null, paid: 0, dealt: null, sel: new Set(),
+    CATS: ["High card", "Pair", "Two pair", "Three of a kind", "Straight", "Flush", "Full house", "Four of a kind", "Straight flush", "Five of a kind"],
+    PHASES: { bet1: "Betting round 1", draw: "Card exchange", bet2: "Betting round 2", done: "Showdown" },
+    R: "23456789TJQKA", S: ["\u2660", "\u2665", "\u2666", "\u2663"], WILD: 10,
+    $(id) { return document.getElementById(id); },
+    isActive(g) { return g.phase === "bet1" || g.phase === "draw" || g.phase === "bet2"; },
+    isBet(g) { return g.phase === "bet1" || g.phase === "bet2"; },
+    store(key, val) {
+      try { if (val === undefined) return window.sessionStorage.getItem(key); window.sessionStorage.setItem(key, val); } catch (e) { /* storage unavailable */ }
+      return null;
+    },
+    init() {
+      const on = (id, fn) => this.$(id).addEventListener("click", fn);
+      on("bw-join", () => this.join());
+      on("bw-leave", () => this.leave());
+      on("bw-deal", () => this.deal());
+      on("bw-fold", () => this.act("fold"));
+      on("bw-call", () => this.act("call"));
+      on("bw-raise", () => this.act("raise"));
+      on("bw-draw", () => this.exchange());
+      on("bw-kick", () => this.kick());
+    },
+    start() {
+      this.stop(); if (!Room.db || !Room.code) return;
+      this.ref = Room.db.ref(`rooms/${Room.code}/bw`);
+      this.cb = (s) => { this.g = s.val() || { phase: "lobby" }; this.sync(); this.render(); };
+      this.ref.on("value", this.cb);
+      this.tick = window.setInterval(() => { if (this.isActive(this.g)) this.renderControls(); }, 1000);
+    },
+    stop() {
+      if (this.ref && this.cb) this.ref.off("value", this.cb);
+      if (this.tick) window.clearInterval(this.tick);
+      this.ref = this.cb = this.tick = null; this.g = { phase: "lobby" }; this.hid = null; this.sel.clear();
+    },
+    /* --- seats --- */
+    join() {
+      const me = State.username; if (!this.ref || !me) return;
+      if (this.isActive(this.g)) return Notify.warning("Wait for the current hand to finish.");
+      this.ref.child("seats").transaction((s) => {
+        s = s || {}; if (s[me]) return s;
+        if (Object.keys(s).length >= this.MAX_SEATS) return;
+        s[me] = true; return s;
+      });
+    },
+    leave() {
+      const me = State.username, g = this.g; if (!this.ref || !me) return;
+      if (this.isActive(g) && (g.order || []).includes(me) && !(g.folded || {})[me]) return Notify.warning("Fold or finish the hand before leaving.");
+      this.ref.child("seats/" + me).remove();
+    },
+    /* --- deal: 5 cards each from one shuffled deck; the rest stays in the shared state for the exchange --- */
+    deal() {
+      if (!this.ref) return;
+      this.ref.transaction((v) => {
+        v = v || {}; const names = Object.keys(v.seats || {});
+        if (this.isActive(v) || names.length < 2) return;
+        const rot = (v.rot || 0) + 1, order = names.map((_, i) => names[(i + rot) % names.length]);
+        const deck = Array.from({ length: 52 }, (_, i) => i);
+        for (let i = 51; i > 0; i -= 1) { const j = Math.floor(Math.random() * (i + 1)); [deck[i], deck[j]] = [deck[j], deck[i]]; }
+        const hands = {}; order.forEach((u, i) => { hands[u] = deck.slice(i * 5, i * 5 + 5); });
+        return {
+          seats: v.seats, rot, phase: "bet1", hid: Date.now(), order, hands, deck, dpos: order.length * 5,
+          in: { [order[0]]: this.SB, [order[1]]: this.BB }, cur: this.BB, raises: 0, turn: 2 % order.length,
+          acted: { _: 0 }, folded: { _: 0 }, drawn: { _: 0 }, turnAt: Date.now(), res: null
+        };
+      });
+    },
+    nextAlive(v, from) { let t = from; do { t = (t + 1) % v.order.length; } while (v.folded[v.order[t]]); return t; },
+    firstAlive(v) { let t = 0; while (v.folded[v.order[t]]) t += 1; return t; },
+    /* --- betting: fold / check-call / raise (fixed step, capped) --- */
+    act(type, who) {
+      const me = who || State.username; if (!this.ref || !me) return;
+      if (!who) {
+        const g = this.g, toCall = (g.cur || 0) - ((g.in || {})[me] || 0), need = type === "raise" ? toCall + this.RAISE : type === "call" ? toCall : 0;
+        if (need > State.balance) return Notify.error("Not enough chips for that action.");
+      }
+      this.ref.transaction((v) => {
+        if (!v || !this.isBet(v) || v.order[v.turn] !== me) return;
+        if (who && Date.now() - (v.turnAt || 0) < this.IDLE_MS) return;
+        v.in = v.in || {}; v.folded = v.folded || {}; v.acted = v.acted || {};
+        if (type === "fold") v.folded[me] = 1;
+        else if (type === "raise") {
+          if ((v.raises || 0) >= this.MAX_RAISES) return;
+          v.cur += this.RAISE; v.raises = (v.raises || 0) + 1; v.in[me] = v.cur; v.acted = { [me]: 1 };
+        } else { v.in[me] = v.cur; v.acted[me] = 1; }
+        return this.advance(v);
+      }).then((r) => this.settle(r)).catch(() => {});
+    },
+    advance(v) {
+      const alive = v.order.filter((u) => !v.folded[u]);
+      if (alive.length === 1) return this.finish(v, alive);
+      if (!alive.every((u) => v.acted[u] && (v.in[u] || 0) === v.cur)) { v.turn = this.nextAlive(v, v.turn); v.turnAt = Date.now(); return v; }
+      if (v.phase === "bet2") return this.finish(v, alive);
+      v.phase = "draw"; v.drawn = { _: 0 }; v.turn = this.firstAlive(v); v.turnAt = Date.now(); return v;
+    },
+    /* --- exchange: each live player, in turn, swaps up to 3 cards (or stands pat) --- */
+    exchange(who) {
+      const me = who || State.username, idxs = who ? [] : [...this.sel].sort((a, b) => a - b); if (!this.ref || !me) return;
+      this.ref.transaction((v) => {
+        if (!v || v.phase !== "draw" || v.order[v.turn] !== me) return;
+        if (who && Date.now() - (v.turnAt || 0) < this.IDLE_MS) return;
+        v.drawn = v.drawn || {}; v.folded = v.folded || {};
+        const hand = v.hands[me].slice(), k = Math.min(idxs.length, this.MAX_DRAW);
+        for (let i = 0; i < k; i += 1) { hand[idxs[i]] = v.deck[v.dpos]; v.dpos += 1; }
+        v.hands[me] = hand; v.drawn[me] = k;
+        const alive = v.order.filter((u) => !v.folded[u]);
+        if (alive.every((u) => v.drawn[u] !== undefined)) { v.phase = "bet2"; v.acted = { _: 0 }; v.raises = 0; v.turn = this.firstAlive(v); }
+        else v.turn = this.nextAlive(v, v.turn);
+        v.turnAt = Date.now(); return v;
+      }).then(() => this.sel.clear()).catch(() => {});
+    },
+    kick() {
+      const g = this.g, u = g.order && g.order[g.turn];
+      if (!u || u === State.username || !this.isActive(g)) return;
+      if (Date.now() - (g.turnAt || 0) < this.IDLE_MS) return Notify.warning("Give them a little longer.");
+      if (g.phase === "draw") this.exchange(u); else this.act("fold", u);
+    },
+    finish(v, alive) {
+      const pot = v.order.reduce((a, u) => a + (v.in[u] || 0), 0), cats = {};
+      let winners = alive, best = "Everyone else folded";
+      if (alive.length > 1) {
+        const sc = alive.map((u) => this.best(v.hands[u])), top = sc.reduce((a, b) => (this.cmp(a, b) >= 0 ? a : b));
+        winners = alive.filter((u, i) => this.cmp(sc[i], top) === 0); best = this.CATS[top[0]];
+        alive.forEach((u, i) => { cats[u] = this.CATS[sc[i][0]]; });
+      }
+      const each = Math.floor(pot / winners.length), shares = {};
+      winners.forEach((u, i) => { shares[u] = each + (i === 0 ? pot - each * winners.length : 0); });
+      v.phase = "done"; v.res = { winners, pot, best, cats, shares, show: alive.length > 1 ? 1 : 0 }; return v;
+    },
+    settle(r) {
+      if (!r || !r.committed) return;
+      const v = r.snapshot.val(); if (!v || v.phase !== "done" || !v.res) return;
+      Object.keys(v.res.shares).forEach((u) => Room.playersRef.child(u).child("balance").transaction((b) => (b == null ? b : b + v.res.shares[u])));
+    },
+    /* --- hand evaluation (Queen of Spades = wild: tries all 52 substitutions, duplicates allowed so five of a kind exists) --- */
+    eval5(cs) {
+      const rk = cs.map((c) => c % 13).sort((a, b) => b - a), fl = cs.every((c) => ((c / 13) | 0) === ((cs[0] / 13) | 0)), cnt = {};
+      rk.forEach((r) => { cnt[r] = (cnt[r] || 0) + 1; });
+      const gr = Object.keys(cnt).map(Number).sort((a, b) => cnt[b] - cnt[a] || b - a), shape = gr.map((r) => cnt[r]).join("");
+      const uniq = new Set(rk).size === 5, st = uniq && rk[0] - rk[4] === 4, wheel = uniq && rk.join() === "12,3,2,1,0", hi = wheel ? 3 : rk[0];
+      let cat = 0;
+      if (shape === "5") cat = 9; else if (st || wheel) cat = fl ? 8 : 4; else if (shape === "41") cat = 7; else if (shape === "32") cat = 6;
+      else if (fl) cat = 5; else if (shape === "311") cat = 3; else if (shape === "221") cat = 2; else if (shape === "2111") cat = 1;
+      return [cat, ...((st || wheel) ? [hi] : gr)];
+    },
+    best(hand) {
+      const w = hand.indexOf(this.WILD); if (w < 0) return this.eval5(hand);
+      let top = null;
+      for (let c = 0; c < 52; c += 1) { const h = hand.slice(); h[w] = c; const s = this.eval5(h); if (!top || this.cmp(s, top) > 0) top = s; }
+      return top;
+    },
+    cmp(a, b) { for (let i = 0; i < Math.max(a.length, b.length); i += 1) { const d = (a[i] || 0) - (b[i] || 0); if (d) return d; } return 0; },
+    /* --- chips: pay blinds/calls as they appear in the shared state (persisted per hand so a reload never double-charges) --- */
+    sync() {
+      const g = this.g, me = State.username; if (!me || !g.hid) return;
+      if (this.hid !== g.hid) { this.hid = g.hid; this.paid = Number(this.store(`bw-paid-${Room.code}-${g.hid}-${me}`)) || 0; this.sel.clear(); }
+      const owed = ((g.in || {})[me] || 0) - this.paid;
+      if (owed > 0) { State.debit(Math.min(owed, State.balance)); this.paid += owed; this.store(`bw-paid-${Room.code}-${g.hid}-${me}`, String(this.paid)); }
+      const doneKey = `bw-done-${Room.code}-${g.hid}-${me}`;
+      if (g.phase === "done" && g.res && (g.order || []).includes(me) && !this.store(doneKey)) {
+        this.store(doneKey, "1");
+        const share = (g.res.shares || {})[me] || 0, stake = this.paid;
+        window.setTimeout(() => State.recordRound(stake, share), 1500);
+        if (share > 0) { Effects.celebrate(`\u2660 ${g.res.best} \u2014 you win ${share}!`); this.sparkle(); Notify.success(`You won ${share} chips.`); }
+      }
+    },
+    sparkle() {
+      for (let i = 0; i < 36; i += 1) {
+        const s = document.createElement("span"); s.className = "spark"; s.style.left = (30 + Math.random() * 40) + "vw"; s.style.top = (30 + Math.random() * 30) + "vh";
+        s.style.setProperty("--sx", ((Math.random() - 0.5) * 320) + "px"); s.style.setProperty("--sy", ((Math.random() - 0.5) * 320) + "px");
+        s.addEventListener("animationend", () => s.remove()); document.body.appendChild(s);
+      }
+    },
+    card(c, hidden) {
+      const d = document.createElement("div"); d.className = "bw-card";
+      if (hidden) { d.classList.add("back"); return d; }
+      const s = (c / 13) | 0, rk = this.R[c % 13], b = document.createElement("b"), i = document.createElement("i");
+      b.textContent = rk === "T" ? "10" : rk; i.textContent = this.S[s]; d.append(b, i);
+      if (s === 1 || s === 2) d.classList.add("red");
+      if (c === this.WILD) d.classList.add("wild");
+      return d;
+    },
+    toggle(ci) {
+      if (this.sel.has(ci)) this.sel.delete(ci);
+      else if (this.sel.size < this.MAX_DRAW) this.sel.add(ci);
+      else Notify.warning(`You can swap up to ${this.MAX_DRAW} cards.`);
+      this.render();
+    },
+    render() { this.renderSeats(); this.renderControls(); },
+    renderSeats() {
+      const g = this.g, me = State.username, el = this.$("bw-seats"), active = this.isActive(g), inHand = active || (g.phase === "done" && !!g.res);
+      const names = inHand ? g.order : Object.keys(g.seats || {}), canPick = g.phase === "draw" && g.order[g.turn] === me, fresh = this.dealt !== g.hid;
+      if (!canPick) this.sel.clear();
+      el.textContent = "";
+      names.forEach((u, i) => {
+        const folded = inHand && !!(g.folded || {})[u], won = g.phase === "done" && g.res.winners.includes(u), d = document.createElement("div");
+        d.className = "bw-seat" + (u === me ? " me" : "") + (active && g.order[g.turn] === u ? " turn" : "") + (folded ? " out" : "") + (won ? " win" : "");
+        const n = document.createElement("div"); n.className = "bw-name"; n.append(u + (u === me ? " (you)" : ""));
+        const tag = (t) => { const s = document.createElement("span"); s.className = "bw-tag"; s.textContent = t; n.appendChild(s); };
+        if (inHand) {
+          tag(`in ${(g.in || {})[u] || 0}`); if (i === 0) tag("SB"); if (i === 1) tag("BB"); if (folded) tag("folded");
+          const dr = (g.drawn || {})[u]; if (dr !== undefined && g.phase !== "bet1") tag(dr ? `swapped ${dr}` : "stood pat");
+          const cat = ((g.res || {}).cats || {})[u]; if (g.phase === "done" && cat) tag(cat);
+        }
+        d.appendChild(n);
+        if (inHand) {
+          const h = document.createElement("div"), face = u === me || (g.phase === "done" && g.res.show && !folded); h.className = "bw-hand";
+          (g.hands[u] || []).forEach((c, ci) => {
+            const cd = this.card(c, !face);
+            if (fresh) { cd.classList.add("deal"); cd.style.animationDelay = (ci * 60) + "ms"; }
+            if (u === me && canPick) { cd.classList.add("pick"); if (this.sel.has(ci)) cd.classList.add("sel"); cd.addEventListener("click", () => this.toggle(ci)); }
+            h.appendChild(cd);
+          });
+          d.appendChild(h);
+        }
+        el.appendChild(d);
+      });
+      this.dealt = g.hid;
+    },
+    renderControls() {
+      const g = this.g, me = State.username, seats = g.seats || {}, seated = !!seats[me], nSeats = Object.keys(seats).length, active = this.isActive(g);
+      const inHand = active || (g.phase === "done" && !!g.res), who = active ? g.order[g.turn] : null, myTurn = who === me, betting = this.isBet(g);
+      const toCall = active ? Math.max(0, (g.cur || 0) - ((g.in || {})[me] || 0)) : 0, iFolded = active && !!(g.folded || {})[me];
+      const pot = inHand ? g.order.reduce((a, u) => a + ((g.in || {})[u] || 0), 0) : 0;
+      this.$("bw-pot").textContent = "Pot " + pot.toLocaleString("en-US");
+      this.$("bw-phase").textContent = this.PHASES[g.phase] || "Waiting for players";
+      let msg;
+      if (g.phase === "done" && g.res) msg = `${g.res.winners.join(", ")} won ${g.res.pot} with ${g.res.best}. Deal again when ready.`;
+      else if (iFolded) msg = `You folded. Waiting for ${who}\u2026`;
+      else if (betting) msg = myTurn ? `Your turn \u2014 ${toCall ? "call " + toCall : "check"}, raise or fold.` : `Waiting for ${who}\u2026`;
+      else if (g.phase === "draw") msg = myTurn ? `Tap up to ${this.MAX_DRAW} cards to swap, then confirm \u2014 or stand pat.` : `${who} is choosing cards\u2026`;
+      else msg = nSeats >= 2 ? `${nSeats} seated. Press Deal hand to start.` : `${nSeats} seated. Two players needed to deal.`;
+      this.$("bw-status").textContent = msg;
+      const join = this.$("bw-join"); join.hidden = seated; join.disabled = active || nSeats >= this.MAX_SEATS;
+      this.$("bw-leave").hidden = !seated;
+      const deal = this.$("bw-deal"); deal.disabled = active || nSeats < 2 || !seated; deal.textContent = g.phase === "done" ? "Deal next hand" : "Deal hand";
+      const canBet = betting && myTurn, capped = (g.raises || 0) >= this.MAX_RAISES;
+      this.$("bw-fold").disabled = !canBet;
+      this.$("bw-call").disabled = !canBet || toCall > State.balance; this.$("bw-call").textContent = toCall ? `Call ${toCall}` : "Check";
+      this.$("bw-raise").disabled = !canBet || capped || toCall + this.RAISE > State.balance; this.$("bw-raise").textContent = capped ? "Raise cap" : `Raise ${this.RAISE}`;
+      const dr = this.$("bw-draw"); dr.hidden = g.phase !== "draw" || !seated; dr.disabled = !(g.phase === "draw" && myTurn);
+      dr.textContent = this.sel.size ? `Exchange ${this.sel.size} card${this.sel.size > 1 ? "s" : ""}` : "Stand pat";
+      this.$("bw-kick").hidden = !(active && seated && !myTurn && Date.now() - (g.turnAt || 0) > this.IDLE_MS);
+    }
+  };
+  BW.init();
+  { const s0 = Social.start, s1 = Social.stop; Social.start = function () { s0.call(Social); BW.start(); }; Social.stop = function () { s1.call(Social); BW.stop(); }; }
+
   function bindGameNavigation() {
     DOM.gameSelector.querySelectorAll(".btn-game-select").forEach((btn) => {
       btn.addEventListener("click", () => Router.selectGame(btn.dataset.game));
@@ -5215,6 +5867,7 @@ button, input { touch-action: manipulation; }
     Slots.init();
     HiLo.init();
     Extra.init();
+    Social.init();
 
     Router.showSetup();
     HUD.update();
