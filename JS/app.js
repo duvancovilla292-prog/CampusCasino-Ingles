@@ -3003,13 +3003,33 @@
         open: false, unread: 0, last: 0, chatQ: null, reactQ: null, chatRef: null, reactRef: null,
         $(id) { return document.getElementById(id); },
         init() {
-            const panel = this.$("chat-panel");
-            const toggle = (v) => { this.open = v; panel.hidden = !v; if (v) { this.unread = 0; this.badge(); this.$("chat-input").focus(); this.scroll(); } };
+            const toggle = (v, refocus) => this.setOpen(v, refocus);
+            const header = this.$("top-panel");
+            this.syncLayout();
+            if (window.ResizeObserver && header) new ResizeObserver(() => this.syncLayout()).observe(header);
+            window.addEventListener("resize", () => this.syncLayout());
+            window.addEventListener("orientationchange", () => this.syncLayout());
+            document.addEventListener("keydown", (e) => { if (e.key === "Escape" && this.open) toggle(false, true); });
             this.$("btn-chat-toggle").addEventListener("click", () => toggle(!this.open));
-            this.$("btn-chat-close").addEventListener("click", () => toggle(false));
+            this.$("btn-chat-close").addEventListener("click", () => toggle(false, true));
             this.$("btn-chat-send").addEventListener("click", () => this.send());
             this.$("chat-input").addEventListener("keydown", (e) => { if (e.key === "Enter") this.send(); });
             this.$("react-bar").querySelectorAll("[data-react]").forEach((b) => b.addEventListener("click", () => this.react(b.dataset.react)));
+        },
+        /* Publish the sticky header's height so the docked panel always starts right below it. */
+        syncLayout() {
+            const header = this.$("top-panel");
+            const h = header && header.offsetParent !== null ? Math.ceil(header.getBoundingClientRect().height) : 0;
+            document.documentElement.style.setProperty("--topbar-h", h + "px");
+        },
+        setOpen(v, refocus) {
+            this.open = !!v;
+            this.$("chat-panel").hidden = !this.open;
+            const view = this.$("view-lobby"); if (view) view.classList.toggle("chat-open", this.open);
+            this.$("btn-chat-toggle").setAttribute("aria-expanded", String(this.open));
+            this.syncLayout();
+            if (this.open) { this.unread = 0; this.badge(); this.$("chat-input").focus({ preventScroll: true }); this.scroll(); }
+            else if (refocus) this.$("btn-chat-toggle").focus({ preventScroll: true });
         },
         badge() { const u = this.$("chat-unread"); u.hidden = !this.unread; u.textContent = String(this.unread); },
         scroll() { const l = this.$("chat-log"); l.scrollTop = l.scrollHeight; },
@@ -3029,6 +3049,7 @@
         stop() {
             if (this.chatQ) this.chatQ.off(); if (this.reactQ) this.reactQ.off();
             this.chatQ = this.reactQ = this.chatRef = this.reactRef = null;
+            if (this.open) this.setOpen(false);
         },
         addMsg(m) {
             if (!m || !m.t) return;

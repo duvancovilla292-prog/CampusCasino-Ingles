@@ -2661,22 +2661,62 @@ textarea,
     padding: 1px 6px;
 }
 
+/* Chat is a docked drawer, not an overlay: it starts BELOW the sticky header (--topbar-h is kept in sync by JS),
+     sits under the header's z-index (100), and the lobby reserves space for it so no game tab or control is covered. */
+:root {
+    --chat-w: 320px;
+    --topbar-h: 0px;
+    --z-chat: 60;
+}
+
 .chat-panel {
     position: fixed;
     right: 0;
-    top: 0;
+    top: var(--topbar-h);
     bottom: 0;
-    width: 320px;
-    z-index: 75;
+    width: var(--chat-w);
+    z-index: var(--z-chat);
+    box-sizing: border-box;
     display: flex;
     flex-direction: column;
-    background: var(--color-surface);
+    min-height: 0;
+    overflow: hidden;
+    overscroll-behavior: contain;
+    background: var(--color-surface-alt);
     border-left: 2px solid var(--color-gold-dark);
-    box-shadow: var(--shadow-strong);
+    box-shadow: -10px 0 28px rgba(0, 0, 0, .45);
+    padding-bottom: env(safe-area-inset-bottom);
 }
 
 .chat-panel[hidden] {
     display: none;
+}
+
+.chat-log {
+    min-height: 0;
+    overscroll-behavior: contain;
+}
+
+.top-panel {
+    background: rgba(16, 18, 22, .94);
+    backdrop-filter: blur(10px);
+}
+
+/* opaque enough that nothing shows through the nav */
+.view-lobby.chat-open .chat-toggle {
+    display: none;
+}
+
+/* the panel has its own close button; avoid covering Send */
+@media (min-width: 801px) {
+    .view-lobby.chat-open {
+        padding-right: var(--chat-w);
+    }
+
+    /* header stays full-width so the game tabs never shrink or wrap because of the chat */
+    .view-lobby.chat-open>.top-panel {
+        margin-right: calc(var(--chat-w) * -1);
+    }
 }
 
 .chat-head {
@@ -2745,17 +2785,30 @@ textarea,
 }
 
 @media (max-width: 640px) {
-    .chat-panel {
-        top: auto;
-        width: 100%;
-        height: 65vh;
-        border-left: 0;
-        border-top: 2px solid var(--color-gold-dark);
-    }
-
     .jackpot-bar {
         margin: .5rem;
         flex-wrap: wrap;
+    }
+}
+
+/* Tablet/phone: bottom sheet that can never grow into the header, and content gets matching bottom room */
+@media (max-width: 800px) {
+    .chat-panel {
+        top: auto;
+        left: 0;
+        right: 0;
+        width: 100%;
+        height: 60vh;
+        height: min(60dvh, calc(100dvh - var(--topbar-h) - .75rem));
+        border-left: 0;
+        border-top: 2px solid var(--color-gold-dark);
+        border-radius: 14px 14px 0 0;
+        box-shadow: 0 -10px 28px rgba(0, 0, 0, .45);
+    }
+
+    .view-lobby.chat-open {
+        padding-bottom: 60vh;
+        padding-bottom: min(60dvh, calc(100dvh - var(--topbar-h) - .75rem));
     }
 }
 

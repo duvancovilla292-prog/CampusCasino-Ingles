@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,9 +10,9 @@
   <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-database-compat.js"></script>
   <link rel="stylesheet" href="CSS/style.css">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3CradialGradient id='chessGrad' cx='40%25' cy='35%25' r='65%25'%3E%3Cstop offset='0%25' stop-color='%23f4c430'/%3E%3Cstop offset='50%25' stop-color='%23e9c46a'/%3E%3Cstop offset='100%25' stop-color='%23b8860b'/%3E%3C/radialGradient%3E%3C/defs%3E%3Cpath d='M50 15 C54 15 57 18 57 22 C57 25 55 28 52 30 C59 34 64 42 63 52 C68 53 72 56 73 60 C75 64 72 68 67 68 L33 68 C28 68 25 64 27 60 C28 56 32 53 37 52 C36 42 41 34 48 30 C45 28 43 25 43 22 C43 18 46 15 50 15 Z' fill='url(%23chessGrad)' stroke='%23fff' stroke-width='2'/%3E%3Cpath d='M25 76 L75 76 C78 76 80 78 80 81 L80 85 C80 88 78 90 75 90 L25 90 C22 90 20 88 20 85 L20 81 C20 78 22 76 25 76 Z' fill='url(%23chessGrad)' stroke='%23fff' stroke-width='2'/%3E%3C/svg%3E">
 
 </head>
-
 <body>
 
   <!-- Floating notifications / system log container -->
@@ -35,8 +34,7 @@
           <span class="brand-icon" aria-hidden="true">&spades;</span>
           <h1 id="setup-heading">Casino Campus</h1>
         </div>
-        <p class="auth-subtitle">Educational simulator with virtual chips &mdash; real-time multiplayer, zero real risk.
-        </p>
+        <p class="auth-subtitle">Educational simulator with virtual chips &mdash; real-time multiplayer, zero real risk.</p>
       </header>
 
       <div class="auth-body" style="grid-template-columns: 1fr;">
@@ -61,8 +59,7 @@
               <input type="text" id="host-share-link" class="input-field" readonly aria-label="Share link">
               <button type="button" id="btn-copy-link" class="btn btn-secondary">Copy Link</button>
             </div>
-            <button type="button" id="btn-host-continue" class="btn btn-primary btn-block" style="margin-top:0.75rem;"
-              hidden>Continue to Lobby &rarr;</button>
+            <button type="button" id="btn-host-continue" class="btn btn-primary btn-block" style="margin-top:0.75rem;" hidden>Continue to Lobby &rarr;</button>
           </div>
 
           <div class="setup-divider" role="separator"><span>or join a room</span></div>
@@ -70,8 +67,7 @@
           <div id="panel-join">
             <div class="form-group">
               <label for="input-room-code">Room code</label>
-              <input type="text" id="input-room-code" class="input-field room-code-input" placeholder="e.g. AB12CD"
-                maxlength="8" autocomplete="off" autocapitalize="characters" spellcheck="false">
+              <input type="text" id="input-room-code" class="input-field room-code-input" placeholder="e.g. AB12CD" maxlength="8" autocomplete="off" autocapitalize="characters" spellcheck="false">
             </div>
             <span id="join-error" class="form-error" role="alert"></span>
             <button type="button" id="btn-join-room" class="btn btn-secondary btn-block">Join Room</button>
@@ -85,8 +81,7 @@
       </div>
 
       <footer class="auth-footer">
-        <span>Devices sync in real time through Firebase &middot; no backend install &middot; works on any static host
-          (e.g. GitHub Pages)</span>
+        <span>Devices sync in real time through Firebase &middot; no backend install &middot; works on any static host (e.g. GitHub Pages)</span>
       </footer>
     </div>
   </section>
@@ -116,12 +111,14 @@
             <span id="players-count" class="players-count-badge">0</span>
           </div>
 
-          <input type="text" id="input-player-search" class="input-field input-search"
+          <input
+            type="text"
+            id="input-player-search"
+            class="input-field input-search"
             placeholder="Search player by name...">
 
           <div id="players-grid" class="players-grid" role="list"></div>
-          <p id="players-empty" class="players-empty">No players have joined this room yet. Create the first profile on
-            the right &rarr;</p>
+          <p id="players-empty" class="players-empty">No players have joined this room yet. Create the first profile on the right &rarr;</p>
         </div>
 
         <div class="auth-panel new-player-panel">
@@ -132,10 +129,18 @@
           <form id="login-form" class="login-form" novalidate>
             <div class="form-group">
               <label for="input-username">Username</label>
-              <input type="text" id="input-username" name="username" class="input-field" placeholder="e.g. student01"
-                pattern="[A-Za-z0-9_-]{3,16}" minlength="3" maxlength="16" required aria-describedby="username-help">
-              <small id="username-help" class="form-help">3-16 characters: letters, numbers, hyphens or
-                underscores</small>
+              <input
+                type="text"
+                id="input-username"
+                name="username"
+                class="input-field"
+                placeholder="e.g. student01"
+                pattern="[A-Za-z0-9_-]{3,16}"
+                minlength="3"
+                maxlength="16"
+                required
+                aria-describedby="username-help">
+              <small id="username-help" class="form-help">3-16 characters: letters, numbers, hyphens or underscores</small>
             </div>
 
             <div class="form-group">
@@ -150,24 +155,20 @@
 
             <span id="login-error" class="form-error" role="alert" aria-live="assertive"></span>
 
-            <button type="submit" id="btn-login-submit" class="btn btn-primary btn-block">Create Player &amp;
-              Join</button>
+            <button type="submit" id="btn-login-submit" class="btn btn-primary btn-block">Create Player &amp; Join</button>
           </form>
 
           <div class="auth-divider"><span>or</span></div>
 
-          <button type="button" id="btn-open-leaderboard-auth" class="btn btn-secondary btn-block">&#127942; View
-            Leaderboard</button>
-          <button type="button" id="btn-open-admin" class="btn btn-ghost btn-block" hidden>&#9881; Administrator
-            Panel</button>
+          <button type="button" id="btn-open-leaderboard-auth" class="btn btn-secondary btn-block">&#127942; View Leaderboard</button>
+          <button type="button" id="btn-open-admin" class="btn btn-ghost btn-block" hidden>&#9881; Administrator Panel</button>
           <button type="button" id="btn-leave-room" class="btn btn-ghost btn-block">&larr; Leave Room</button>
         </div>
 
       </div>
 
       <footer class="auth-footer">
-        <span>Synced live across every device connected to room <strong
-            id="auth-room-code-footer">------</strong></span>
+        <span>Synced live across every device connected to room <strong id="auth-room-code-footer">------</strong></span>
       </footer>
     </div>
   </section>
@@ -201,33 +202,21 @@
       </div>
 
       <nav id="game-selector" class="game-selector" aria-label="Game selection">
-        <button type="button" class="btn btn-game-select" id="nav-blackjack" data-game="blackjack"
-          aria-pressed="false">&#127137; Blackjack</button>
-        <button type="button" class="btn btn-game-select" id="nav-roulette" data-game="roulette"
-          aria-pressed="false">&#127923; Roulette</button>
-        <button type="button" class="btn btn-game-select" id="nav-wheel" data-game="wheel"
-          aria-pressed="false">&#127905; Player Wheel</button>
-        <button type="button" class="btn btn-game-select" id="nav-draw" data-game="draw" aria-pressed="false">&#127873;
-          Lucky Draw</button>
-        <button type="button" class="btn btn-game-select" id="nav-slots" data-game="slots"
-          aria-pressed="false">&#127920; Slot Machine</button>
-        <button type="button" class="btn btn-game-select" id="nav-hilo" data-game="hilo" aria-pressed="false">&#128256;
-          Hi-Lo</button>
-        <button type="button" class="btn btn-game-select" id="nav-craps" data-game="craps"
-          aria-pressed="false">&#127922; Craps</button>
-        <button type="button" class="btn btn-game-select" id="nav-crash" data-game="crash"
-          aria-pressed="false">&#128640; Crash</button>
-        <button type="button" class="btn btn-game-select" id="nav-pokerdice" data-game="pokerdice"
-          aria-pressed="false">&#127183; Poker Dice</button>
-        <button type="button" class="btn btn-game-select" id="nav-moneywheel" data-game="moneywheel"
-          aria-pressed="false">&#128176; Money Wheel</button>
-        <button type="button" class="btn btn-game-select" id="nav-blackwidow" data-game="blackwidow"
-          aria-pressed="false">&#128375; Black Widow Poker</button>
+        <button type="button" class="btn btn-game-select" id="nav-blackjack" data-game="blackjack" aria-pressed="false">&#127137; Blackjack</button>
+        <button type="button" class="btn btn-game-select" id="nav-roulette" data-game="roulette" aria-pressed="false">&#127923; Roulette</button>
+        <button type="button" class="btn btn-game-select" id="nav-wheel" data-game="wheel" aria-pressed="false">&#127905; Player Wheel</button>
+        <button type="button" class="btn btn-game-select" id="nav-draw" data-game="draw" aria-pressed="false">&#127873; Lucky Draw</button>
+        <button type="button" class="btn btn-game-select" id="nav-slots" data-game="slots" aria-pressed="false">&#127920; Slot Machine</button>
+        <button type="button" class="btn btn-game-select" id="nav-hilo" data-game="hilo" aria-pressed="false">&#128256; Hi-Lo</button>
+        <button type="button" class="btn btn-game-select" id="nav-craps" data-game="craps" aria-pressed="false">&#127922; Craps</button>
+        <button type="button" class="btn btn-game-select" id="nav-crash" data-game="crash" aria-pressed="false">&#128640; Crash</button>
+        <button type="button" class="btn btn-game-select" id="nav-pokerdice" data-game="pokerdice" aria-pressed="false">&#127183; Poker Dice</button>
+        <button type="button" class="btn btn-game-select" id="nav-moneywheel" data-game="moneywheel" aria-pressed="false">&#128176; Money Wheel</button>
+        <button type="button" class="btn btn-game-select" id="nav-blackwidow" data-game="blackwidow" aria-pressed="false">&#128375; Black Widow Poker</button>
       </nav>
 
       <div class="top-panel-actions">
-        <button type="button" id="btn-sound-toggle" class="btn btn-icon" aria-pressed="true"
-          aria-label="Mute sound">&#128266;</button>
+        <button type="button" id="btn-sound-toggle" class="btn btn-icon" aria-pressed="true" aria-label="Mute sound">&#128266;</button>
         <button type="button" id="btn-open-leaderboard" class="btn btn-secondary">&#127942;</button>
         <button type="button" id="btn-open-admin-lobby" class="btn btn-secondary" hidden>&#9881;</button>
         <button type="button" id="btn-open-shop" class="btn btn-secondary" title="Profile Shop">&#128717; Shop</button>
@@ -236,8 +225,7 @@
     </header>
 
     <!-- Community Jackpot Vault -->
-    <div id="jackpot-bar" class="jackpot-bar"
-      title="2% of every wager feeds the shared vault. When it fills, all active players share it!">
+    <div id="jackpot-bar" class="jackpot-bar" title="2% of every wager feeds the shared vault. When it fills, all active players share it!">
       <span class="jp-title">&#128142; Community Vault</span>
       <div class="jp-track"><i id="jp-fill"></i></div>
       <span class="jp-count"><b id="jp-amount">0</b> / <span id="jp-target">500</span></span>
@@ -246,11 +234,9 @@
     <div id="react-layer" class="react-layer" aria-hidden="true"></div>
 
     <!-- Room chat + floating reactions -->
-    <button type="button" id="btn-chat-toggle" class="chat-toggle" aria-label="Toggle room chat">&#128172;<span
-        id="chat-unread" class="chat-unread" hidden>0</span></button>
+    <button type="button" id="btn-chat-toggle" class="chat-toggle" aria-label="Toggle room chat" aria-controls="chat-panel" aria-expanded="false">&#128172;<span id="chat-unread" class="chat-unread" hidden>0</span></button>
     <aside id="chat-panel" class="chat-panel" hidden aria-label="Room chat">
-      <div class="chat-head"><b>Room Chat</b><button type="button" id="btn-chat-close" class="modal-close"
-          aria-label="Close chat">&#10005;</button></div>
+      <div class="chat-head"><b>Room Chat</b><button type="button" id="btn-chat-close" class="modal-close" aria-label="Close chat">&#10005;</button></div>
       <div id="chat-log" class="chat-log" aria-live="polite"></div>
       <div id="react-bar" class="react-bar">
         <button type="button" class="btn btn-small" data-react="&#128079;">&#128079;</button>
@@ -268,8 +254,7 @@
     <!-- ============================= -->
     <!-- GAME SECTION: BLACKJACK       -->
     <!-- ============================= -->
-    <section id="game-blackjack" class="game-section" data-game-section="blackjack" hidden
-      aria-labelledby="blackjack-heading">
+    <section id="game-blackjack" class="game-section" data-game-section="blackjack" hidden aria-labelledby="blackjack-heading">
       <h2 id="blackjack-heading">Blackjack</h2>
 
       <div class="blackjack-table">
@@ -289,8 +274,7 @@
       <div class="blackjack-controls">
         <div class="form-group bet-group">
           <label for="input-blackjack-bet">Bet</label>
-          <input type="number" id="input-blackjack-bet" name="blackjackBet" class="input-field input-bet" min="1"
-            step="1" placeholder="Amount">
+          <input type="number" id="input-blackjack-bet" name="blackjackBet" class="input-field input-bet" min="1" step="1" placeholder="Amount">
         </div>
 
         <div class="action-buttons">
@@ -306,8 +290,7 @@
     <!-- ============================= -->
     <!-- GAME SECTION: ROULETTE        -->
     <!-- ============================= -->
-    <section id="game-roulette" class="game-section" data-game-section="roulette" hidden
-      aria-labelledby="roulette-heading">
+    <section id="game-roulette" class="game-section" data-game-section="roulette" hidden aria-labelledby="roulette-heading">
       <h2 id="roulette-heading">Roulette</h2>
 
       <div class="roulette-layout">
@@ -320,12 +303,9 @@
           <div id="roulette-board" class="roulette-board" role="group" aria-label="Betting board">
             <div class="roulette-numbers" id="roulette-numbers"></div>
             <div class="roulette-colors">
-              <button type="button" class="btn roulette-color-bet is-red" id="bet-color-red"
-                data-color="red">Red</button>
-              <button type="button" class="btn roulette-color-bet is-black" id="bet-color-black"
-                data-color="black">Black</button>
-              <button type="button" class="btn roulette-color-bet is-green" id="bet-color-green"
-                data-color="green">Green (0)</button>
+              <button type="button" class="btn roulette-color-bet is-red" id="bet-color-red" data-color="red">Red</button>
+              <button type="button" class="btn roulette-color-bet is-black" id="bet-color-black" data-color="black">Black</button>
+              <button type="button" class="btn roulette-color-bet is-green" id="bet-color-green" data-color="green">Green (0)</button>
             </div>
             <div class="roulette-parity">
               <button type="button" class="btn roulette-parity-bet" id="bet-even" data-parity="even">Even</button>
@@ -345,8 +325,7 @@
 
         <div class="form-group bet-group">
           <label for="input-roulette-bet">Current bet</label>
-          <input type="text" id="input-roulette-bet" name="rouletteBet" class="input-field input-bet"
-            placeholder="Selection: none" readonly>
+          <input type="text" id="input-roulette-bet" name="rouletteBet" class="input-field input-bet" placeholder="Selection: none" readonly>
         </div>
 
         <button type="button" id="btn-roulette-spin" class="btn btn-primary">Spin</button>
@@ -364,8 +343,7 @@
     <!-- ============================= -->
     <section id="game-wheel" class="game-section" data-game-section="wheel" hidden aria-labelledby="wheel-heading">
       <h2 id="wheel-heading">Player Wheel</h2>
-      <p class="modal-subtitle" style="text-align:center;">Spin to land on a room member, then choose whether to keep
-        them in the pool.</p>
+      <p class="modal-subtitle" style="text-align:center;">Spin to land on a room member, then choose whether to keep them in the pool.</p>
 
       <div class="wheel-layout">
         <div id="wheel-container" class="wheel-container" aria-label="Player wheel">
@@ -376,8 +354,7 @@
           <div id="wheel-pointer" class="wheel-pointer" aria-hidden="true"></div>
         </div>
 
-        <p id="wheel-empty-state" class="wheel-empty-state" hidden>No players are currently in the pool. Add players to
-          the room, or restart the wheel below.</p>
+        <p id="wheel-empty-state" class="wheel-empty-state" hidden>No players are currently in the pool. Add players to the room, or restart the wheel below.</p>
 
         <div class="wheel-controls">
           <button type="button" id="btn-wheel-spin" class="btn btn-primary">&#127920; Spin the Wheel</button>
@@ -404,36 +381,23 @@
       <div class="draw-controls">
         <div class="draw-row" role="group" aria-label="Number of winners">
           <span class="draw-row-label">Winners</span>
-          <button type="button" class="btn btn-game-select draw-count-btn" data-count="1"
-            aria-pressed="false">1</button>
-          <button type="button" class="btn btn-game-select draw-count-btn" data-count="2"
-            aria-pressed="false">2</button>
+          <button type="button" class="btn btn-game-select draw-count-btn" data-count="1" aria-pressed="false">1</button>
+          <button type="button" class="btn btn-game-select draw-count-btn" data-count="2" aria-pressed="false">2</button>
           <button type="button" class="btn btn-game-select draw-count-btn" data-count="3" aria-pressed="true">3</button>
-          <button type="button" class="btn btn-game-select draw-count-btn" data-count="4"
-            aria-pressed="false">4</button>
-          <button type="button" class="btn btn-game-select draw-count-btn" data-count="5"
-            aria-pressed="false">5</button>
-          <button type="button" class="btn btn-game-select draw-count-btn" data-count="6"
-            aria-pressed="false">6</button>
+          <button type="button" class="btn btn-game-select draw-count-btn" data-count="4" aria-pressed="false">4</button>
+          <button type="button" class="btn btn-game-select draw-count-btn" data-count="5" aria-pressed="false">5</button>
+          <button type="button" class="btn btn-game-select draw-count-btn" data-count="6" aria-pressed="false">6</button>
         </div>
         <div class="draw-row" role="group" aria-label="Draw mode">
           <span class="draw-row-label">Mode</span>
-          <button type="button" class="btn btn-game-select draw-mode-btn" data-draw-mode="slots"
-            aria-pressed="true">&#127920; Slot Reels</button>
-          <button type="button" class="btn btn-game-select draw-mode-btn" data-draw-mode="bingo"
-            aria-pressed="false">&#127921; Bingo Blower</button>
-          <button type="button" class="btn btn-game-select draw-mode-btn" data-draw-mode="cards"
-            aria-pressed="false">&#127183; Card Dealer</button>
-          <button type="button" class="btn btn-game-select draw-mode-btn" data-draw-mode="laser"
-            aria-pressed="false">&#128302; Chip Laser</button>
-          <button type="button" class="btn btn-game-select draw-mode-btn" data-draw-mode="bracket"
-            aria-pressed="false">&#127942; 1v1 Bracket</button>
-          <button type="button" class="btn btn-game-select draw-mode-btn" data-draw-mode="plinko"
-            aria-pressed="false">&#128309; Plinko</button>
-          <button type="button" class="btn btn-game-select draw-mode-btn" data-draw-mode="chests"
-            aria-pressed="false">&#127873; Mystery Chests</button>
-          <button type="button" class="btn btn-game-select draw-mode-btn" data-draw-mode="roles"
-            aria-pressed="false">&#129513; Roles Matrix</button>
+          <button type="button" class="btn btn-game-select draw-mode-btn" data-draw-mode="slots" aria-pressed="true">&#127920; Slot Reels</button>
+          <button type="button" class="btn btn-game-select draw-mode-btn" data-draw-mode="bingo" aria-pressed="false">&#127921; Bingo Blower</button>
+          <button type="button" class="btn btn-game-select draw-mode-btn" data-draw-mode="cards" aria-pressed="false">&#127183; Card Dealer</button>
+          <button type="button" class="btn btn-game-select draw-mode-btn" data-draw-mode="laser" aria-pressed="false">&#128302; Chip Laser</button>
+          <button type="button" class="btn btn-game-select draw-mode-btn" data-draw-mode="bracket" aria-pressed="false">&#127942; 1v1 Bracket</button>
+          <button type="button" class="btn btn-game-select draw-mode-btn" data-draw-mode="plinko" aria-pressed="false">&#128309; Plinko</button>
+          <button type="button" class="btn btn-game-select draw-mode-btn" data-draw-mode="chests" aria-pressed="false">&#127873; Mystery Chests</button>
+          <button type="button" class="btn btn-game-select draw-mode-btn" data-draw-mode="roles" aria-pressed="false">&#129513; Roles Matrix</button>
         </div>
         <div class="draw-row">
           <button type="button" id="btn-draw-start" class="btn btn-primary">&#127922; Draw Winners</button>
@@ -446,13 +410,8 @@
       <div id="draw-podium" class="draw-podium" role="list" aria-label="Winners"></div>
       <p id="draw-result" class="game-result" role="status" aria-live="polite"></p>
       <div class="draw-history" aria-label="Recent winners">
-        <div class="draw-history-head">
-          <h3>&#127942; Recent Winners</h3><button type="button" id="btn-history-clear"
-            class="btn btn-secondary">Clear</button>
-        </div>
-        <ol id="draw-history-list" class="draw-history-list">
-          <li class="draw-history-empty">No draws yet this session.</li>
-        </ol>
+        <div class="draw-history-head"><h3>&#127942; Recent Winners</h3><button type="button" id="btn-history-clear" class="btn btn-secondary">Clear</button></div>
+        <ol id="draw-history-list" class="draw-history-list"><li class="draw-history-empty">No draws yet this session.</li></ol>
       </div>
     </section>
 
@@ -481,8 +440,7 @@
       <div class="slots-controls">
         <div class="form-group bet-group">
           <label for="input-slots-bet">Bet</label>
-          <input type="number" id="input-slots-bet" name="slotsBet" class="input-field input-bet" min="1" step="1"
-            placeholder="Amount">
+          <input type="number" id="input-slots-bet" name="slotsBet" class="input-field input-bet" min="1" step="1" placeholder="Amount">
         </div>
 
         <button type="button" id="btn-slots-spin" class="btn btn-primary">Spin</button>
@@ -505,16 +463,14 @@
 
         <div class="hilo-next-card-area">
           <h3>Next card</h3>
-          <div id="hilo-next-card" class="hilo-card hilo-card-hidden" aria-label="Next card, hidden until revealed">?
-          </div>
+          <div id="hilo-next-card" class="hilo-card hilo-card-hidden" aria-label="Next card, hidden until revealed">?</div>
         </div>
       </div>
 
       <div class="hilo-controls">
         <div class="form-group bet-group">
           <label for="input-hilo-bet">Bet</label>
-          <input type="number" id="input-hilo-bet" name="hiloBet" class="input-field input-bet" min="1" step="1"
-            placeholder="Amount">
+          <input type="number" id="input-hilo-bet" name="hiloBet" class="input-field input-bet" min="1" step="1" placeholder="Amount">
         </div>
 
         <div class="action-buttons">
@@ -530,11 +486,9 @@
     <section id="game-crash" class="game-section" data-game-section="crash" hidden></section>
     <section id="game-pokerdice" class="game-section" data-game-section="pokerdice" hidden></section>
     <section id="game-moneywheel" class="game-section" data-game-section="moneywheel" hidden></section>
-    <section id="game-blackwidow" class="game-section" data-game-section="blackwidow" hidden
-      aria-labelledby="bw-heading">
+    <section id="game-blackwidow" class="game-section" data-game-section="blackwidow" hidden aria-labelledby="bw-heading">
       <h2 id="bw-heading">Black Widow Poker</h2>
-      <p class="bw-info">5-card draw &middot; the Queen of Spades (&ldquo;Black Widow&rdquo;) is wild &middot; blinds 5
-        / 10 &middot; raises of 10 (max 3 per round) &middot; swap up to 3 cards</p>
+      <p class="bw-info">5-card draw &middot; the Queen of Spades (&ldquo;Black Widow&rdquo;) is wild &middot; blinds 5 / 10 &middot; raises of 10 (max 3 per round) &middot; swap up to 3 cards</p>
       <div class="bw-table">
         <div class="bw-phase" id="bw-phase">Waiting for players</div>
         <div class="bw-pot" id="bw-pot">Pot 0</div>
@@ -562,8 +516,7 @@
     <div class="modal" role="dialog" aria-labelledby="shop-title">
       <button type="button" class="modal-close" id="btn-shop-close" aria-label="Close">&#10005;</button>
       <h2 id="shop-title">&#128717; Profile Shop</h2>
-      <p class="modal-subtitle">Balance: <b id="shop-balance">0</b> chips &middot; unlock avatars, borders and chat
-        badges</p>
+      <p class="modal-subtitle">Balance: <b id="shop-balance">0</b> chips &middot; unlock avatars, borders and chat badges</p>
       <div id="shop-body" class="shop-body"></div>
     </div>
   </div>
@@ -590,8 +543,7 @@
         <input type="password" id="input-admin-code" class="input-field" placeholder="Access PIN" autocomplete="off">
         <span id="admin-lock-error" class="form-error" role="alert"></span>
         <button type="button" id="btn-admin-unlock" class="btn btn-primary btn-block">Unlock</button>
-        <small class="form-help">Default PIN: <code>admin123</code> (editable in CONFIG.ADMIN_CODE). Only this room's
-          Host device can open this panel.</small>
+        <small class="form-help">Default PIN: <code>admin123</code> (editable in CONFIG.ADMIN_CODE). Only this room's Host device can open this panel.</small>
       </div>
 
       <div id="admin-content" class="admin-content" hidden>
@@ -649,8 +601,7 @@
         <button type="button" id="btn-wheel-remove" class="btn btn-danger">Remove from Pool</button>
         <button type="button" id="btn-wheel-keep" class="btn btn-secondary">Keep In Pool</button>
       </div>
-      <small class="form-help" style="display:block; text-align:center; margin-top:0.75rem;">This only affects this
-        round of the wheel &mdash; the player stays in the room either way.</small>
+      <small class="form-help" style="display:block; text-align:center; margin-top:0.75rem;">This only affects this round of the wheel &mdash; the player stays in the room either way.</small>
     </div>
   </div>
 
@@ -662,14 +613,11 @@
       <h2 id="wheel-resume-title">&#127905; Welcome Back to the Wheel</h2>
       <p class="modal-subtitle" id="wheel-resume-subtitle">You have a wheel pool from earlier in this session.</p>
       <div class="modal-actions">
-        <button type="button" id="btn-wheel-resume-restart" class="btn btn-secondary">Restart Wheel (all room
-          players)</button>
+        <button type="button" id="btn-wheel-resume-restart" class="btn btn-secondary">Restart Wheel (all room players)</button>
         <button type="button" id="btn-wheel-resume-continue" class="btn btn-primary">Continue Previous Pool</button>
       </div>
     </div>
   </div>
-
   <script src="JS/app.js"></script>
 </body>
-
 </html>
