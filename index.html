@@ -2988,17 +2988,22 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;ba
     },
 
     /** Atomically creates a player if the username is free in this room. */
-    createPlayer(username, startingChips) {
+    createPlayer(username, startingChips, seed) {
       const now = Date.now();
+      const st = (seed && seed.stats) || {};
       return this.playersRef.child(username).transaction((current) => {
         if (current !== null) return; // abort — username already taken
         return {
           username,
           balance: startingChips,
-          createdAt: now,
-          updatedAt: now,
+          createdAt: (seed && Number(seed.createdAt)) || now,
+          updatedAt: (seed && Number(seed.updatedAt)) || now,
           deviceId: Storage.getDeviceId(),
-          stats: { gamesPlayed: 0, totalWagered: 0, netProfit: 0 }
+          stats: {
+            gamesPlayed: Number(st.gamesPlayed) || 0,
+            totalWagered: Number(st.totalWagered) || 0,
+            netProfit: Number(st.netProfit) || 0
+          }
         };
       });
     },
@@ -7528,19 +7533,57 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;ba
       };
     };
 
-    /* ---------- Default roster from data.json ---------- */
+    /* ---------- Embedded default roster (replaces external data.json) ---------- */
+    const DEFAULT_STUDENTS_ROSTER = {
+      "exportedAt": "2026-09-28T20:44:37.139Z",
+      "roomCode": "2B9MNL",
+      "players": {
+        "ANDRES FELIPE RUEDA": { "balance": 1000, "createdAt": 1790541275706, "stats": { "gamesPlayed": 9, "netProfit": 181, "totalWagered": 461 }, "updatedAt": 1790619429269, "username": "ANDRES FELIPE RUEDA" },
+        "Andrés Felipe JIménez Ramírez": { "balance": 1000, "createdAt": 1790541275706, "stats": { "gamesPlayed": 0, "netProfit": 0, "totalWagered": 0 }, "updatedAt": 1790541275706, "username": "Andrés Felipe JIménez Ramírez" },
+        "Brayan Rafael Medina Madiedo": { "balance": 1000, "createdAt": 1790541275706, "stats": { "gamesPlayed": 41, "netProfit": -845, "totalWagered": 1377 }, "updatedAt": 1790620556140, "username": "Brayan Rafael Medina Madiedo" },
+        "Brenda NIcol Carrillo Gonzalez": { "balance": 1000, "createdAt": 1790541275706, "stats": { "gamesPlayed": 0, "netProfit": 0, "totalWagered": 0 }, "updatedAt": 1790541275706, "username": "Brenda NIcol Carrillo Gonzalez" },
+        "CARLOS MARIO VELASQUEZ ANGULO": { "balance": 1000, "createdAt": 1790541275706, "stats": { "gamesPlayed": 0, "netProfit": 0, "totalWagered": 0 }, "updatedAt": 1790541275706, "username": "CARLOS MARIO VELASQUEZ ANGULO" },
+        "Crisbely Maria Graterol Goitia": { "balance": 1000, "createdAt": 1790541275706, "stats": { "gamesPlayed": 0, "netProfit": 0, "totalWagered": 0 }, "updatedAt": 1790541275706, "username": "Crisbely Maria Graterol Goitia" },
+        "Duvan Steven Covilla Rolón": { "balance": 1000, "createdAt": 1790541275706, "stats": { "gamesPlayed": 0, "netProfit": 0, "totalWagered": 0 }, "updatedAt": 1790541275706, "username": "Duvan Steven Covilla Rolón" },
+        "Exneider Alfonso Nava Archila": { "balance": 1000, "createdAt": 1790541275706, "stats": { "gamesPlayed": 0, "netProfit": 0, "totalWagered": 0 }, "updatedAt": 1790541275706, "username": "Exneider Alfonso Nava Archila" },
+        "JHORMAN FABIAN PEÑALOZA SIERRA": { "balance": 1000, "createdAt": 1790541275706, "stats": { "gamesPlayed": 0, "netProfit": 0, "totalWagered": 0 }, "updatedAt": 1790541275706, "username": "JHORMAN FABIAN PEÑALOZA SIERRA" },
+        "JOAN SEBASTIAN BLANCO RUIZ": { "balance": 1000, "createdAt": 1790541275706, "stats": { "gamesPlayed": 0, "netProfit": 0, "totalWagered": 0 }, "updatedAt": 1790541275706, "username": "JOAN SEBASTIAN BLANCO RUIZ" },
+        "Javier Alfonso Suarez Duarte": { "balance": 1000, "createdAt": 1790541275706, "stats": { "gamesPlayed": 0, "netProfit": 0, "totalWagered": 0 }, "updatedAt": 1790541275706, "username": "Javier Alfonso Suarez Duarte" },
+        "Julio Ernesto Castaño Palacios": { "balance": 1000, "createdAt": 1790541275706, "stats": { "gamesPlayed": 0, "netProfit": 0, "totalWagered": 0 }, "updatedAt": 1790541275706, "username": "Julio Ernesto Castaño Palacios" },
+        "Kleiderson Jesús Salcedo RIco": { "balance": 1000, "createdAt": 1790541275706, "stats": { "gamesPlayed": 0, "netProfit": 0, "totalWagered": 0 }, "updatedAt": 1790541275706, "username": "Kleiderson Jesús Salcedo RIco" },
+        "Marilud Uribe Prada": { "balance": 1000, "createdAt": 1790541275706, "stats": { "gamesPlayed": 0, "netProfit": 0, "totalWagered": 0 }, "updatedAt": 1790541275706, "username": "Marilud Uribe Prada" },
+        "RAUL FELIPE CALVO VIANCHA": { "balance": 1000, "createdAt": 1790541275706, "stats": { "gamesPlayed": 0, "netProfit": 0, "totalWagered": 0 }, "updatedAt": 1790541275706, "username": "RAUL FELIPE CALVO VIANCHA" },
+        "Ricardo Jose Vargas Gamboa": { "balance": 1000, "createdAt": 1790541275706, "stats": { "gamesPlayed": 0, "netProfit": 0, "totalWagered": 0 }, "updatedAt": 1790541275706, "username": "Ricardo Jose Vargas Gamboa" },
+        "SOFIA SALAZAR HERNANDEZ": { "balance": 1000, "createdAt": 1790541275706, "stats": { "gamesPlayed": 0, "netProfit": 0, "totalWagered": 0 }, "updatedAt": 1790541275706, "username": "SOFIA SALAZAR HERNANDEZ" },
+        "Thomas Andrey Arevalo Casadiego": { "balance": 1000, "createdAt": 1790541275706, "stats": { "gamesPlayed": 0, "netProfit": 0, "totalWagered": 0 }, "updatedAt": 1790541275706, "username": "Thomas Andrey Arevalo Casadiego" },
+        "Valeria Lizcano Arenas": { "balance": 1000, "createdAt": 1790541275706, "stats": { "gamesPlayed": 0, "netProfit": 0, "totalWagered": 0 }, "updatedAt": 1790541275706, "username": "Valeria Lizcano Arenas" },
+        "Yeimer Andres Torres Manrique": { "balance": 1000, "createdAt": 1790541275706, "stats": { "gamesPlayed": 0, "netProfit": 0, "totalWagered": 0 }, "updatedAt": 1790541275706, "username": "Yeimer Andres Torres Manrique" },
+        "Yonder Daniel Maldonado Pabon": { "balance": 1000, "createdAt": 1790541275706, "stats": { "gamesPlayed": 0, "netProfit": 0, "totalWagered": 0 }, "updatedAt": 1790541275706, "username": "Yonder Daniel Maldonado Pabon" },
+        "Zlatan Ricardo Villamizar Fajardo": { "balance": 1000, "createdAt": 1790541275706, "stats": { "gamesPlayed": 0, "netProfit": 0, "totalWagered": 0 }, "updatedAt": 1790541275706, "username": "Zlatan Ricardo Villamizar Fajardo" },
+        "alvaro andres angarita escobar": { "balance": 1000, "createdAt": 1790541275706, "stats": { "gamesPlayed": 0, "netProfit": 0, "totalWagered": 0 }, "updatedAt": 1790541275706, "username": "alvaro andres angarita escobar" },
+        "carlos said perez gutierrez": { "balance": 1000, "createdAt": 1790541275706, "stats": { "gamesPlayed": 0, "netProfit": 0, "totalWagered": 0 }, "updatedAt": 1790541275706, "username": "carlos said perez gutierrez" },
+        "hamilton julian quiroga vera": { "balance": 1000, "createdAt": 1790541275706, "stats": { "gamesPlayed": 0, "netProfit": 0, "totalWagered": 0 }, "updatedAt": 1790541275706, "username": "hamilton julian quiroga vera" },
+        "keiler sebastian serrano rosales": { "balance": 1000, "createdAt": 1790541275706, "stats": { "gamesPlayed": 0, "netProfit": 0, "totalWagered": 0 }, "updatedAt": 1790541275706, "username": "keiler sebastian serrano rosales" }
+      }
+    };
+
+    /* ---------- Default roster (embedded) ---------- */
     const loadBtn = mk(`<button type="button" id="btn-load-roster" class="btn btn-secondary px-load" hidden>\u{1F4C2} Load Default Roster</button>`);
     DOM.playersEmpty.after(loadBtn);
     loadBtn.onclick = async () => {
       loadBtn.disabled = true;
       try {
-        const res = await fetch("data.json", { cache: "no-store" }); if (!res.ok) throw new Error(res.status);
-        const j = await res.json(), list = Array.isArray(j) ? j : (j.players || j.students || []);
         if (Room.list().length) { Notify.warning("Room is no longer empty."); return; }
+        const list = Object.values(DEFAULT_STUDENTS_ROSTER.players || {});
         let n = 0;
-        for (const r of list) { const name = String(typeof r === "string" ? r : r.username || r.name || "").trim().slice(0, 24); if (name) { await Room.createPlayer(name, Number(r.chips || r.balance) || 1000); n += 1; } }
-        Notify.success(`Loaded ${n} players from data.json`);
-      } catch (e) { Notify.error("Could not read data.json (serve the page over http and keep the file beside it)."); }
+        for (const r of list) {
+          const name = String(r.username || "").trim();
+          if (!name) continue;
+          await Room.createPlayer(name, Number(r.balance) || 1000, r);
+          n += 1;
+        }
+        Notify.success(`Loaded ${n} players from the default roster`);
+      } catch (e) { Notify.error("Could not load the default roster."); }
       loadBtn.disabled = false;
     };
     const syncUi = () => {
