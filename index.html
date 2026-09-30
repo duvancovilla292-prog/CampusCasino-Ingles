@@ -1563,6 +1563,7 @@ button {
    ========================================================================= */
 .draw-controls { display: flex; flex-direction: column; align-items: center; gap: 0.85rem; margin: 1.1rem 0 1.25rem; }
 .draw-row { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 0.45rem; }
+.draw-row[hidden] { display: none; }
 .draw-row-label { width: 100%; text-align: center; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-text-muted); }
 .draw-count-btn { width: 42px; height: 42px; padding: 0; border-radius: 50%; }
 .draw-player-count { margin: 0; font-size: 0.82rem; color: var(--color-text-muted); }
@@ -2437,6 +2438,10 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;ba
 
         <p id="wheel-empty-state" class="wheel-empty-state" hidden>No players are currently in the pool. Add players to the room, or restart the wheel below.</p>
 
+        <div class="draw-row" id="wheel-prize-row" hidden>
+          <span class="draw-row-label">Prize for the winner (host only)</span>
+          <input type="number" id="wheel-prize" class="xg-bet" min="0" step="1" value="0" inputmode="numeric" aria-label="Prize in chips for the wheel winner. 0 means selection only.">
+        </div>
         <div class="wheel-controls">
           <button type="button" id="btn-wheel-spin" class="btn btn-primary">&#127920; Spin the Wheel</button>
           <button type="button" id="btn-wheel-restart" class="btn btn-secondary">&#8635; Restart Pool</button>
@@ -2480,6 +2485,11 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;ba
           <button type="button" class="btn btn-game-select draw-mode-btn" data-draw-mode="marble" aria-pressed="false">&#128302; Marble Race</button>
           <button type="button" class="btn btn-game-select draw-mode-btn" data-draw-mode="chests" aria-pressed="false">&#127873; Mystery Chests</button>
           <button type="button" class="btn btn-game-select draw-mode-btn" data-draw-mode="roles" aria-pressed="false">&#129513; Roles Matrix</button>
+        </div>
+        <div class="draw-row" id="draw-prize-row" hidden>
+          <span class="draw-row-label">Prize pool (host only)</span>
+          <input type="number" id="draw-prize" class="xg-bet" min="0" step="1" value="0" inputmode="numeric" aria-label="Prize pool in chips, split between the winners. 0 means selection only.">
+          <span class="xg-bet-label">chips from the house, split between winners (0 = selection only)</span>
         </div>
         <div class="draw-row">
           <button type="button" id="btn-draw-start" class="btn btn-primary">&#127922; Draw Winners</button>
@@ -3025,6 +3035,25 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;ba
       });
     },
 
+    /**
+     * Atomic, delta-based round settlement for ANY player. Unlike persistPlayer it never
+     * writes an absolute balance, so it cannot clobber jackpot shares, pot payouts,
+     * mission rewards or admin edits that landed in the meantime.
+     */
+    applyRound(username, d) {
+      if (!this.playersRef || !username) return Promise.resolve();
+      return this.playersRef.child(username).transaction((player) => {
+        if (!player) return player; // null on a cold cache makes Firebase retry with the server value
+        player.balance = Math.max(0, Math.round((player.balance || 0) + (d.balance || 0)));
+        player.updatedAt = Date.now();
+        player.stats = player.stats || { gamesPlayed: 0, totalWagered: 0, netProfit: 0 };
+        player.stats.gamesPlayed = (player.stats.gamesPlayed || 0) + (d.gamesPlayed || 0);
+        player.stats.totalWagered = (player.stats.totalWagered || 0) + (d.totalWagered || 0);
+        player.stats.netProfit = (player.stats.netProfit || 0) + (d.netProfit || 0);
+        return player;
+      });
+    },
+
     setBalance(username, balance) {
       if (!this.playersRef) return Promise.resolve();
       return this.playersRef.child(username).update({ balance: Math.max(0, Math.round(balance)), updatedAt: Date.now() });
@@ -3114,17 +3143,6 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;ba
 
     credit(amount) {
       this.setBalance(this.balance + amount);
-    },
-
-    /** Records the outcome of a round for this player's room-wide stats. */
-    recordRound(wager, payout) {
-      if (!this.username) return;
-      const fee = Jackpot.rake(wager); // 2% vault contribution, taken from the player
-      Room.persistPlayer(this.username, this.balance, {
-        gamesPlayed: 1,
-        totalWagered: wager,
-        netProfit: payout - wager - fee
-      });
     },
 
     reset() {
@@ -3721,6 +3739,137 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;ba
   };
 
   /* =========================================================================
+     12b. UNIVERSAL GAME RESOLVER
+     Every game / challenge / draw reports its outcome through ONE entry point:
+
+       resolveGameOutcome(gameId, results)
+
+     results (all fields optional, combine freely):
+       roundId       unique id of this round (auto-generated when omitted; makes settlement idempotent)
+       entries       [{ username?, wager, payout, credited? }]  per-player money result.
+                     username defaults to the local player. `wager` was already debited when the bet
+                     was placed; `payout` is the gross amount returned. credited:true means the payout
+                     was already added to the balance by the game itself (e.g. Black Widow pot) so only
+                     stats + vault fee are applied.
+       winners       [username]  winners of a selection game (plinko, marble, bracket, wheel ...)
+       prizePool     house-funded chips split equally between `winners` (remainder goes to rank 1)
+       participants  [username]  everybody who took part (counts as a game played when chips move)
+
+     For every affected player it updates balance, stats.gamesPlayed, stats.totalWagered and
+     stats.netProfit with ONE atomic Firebase transaction (delta based, never an absolute overwrite).
+     Payouts for players other than the local one are claimed once per round at rooms/<code>/rounds.
+     ========================================================================= */
+  const GameResolver = {
+    MAX_PRIZE: 5000,
+    settled: new Set(),
+    LABELS: {
+      blackjack: "Blackjack", roulette: "Roulette", slots: "Slots", hilo: "Hi-Lo", craps: "Craps", crash: "Crash",
+      moneywheel: "Money Wheel", pokerdice: "Poker Dice", blackwidow: "Black Widow Poker", wheel: "Player Wheel"
+    },
+
+    label(gameId) {
+      if (this.LABELS[gameId]) return this.LABELS[gameId];
+      if (String(gameId).startsWith("draw:")) return "Lucky Draw";
+      return String(gameId);
+    },
+
+    int(v) { const n = Math.round(Number(v)); return Number.isFinite(n) && n > 0 ? n : 0; },
+    safeKey(s) { return String(s).replace(/[.#$\[\]\/\s]/g, "_").slice(0, 120); },
+
+    /** Turns any supported results shape into [{ username, wager, payout, credited }]. */
+    normalize(results) {
+      const r = results || {}, me = State.username, map = new Map();
+      const add = (u, wager, payout, credited) => {
+        if (!u) return;
+        const e = map.get(u) || { username: u, wager: 0, payout: 0, credited: false };
+        e.wager += wager; e.payout += payout; e.credited = e.credited || !!credited;
+        map.set(u, e);
+      };
+      (Array.isArray(r.entries) ? r.entries : []).forEach((e) => add(e.username || me, this.int(e.wager), this.int(e.payout), e.credited));
+
+      const winners = Array.isArray(r.winners) ? [...new Set(r.winners.filter(Boolean))] : [];
+      const pool = Math.min(this.int(r.prizePool), this.MAX_PRIZE * 10);
+      if (winners.length && pool > 0) {
+        const share = Math.floor(pool / winners.length), rest = pool - share * winners.length;
+        winners.forEach((u, i) => add(u, 0, share + (i === 0 ? rest : 0), false));
+      }
+      if (map.size && Array.isArray(r.participants)) r.participants.filter(Boolean).forEach((u) => add(u, 0, 0, false));
+      return [...map.values()];
+    },
+
+    /** Host-only, house-funded prize. Returns 0 for non-hosts, selection-only draws and overridden draws. */
+    readPrize(inputId, overridden) {
+      const el = document.getElementById(inputId);
+      const v = Math.min(this.MAX_PRIZE, this.int(el && el.value));
+      if (!v || !State.isHost) return 0;
+      if (overridden) { Notify.warning("Prize skipped for this draw."); return 0; }
+      return v;
+    },
+
+    syncPrizeUi() {
+      ["draw-prize-row", "wheel-prize-row"].forEach((id) => { const el = document.getElementById(id); if (el) el.hidden = !State.isHost; });
+    },
+
+    /** Settles the local player's own entry: instant HUD update + one atomic remote delta. */
+    applyLocal(e) {
+      const gross = e.credited ? 0 : e.payout;
+      State.balance = Math.max(0, State.balance + gross);
+      const fee = e.wager > 0 ? Jackpot.rake(e.wager) : 0; // 2% vault contribution (also deducted locally)
+      HUD.update();
+      return Room.applyRound(e.username, {
+        balance: gross - fee, gamesPlayed: 1, totalWagered: e.wager, netProfit: e.payout - e.wager - fee
+      });
+    },
+
+    /** Settles other players. Only the client whose claim commits pays, so a round can never pay twice. */
+    async applyRemote(gameId, roundId, entries) {
+      if (!Room.db || !Room.code || !Room.playersRef) return false;
+      const claim = Room.db.ref(`rooms/${Room.code}/rounds/${this.safeKey(gameId + "_" + roundId)}`);
+      const res = await claim.transaction((v) => (v ? undefined : {
+        gameId, roundId, by: State.username, ts: Date.now(),
+        entries: entries.map((e) => ({ u: e.username, w: e.wager, p: e.payout }))
+      }));
+      if (!res.committed) return false;
+      await Promise.all(entries.map((e) => Room.applyRound(e.username, {
+        balance: e.credited ? 0 : e.payout, gamesPlayed: 1, totalWagered: e.wager, netProfit: e.payout - e.wager
+      })));
+      return true;
+    },
+
+    resolve(gameId, results) {
+      const r = results || {}, me = State.username;
+      const roundId = String(r.roundId || `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`);
+      const key = gameId + ":" + roundId;
+      if (!gameId || !me || this.settled.has(key)) return Promise.resolve(null);
+      this.settled.add(key);
+
+      const entries = this.normalize(r);
+      const summary = { gameId, roundId, entries, ts: Date.now() };
+      if (!entries.length) return Promise.resolve(summary); // selection-only round: nothing to settle
+
+      const mine = entries.filter((e) => e.username === me), others = entries.filter((e) => e.username !== me);
+      const localTasks = mine.map((e) => this.applyLocal(e));
+      const remoteTask = others.length ? this.applyRemote(gameId, roundId, others) : Promise.resolve(false);
+      PubSub.emit("round-resolved", summary);
+
+      return Promise.all([...localTasks, remoteTask]).then((done) => {
+        const paid = new Set(mine.map((e) => e.username));
+        if (done[done.length - 1]) others.forEach((e) => paid.add(e.username));
+        const awarded = entries.filter((e) => paid.has(e.username) && e.payout > 0 && e.wager === 0);
+        if (awarded.length) {
+          const total = awarded.reduce((a, e) => a + e.payout, 0);
+          Notify.success(`${this.label(gameId)}: ${total.toLocaleString("en-US")} chips awarded to ${awarded.map((e) => e.username).join(", ")}.`);
+        }
+        return summary;
+      }).catch((err) => { console.error("Round settlement failed", err); Notify.error("Could not save the round result."); return null; });
+    }
+  };
+  /** The one function every mini-game calls when a round ends. */
+  function resolveGameOutcome(gameId, results) { return GameResolver.resolve(gameId, results); }
+  document.addEventListener("game-changed", () => GameResolver.syncPrizeUi());
+  PubSub.on("players-updated", () => GameResolver.syncPrizeUi());
+
+  /* =========================================================================
      13. BLACKJACK — multiplayer table vs the dealer, synced at rooms/<code>/bj
      Flow: lobby (host starts) -> bets -> deal -> clockwise turns -> dealer -> payouts -> next round.
      Cards are ints 0..51 (rank = c % 13, suit = c / 13), same encoding as Black Widow.
@@ -3931,8 +4080,7 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;ba
       const share = (g.res.shares || {})[me] || 0, stake = (g.bets || {})[me] || 0, out = (g.res.out || {})[me];
       this.ref.child("paid/" + me).transaction((c) => (c ? undefined : Date.now())).then((r) => {
         if (!r.committed) return;
-        if (share > 0) State.credit(share);
-        State.recordRound(stake, share);
+        resolveGameOutcome("blackjack", { roundId: g.hid + "-" + me, entries: [{ wager: stake, payout: share }] });
         const text = { blackjack: `Blackjack! You won ${share} chips.`, win: `You won ${share} chips.`, push: "Push. Your bet was returned.", lose: `Dealer wins. You lost ${stake} chips.`, bust: `You busted and lost ${stake} chips.` }[out];
         if (out === "blackjack" || out === "win") { Notify.success(text); Sound.win(); if (share >= CONFIG.BIG_WIN_THRESHOLD) Effects.celebrate(`${out === "blackjack" ? "BLACKJACK" : "YOU WON"}! +${share} chips`); }
         else if (out === "push") Notify.warning(text);
@@ -4232,7 +4380,6 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;ba
       const colorLabels = { red: "red", black: "black", green: "green" };
 
       if (payout > 0) {
-        State.credit(payout);
         DOM.rouletteResult.textContent = `Winning number ${winningNumber} (${colorLabels[winningColor]}). You won ${payout} chips!`;
         Notify.success(`Roulette: ${winningNumber} ${colorLabels[winningColor]}. Won ${payout} chips.`);
         Sound.win();
@@ -4243,7 +4390,7 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;ba
         Sound.lose();
       }
 
-      State.recordRound(bet, payout);
+      resolveGameOutcome("roulette", { entries: [{ wager: bet, payout }] });
       this.isSpinning = false;
       DOM.btnRouletteSpin.disabled = false;
     }
@@ -4484,6 +4631,8 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;ba
       DOM.btnWheelRestart.disabled = false;
       DOM.btnWheelSpin.disabled = this.pool.length < 2;
       DOM.wheelResult.textContent = `The wheel landed on ${winner}.`;
+      const prize = GameResolver.readPrize("wheel-prize", Rig.on && Rig.target === winner);
+      resolveGameOutcome("wheel", { winners: [winner], participants: this.pool.slice(), prizePool: prize });
       Sound.win();
       this.draw(winnerIndex, 1);
 
@@ -4668,7 +4817,6 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;ba
           const hit = (a === b && b === c) || results.filter((x) => x === results[i]).length > 1;
           if (hit) reel.classList.add("is-win");
         });
-        State.credit(payout);
         DOM.slotsResult.textContent = `${results.join(" ")} \u2014 Winning combination! You won ${payout} chips.`;
         Notify.success(`Slots: won ${payout} chips.`);
         Sound.win();
@@ -4679,7 +4827,7 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;ba
         Sound.lose();
       }
 
-      State.recordRound(bet, payout);
+      resolveGameOutcome("slots", { entries: [{ wager: bet, payout }] });
       this.isSpinning = false;
       DOM.btnSlotsSpin.disabled = false;
       DOM.btnSlotsLever.disabled = false;
@@ -4743,12 +4891,10 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;ba
 
       if (!isHigher && !isLower) {
         payout = bet;
-        State.credit(payout);
         DOM.hiloResult.textContent = `Push on ${nextCard.rank}${nextCard.suit}. Bet returned.`;
         Notify.warning("Hi-Lo: push, bet returned.");
       } else if (guessedCorrectly) {
         payout = bet * 2;
-        State.credit(payout);
         DOM.hiloResult.textContent = `Correct! ${nextCard.rank}${nextCard.suit} was ${directionLabel}. You won ${payout} chips.`;
         Notify.success(`Hi-Lo: won ${payout} chips.`);
         Sound.win();
@@ -4759,7 +4905,7 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;ba
         Sound.lose();
       }
 
-      State.recordRound(bet, payout);
+      resolveGameOutcome("hilo", { entries: [{ wager: bet, payout }] });
       this.currentCard = nextCard;
       this.renderCurrentCard();
       this.isResolving = false;
@@ -4935,6 +5081,11 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;ba
       Sound.win();
     },
 
+    /** Hands a finished selection round to the universal resolver (prize is house-funded, host only). */
+    settleDraw(winners, participants, roundId, prizePool) {
+      return resolveGameOutcome("draw:" + this.mode, { roundId, winners, participants, prizePool });
+    },
+
     async start() {
       if (this.running) return;
       if (this.mode === "marble") { MarbleRace.hostStart(); return; }
@@ -4951,10 +5102,12 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;ba
       this.el.result.textContent = "";
 
       const winners = this.shuffle(names).slice(0, n);
+      const prize = this.mode === "roles" ? 0 : GameResolver.readPrize("draw-prize", Rig.on && names.includes(Rig.target));
       const runner = { slots: this.runSlots, bingo: this.runBingo, cards: this.runCards, laser: this.runLaser, bracket: this.runBracket, plinko: this.runPlinko, chests: this.runChests, roles: this.runRoles }[this.mode];
       try {
         await runner.call(this, names, winners, id);
         this.logDraw(winners);
+        this.settleDraw(winners, names, `${this.mode}-${id}-${Date.now().toString(36)}`, prize);
         this.el.result.textContent = `\u{1F389} ${n === 1 ? "Winner" : "Winners"}: ${winners.join(", ")}`;
         Sound.jackpot();
       } catch (err) {
@@ -5860,13 +6013,12 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;ba
       const bet = mk("input", "xg-bet"); bet.type = "number"; bet.min = 1; bet.value = 10; bet.setAttribute("aria-label", "Bet amount");
       const lab = mk("label", "xg-bet-label", "Bet"); lab.append(bet);
       sec.append(mk("h2", "", title), p, stage, ctl, res);
-      return { sec, stage, ctl, res, bet, lab };
+      return { key, sec, stage, ctl, res, bet, lab };
     };
     const btn = (label, cls = "btn btn-primary", fn) => { const b = mk("button", cls, label); b.type = "button"; if (fn) b.addEventListener("click", fn); return b; };
 
     const settle = (g, name, bet, payout, msg) => {
-      if (payout > 0) State.credit(payout);
-      State.recordRound(bet, payout);
+      resolveGameOutcome(g.key, { entries: [{ wager: bet, payout }] });
       const net = payout - bet;
       g.res.textContent = `${msg} ${net > 0 ? "You won " + payout + " chips." : net === 0 ? "Bet returned." : "Lost " + bet + " chips."}`;
       if (net > 0) { Notify.success(`${name}: won ${payout} chips.`); Sound.win(); if (payout >= CONFIG.BIG_WIN_THRESHOLD) Effects.celebrate(`${name.toUpperCase()}! +${payout} chips`); }
@@ -6599,7 +6751,7 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;ba
       if ((g.order || []).includes(me) && !this.store(doneKey)) {
         this.store(doneKey, "1");
         const share = (g.res.shares || {})[me] || 0, stake = this.paid, cat = ((g.res.cidx || {})[me]) || 0;
-        window.setTimeout(() => State.recordRound(stake, share), 1500);
+        resolveGameOutcome("blackwidow", { roundId: g.hid + "-" + me, entries: [{ wager: stake, payout: share, credited: true }] });
         if (this.statsRef) {
           this.statsRef.child(me).transaction((s) => {
             s = s || { hands: 0, wins: 0, net: 0, best: 0 };
@@ -7170,7 +7322,7 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;ba
       Lk.el.podium.replaceChildren(); Lk.el.result.textContent = "";
       try {
         const winners = await race(cfg, id);
-        Lk.logDraw(winners); Lk.el.result.textContent = `\u{1F389} ${winners.length === 1 ? "Winner" : "Winners"}: ${winners.join(", ")}`; Sound.jackpot();
+        Lk.logDraw(winners); Lk.settleDraw(winners, cfg.racers.map((x) => x.n), cfg.id, State.isHost ? (Number(cfg.prize) || 0) : 0); Lk.el.result.textContent = `\u{1F389} ${winners.length === 1 ? "Winner" : "Winners"}: ${winners.join(", ")}`; Sound.jackpot();
       } catch (err) { if (err !== Lk.CANCEL) { console.error(err); Notify.error("The marble race was interrupted."); } }
       finally { if (id === Lk.runId) { Lk.running = false; Lk.setBusy(false); Lk.updateInfo(); } }
     };
@@ -7202,6 +7354,7 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;ba
           if (pool.length > MAXR) { pool = pool.slice(0, MAXR); if (target && !pool.includes(target)) pool[0] = target; pool = Lk.shuffle(pool); }
           const racers = pool.map((n) => ({ n, a: Cosmetics.icon(n, "avatar") || "" }));
           const cfg = { id: Date.now().toString(36) + Math.floor(Math.random() * 1e6).toString(36), map, count: Math.min(Lk.count, racers.length), racers, seed: Math.floor(Math.random() * 4294967296) >>> 0 };
+          cfg.prize = GameResolver.readPrize("draw-prize", !!target);
           if (target) cfg.seed = await findSeed(cfg, pool.indexOf(target));
           cfg.w = Sim.run(cfg).slice(0, cfg.count).map((i) => racers[i].n);
           cfg.startAt = now() + 5500;
@@ -7484,15 +7637,14 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;ba
 
     /* ---------- Daily missions ---------- */
     const bump = (id, n) => { if (!cfg.missionsOn || !State.username || !Room.playersRef) return; qRef().child("p/" + id).transaction((v) => (v || 0) + n); };
-    const origRecord = State.recordRound.bind(State);
-    State.recordRound = function (wager, payout) {
-      origRecord(wager, payout);
-      const g = Router.currentGameKey;
+    PubSub.on("round-resolved", ({ gameId, entries }) => {
+      const e = entries.find((x) => x.username === State.username && x.wager > 0);
+      if (!e) return;
       bump("play3", 1);
-      if (g === "blackjack") bump("bj", 1);
-      if (["wheel", "roulette", "slots", "moneywheel"].includes(g)) bump("spin", 1);
-      if (payout > wager) bump("win", payout - wager);
-    };
+      if (gameId === "blackjack") bump("bj", 1);
+      if (["wheel", "roulette", "slots", "moneywheel"].includes(gameId)) bump("spin", 1);
+      if (e.payout > e.wager) bump("win", e.payout - e.wager);
+    });
     const renderQuests = () => {
       $("px-qlist").innerHTML = QUESTS.map((q) => {
         const p = Math.min(q.goal, (qState.p || {})[q.id] || 0), done = p >= q.goal, got = (qState.c || {})[q.id], rw = Math.round(q.reward * cfg.bonusMult);
