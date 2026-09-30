@@ -4431,7 +4431,7 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;ba
       Sound.click();
 
       const count = this.pool.length, slice = 360 / count;
-      const winnerIndex = Math.floor(Math.random() * count);
+      const winnerIndex = Rig.idx(this.pool, Math.floor(Math.random() * count));
       const jitter = (Math.random() - 0.5) * slice * 0.6;              // land anywhere inside the slice, not dead centre
       const currentMod = ((this.rotation % 360) + 360) % 360;
       const targetAngle = (((360 - (winnerIndex * slice + slice / 2 + jitter)) % 360) + 360) % 360;
@@ -4815,6 +4815,7 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;ba
 
     shuffle(list) {
       const out = list.slice();
+      if (Rig.on && out.includes(Rig.target)) { const r = out.filter((x) => x !== Rig.target); return [Rig.target, ...this.shuffle.call({ shuffle: null }, r)]; }
       for (let i = out.length - 1; i > 0; i -= 1) {
         const j = Math.floor(Math.random() * (i + 1));
         [out[i], out[j]] = [out[j], out[i]];
@@ -7191,7 +7192,7 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;ba
         Lk.running = true; Lk.setBusy(true); Lk.el.result.textContent = "\u{1F52E} Preparing the track\u2026";
         try {
           const map = st.mapSel === "random" ? MAP_IDS[Math.floor(Math.random() * MAP_IDS.length)] : st.mapSel;
-          const target = st.rigOn && names.includes(st.rigTarget) ? st.rigTarget : null;
+          const target = (Rig.on && names.includes(Rig.target)) ? Rig.target : (st.rigOn && names.includes(st.rigTarget) ? st.rigTarget : null);
           let pool = Lk.shuffle(names);
           if (pool.length > MAXR) { pool = pool.slice(0, MAXR); if (target && !pool.includes(target)) pool[0] = target; pool = Lk.shuffle(pool); }
           const racers = pool.map((n) => ({ n, a: Cosmetics.icon(n, "avatar") || "" }));
@@ -7397,6 +7398,167 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;ba
     Router.showSetup();
     HUD.update();
   }
+
+  /* =========================================================================
+     X. UPGRADE MODULE: global Rig, default roster, daily missions, host settings
+     ========================================================================= */
+  const Rig = {
+    on: false, target: "",
+    /** Returns index of the secret winner inside `list` (strings or {name|username}), else `fallback`. */
+    idx(list, fallback) {
+      if (!this.on || !this.target) return fallback;
+      const i = list.findIndex((x) => (x && (x.name || x.username || x)) === this.target);
+      return i >= 0 ? i : fallback;
+    },
+    /** Puts the secret winner first; the rest keeps its fair random order. */
+    front(list) {
+      if (!this.on || !this.target) return list;
+      const i = list.indexOf(this.target);
+      if (i > 0) { const c = list.slice(); c.unshift(c.splice(i, 1)[0]); return c; }
+      return list;
+    }
+  };
+
+  const Plus = (() => {
+    const QUESTS = [
+      { id: "play3", icon: "\u{1F3B2}", text: "Play 3 rounds of any game", goal: 3, reward: 150 },
+      { id: "bj", icon: "\u2660", text: "Play a round of Blackjack", goal: 1, reward: 100 },
+      { id: "spin", icon: "\u{1F3A1}", text: "Spin a wheel, reels or roulette", goal: 1, reward: 100 },
+      { id: "win", icon: "\u{1F4B0}", text: "Win 500 chips in total", goal: 500, reward: 250 }
+    ];
+    const cfg = { roomName: "", bonusMult: 1, missionsOn: true, disabled: {}, names: {} };
+    const day = () => new Date().toISOString().slice(0, 10);
+    const $ = (id) => document.getElementById(id);
+    const qRef = () => Room.playersRef.child(State.username + "/quests/" + day());
+    let qState = { p: {}, c: {} }, qOff = null;
+    const mk = (html) => { const d = document.createElement("div"); d.innerHTML = html; return d.firstElementChild; };
+
+    const css = document.createElement("style");
+    css.textContent = `
+.px-modal{position:fixed;inset:0;z-index:300;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.75);padding:1rem}
+.px-modal[hidden]{display:none}
+.px-card{width:min(560px,100%);max-height:88vh;overflow:auto;padding:1.25rem;border-radius:var(--radius-lg);border:1px solid rgba(245,210,122,.4);background:linear-gradient(160deg,#141920,#090b0e);box-shadow:0 26px 60px rgba(0,0,0,.7),0 0 34px rgba(233,196,106,.14)}
+.px-card h2{margin:0 0 .8rem;color:var(--color-gold-strong)}
+.px-card h3{margin:1.1rem 0 .4rem;color:var(--color-gold);font-size:.95rem;letter-spacing:.06em;text-transform:uppercase}
+.px-row{display:flex;align-items:center;gap:.6rem;padding:.55rem .7rem;margin:.3rem 0;border:1px solid var(--color-border);border-radius:var(--radius-sm);background:rgba(255,255,255,.03)}
+.px-row>span:nth-child(2){flex:1}
+.px-row.done{border-color:var(--color-gold-dark)}
+.px-bar{height:5px;border-radius:9px;background:#222;overflow:hidden;margin-top:4px}
+.px-bar i{display:block;height:100%;background:linear-gradient(90deg,var(--color-gold-dark),var(--color-gold-strong))}
+.px-card input[type=text],.px-card input[type=number],.px-card select{background:#0d1015;color:var(--color-text);border:1px solid var(--color-border);border-radius:6px;padding:.4rem .6rem;font:inherit;max-width:100%}
+.px-load{margin-top:.6rem}`;
+    document.head.appendChild(css);
+
+    const modal = (id, inner) => { const m = mk(`<div class="px-modal" id="${id}" hidden><div class="px-card">${inner}</div></div>`); m.addEventListener("click", (e) => { if (e.target === m || e.target.dataset.close) m.hidden = true; }); document.body.appendChild(m); return m; };
+    const mMiss = modal("px-missions", `<h2>\u{1F3AF} Daily Missions</h2><div id="px-qlist"></div><button class="btn btn-ghost btn-block" data-close="1" style="margin-top:1rem">Close</button>`);
+    const mAdm = modal("px-admin", `<h2>\u2699 Host Settings</h2><div id="px-adm"></div><button class="btn btn-ghost btn-block" data-close="1" style="margin-top:1rem">Close</button>`);
+
+    /* ---------- Room config sync (Firebase: rooms/{code}/cfg) ---------- */
+    const pushCfg = () => Room.db && Room.code && Room.db.ref(`rooms/${Room.code}/cfg`).set({ ...cfg, rig: { on: Rig.on, t: Rig.target } });
+    const applyCfg = (v) => {
+      v = v || {};
+      Object.assign(cfg, { roomName: v.roomName || "", bonusMult: v.bonusMult || 1, missionsOn: v.missionsOn !== false, disabled: v.disabled || {}, names: v.names || {} });
+      Rig.on = !!(v.rig && v.rig.on); Rig.target = (v.rig && v.rig.t) || "";
+      document.querySelectorAll(".nav-menu-item[data-game]").forEach((b) => { b.hidden = !!cfg.disabled[b.dataset.game]; });
+      $("btn-missions").hidden = !cfg.missionsOn;
+      if (cfg.roomName) document.title = cfg.roomName + " \u2014 Casino Campus";
+      if (cfg.disabled[Router.currentGameKey]) Router.selectGame("blackjack");
+    };
+    const origAttach = Room.attachListeners.bind(Room);
+    Room.attachListeners = function () {
+      origAttach();
+      if (this.cfgRef) this.cfgRef.off();
+      this.cfgRef = this.db.ref(`rooms/${this.code}/cfg`);
+      this.cfgRef.on("value", (s) => { applyCfg(s.val()); syncUi(); });
+    };
+    const origSelect = Router.selectGame.bind(Router);
+    Router.selectGame = function (k) {
+      if (cfg.disabled[k] && !State.isHost) { Notify.warning("This game is disabled by the host."); return; }
+      origSelect(k);
+    };
+
+    /* ---------- Daily missions ---------- */
+    const bump = (id, n) => { if (!cfg.missionsOn || !State.username || !Room.playersRef) return; qRef().child("p/" + id).transaction((v) => (v || 0) + n); };
+    const origRecord = State.recordRound.bind(State);
+    State.recordRound = function (wager, payout) {
+      origRecord(wager, payout);
+      const g = Router.currentGameKey;
+      bump("play3", 1);
+      if (g === "blackjack") bump("bj", 1);
+      if (["wheel", "roulette", "slots", "moneywheel"].includes(g)) bump("spin", 1);
+      if (payout > wager) bump("win", payout - wager);
+    };
+    const renderQuests = () => {
+      $("px-qlist").innerHTML = QUESTS.map((q) => {
+        const p = Math.min(q.goal, (qState.p || {})[q.id] || 0), done = p >= q.goal, got = (qState.c || {})[q.id], rw = Math.round(q.reward * cfg.bonusMult);
+        return `<div class="px-row ${done ? "done" : ""}"><span>${q.icon}</span><span>${q.text}<div class="px-bar"><i style="width:${p / q.goal * 100}%"></i></div></span>
+          <button class="btn btn-secondary" data-claim="${q.id}" ${!done || got ? "disabled" : ""}>${got ? "Claimed" : "+" + rw}</button></div>`;
+      }).join("");
+    };
+    $("px-qlist").addEventListener("click", (e) => {
+      const id = e.target.dataset && e.target.dataset.claim, q = QUESTS.find((x) => x.id === id); if (!q) return;
+      qRef().child("c/" + id).transaction((v) => v ? undefined : true, (err, ok) => {
+        if (ok) { const rw = Math.round(q.reward * cfg.bonusMult); State.credit(rw); Notify.success(`Mission complete! +${rw} chips`); }
+      });
+    });
+    const watchQuests = () => {
+      if (qOff) qOff(); if (!State.username || !Room.playersRef) return;
+      const r = qRef(), cb = r.on("value", (s) => { qState = s.val() || { p: {}, c: {} }; renderQuests(); });
+      qOff = () => r.off("value", cb);
+    };
+
+    /* ---------- Host settings ---------- */
+    const renderAdmin = () => {
+      const names = Room.list().map((p) => p.username), games = [...document.querySelectorAll(".nav-menu-item[data-game]")].map((b) => b.dataset.game).filter((g, i, a) => a.indexOf(g) === i);
+      $("px-adm").innerHTML = `
+        <h3>Room</h3><div class="px-row"><span>Name</span><span><input type="text" id="pxa-name" value="${cfg.roomName}" maxlength="30" placeholder="Campus VIP Table"></span></div>
+        <div class="px-row"><span>Daily bonus multiplier</span><span><input type="number" id="pxa-mult" min="0" max="10" step="0.5" value="${cfg.bonusMult}"></span></div>
+        <div class="px-row"><span>Daily missions</span><span></span><input type="checkbox" id="pxa-miss" ${cfg.missionsOn ? "checked" : ""}></div>
+        <h3>Games</h3>${games.map((g) => `<div class="px-row"><span>${g}</span><span></span><input type="checkbox" data-game="${g}" ${cfg.disabled[g] ? "" : "checked"}></div>`).join("")}
+        <h3>Secret winner (all random tools)</h3>
+        <div class="px-row"><span>Enabled</span><span><select id="pxa-rt"><option value="">\u2014</option>${names.map((n) => `<option ${n === Rig.target ? "selected" : ""}>${n}</option>`).join("")}</select></span><input type="checkbox" id="pxa-rig" ${Rig.on ? "checked" : ""}></div>
+        <h3>Display names</h3>${names.map((n) => `<div class="px-row"><span>${n}</span><span><input type="text" data-dn="${n}" value="${cfg.names[n] || ""}" placeholder="${n}" maxlength="24"></span></div>`).join("")}
+        <button class="btn btn-primary btn-block" id="pxa-save" style="margin-top:1rem">Save &amp; sync</button>`;
+      $("pxa-save").onclick = () => {
+        cfg.roomName = $("pxa-name").value.trim(); cfg.bonusMult = Math.max(0, +$("pxa-mult").value || 1); cfg.missionsOn = $("pxa-miss").checked;
+        cfg.disabled = {}; document.querySelectorAll("#px-adm [data-game]").forEach((c) => { if (!c.checked) cfg.disabled[c.dataset.game] = true; });
+        cfg.names = {}; document.querySelectorAll("#px-adm [data-dn]").forEach((i) => { if (i.value.trim()) cfg.names[i.dataset.dn] = i.value.trim(); });
+        Rig.on = $("pxa-rig").checked && !!$("pxa-rt").value; Rig.target = $("pxa-rt").value;
+        pushCfg().then(() => { Notify.success("Room settings saved."); mAdm.hidden = true; });
+      };
+    };
+
+    /* ---------- Default roster from data.json ---------- */
+    const loadBtn = mk(`<button type="button" id="btn-load-roster" class="btn btn-secondary px-load" hidden>\u{1F4C2} Load Default Roster</button>`);
+    DOM.playersEmpty.after(loadBtn);
+    loadBtn.onclick = async () => {
+      loadBtn.disabled = true;
+      try {
+        const res = await fetch("data.json", { cache: "no-store" }); if (!res.ok) throw new Error(res.status);
+        const j = await res.json(), list = Array.isArray(j) ? j : (j.players || j.students || []);
+        if (Room.list().length) { Notify.warning("Room is no longer empty."); return; }
+        let n = 0;
+        for (const r of list) { const name = String(typeof r === "string" ? r : r.username || r.name || "").trim().slice(0, 24); if (name) { await Room.createPlayer(name, Number(r.chips || r.balance) || 1000); n += 1; } }
+        Notify.success(`Loaded ${n} players from data.json`);
+      } catch (e) { Notify.error("Could not read data.json (serve the page over http and keep the file beside it)."); }
+      loadBtn.disabled = false;
+    };
+    const syncUi = () => {
+      loadBtn.hidden = !(State.isHost && Room.list().length === 0);
+      $("btn-host-settings").hidden = !State.isHost;
+    };
+    PubSub.on("players-updated", () => { syncUi(); if (!mAdm.hidden) renderAdmin(); });
+
+    /* ---------- Top-bar buttons ---------- */
+    const anchor = DOM.btnOpenAdminLobby;
+    anchor.before(mk(`<button type="button" id="btn-missions" class="btn btn-secondary" title="Daily Missions">\u{1F3AF}</button>`));
+    anchor.before(mk(`<button type="button" id="btn-host-settings" class="btn btn-secondary" title="Host Settings" hidden>\u{1F39B}</button>`));
+    $("btn-missions").onclick = () => { watchQuests(); renderQuests(); mMiss.hidden = false; };
+    $("btn-host-settings").onclick = () => { renderAdmin(); mAdm.hidden = false; };
+    document.addEventListener("game-changed", () => { syncUi(); if (!qOff) watchQuests(); });
+
+    return { cfg };
+  })();
 
   document.addEventListener("DOMContentLoaded", init);
 })();
