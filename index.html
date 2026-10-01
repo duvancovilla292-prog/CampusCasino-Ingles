@@ -2442,6 +2442,13 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;ba
           <span class="draw-row-label">Prize for the winner (host only)</span>
           <input type="number" id="wheel-prize" class="xg-bet" min="0" step="1" value="0" inputmode="numeric" aria-label="Prize in chips for the wheel winner. 0 means selection only.">
         </div>
+        <div class="marble-fate rig-ctl" hidden>
+            <button type="button" class="marble-fate-toggle rig-toggle" aria-expanded="false" title="Host options">&#9672;</button>
+            <div class="marble-fate-panel rig-panel" hidden>
+              <label class="marble-switch"><input type="checkbox" class="rig-on"><span class="marble-slider" aria-hidden="true"></span><span class="rig-label">Fair random</span></label>
+              <select class="marble-select rig-player" aria-label="Chosen winner" disabled></select>
+            </div>
+          </div>
         <div class="wheel-controls">
           <button type="button" id="btn-wheel-spin" class="btn btn-primary">&#127920; Spin the Wheel</button>
           <button type="button" id="btn-wheel-restart" class="btn btn-secondary">&#8635; Restart Pool</button>
@@ -2496,19 +2503,20 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;ba
           <button type="button" id="btn-draw-reset" class="btn btn-secondary">&#8635; Reset</button>
         </div>
         <p id="draw-player-count" class="draw-player-count"></p>
+        <div class="marble-fate rig-ctl" hidden>
+            <button type="button" class="marble-fate-toggle rig-toggle" aria-expanded="false" title="Host options">&#9672;</button>
+            <div class="marble-fate-panel rig-panel" hidden>
+              <label class="marble-switch"><input type="checkbox" class="rig-on"><span class="marble-slider" aria-hidden="true"></span><span class="rig-label">Fair random</span></label>
+              <select class="marble-select rig-player" aria-label="Chosen winner" disabled></select>
+            </div>
+          </div>
         <div id="marble-panel" class="marble-panel" hidden>
           <div class="draw-row" role="group" aria-label="Marble race map">
             <span class="draw-row-label">Track</span>
             <select id="marble-map" class="marble-select" aria-label="Choose a marble race map"></select>
           </div>
           <div id="marble-map-desc" class="marble-desc" aria-live="polite"></div>
-          <div id="marble-fate" class="marble-fate" hidden>
-            <button type="button" id="marble-fate-toggle" class="marble-fate-toggle" aria-expanded="false" aria-controls="marble-fate-panel" title="Host options">&#9672;</button>
-            <div id="marble-fate-panel" class="marble-fate-panel" hidden>
-              <label class="marble-switch"><input type="checkbox" id="marble-rig-on"><span class="marble-slider" aria-hidden="true"></span><span id="marble-rig-label">Fair random</span></label>
-              <select id="marble-rig-player" class="marble-select" aria-label="Chosen winner" disabled></select>
-            </div>
-          </div>
+
         </div>
       </div>
 
@@ -2589,7 +2597,7 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;ba
     <section id="game-moneywheel" class="game-section" data-game-section="moneywheel" hidden></section>
     <section id="game-blackwidow" class="game-section" data-game-section="blackwidow" hidden aria-labelledby="bw-heading">
       <h2 id="bw-heading">La Viuda Negra<span class="bw-title-sub">Black Widow Poker</span></h2>
-      <p class="bw-info">Ante 10 &middot; up to 6 players &middot; 5 cards each &middot; swap with La Viuda, clockwise &middot; fold, or call &ldquo;Me hasta aqu&iacute;&rdquo; to force the final cycle &middot; best poker hand takes the pot</p>
+      <p class="bw-info">Ante 10 &middot; up to 6 players &middot; 5 cards each &middot; swap with La Viuda (all five or one card), clockwise &middot; fold, or call &ldquo;Me hasta aqu&iacute;&rdquo; to force the final cycle &middot; best poker hand takes the pot</p>
 
       <!-- Pre-game table lobby (built live from Firebase) -->
       <div class="tl" id="bw-lobby" hidden></div>
@@ -2627,8 +2635,8 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;ba
         <ul>
           <li>The host opens a table and waits for players to take seats, then presses Start game now. Playing alone? Start solo and face The House.</li>
           <li>Everyone antes 10 chips into the pot and gets 5 hidden cards. Five more cards sit in the middle: La Viuda.</li>
-          <li>First turn: pass, or swap all 5 of your cards for La Viuda &mdash; that flips La Viuda face-up for everyone.</li>
-          <li>Later turns: swap one of your cards with one face-up La Viuda card, or pass. Fold at any turn to leave the hand and forfeit your ante.</li>
+          <li>First turn: you may pass, swap a single card with a face-down La Viuda card (blind swap), or &mdash; if nobody has taken it yet &mdash; swap all 5 of your cards for La Viuda, which flips it face-up for everyone. If you pass or swap one card, the chance to take the whole widow moves on to the next player.</li>
+          <li>Once La Viuda is face-up: swap one of your cards with one La Viuda card, or pass. Fold at any turn to leave the hand and forfeit your ante.</li>
           <li>On your turn you can call &ldquo;Me hasta aqu&iacute;&rdquo;. Everyone else then gets one last turn; you can&rsquo;t change your hand.</li>
           <li>Then all hands are revealed and the best poker hand wins the pot (ties split it).</li>
         </ul>
@@ -3934,23 +3942,30 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;ba
     /** meta: { round, ord, turnOver } — turnOver = the dealer's hole card being revealed in place (flip only, no travel). */
     renderCard(container, c, hidden, animate, meta) {
       const el = document.createElement("div");
-      if (hidden) { el.className = "card card-back"; }
+      if (hidden) {
+        el.className = "card card-back";
+        container.appendChild(el);   // no face content is ever put in the DOM for a hidden card
+        if (animate && meta && meta.travel) CardFX.add(el, Object.assign({ flip: false, reveal: null }, meta));
+        return;
+      }
       else if (animate || (meta && meta.turnOver)) { el.className = "card card-back"; }   // travels face-down, turns over on arrival
       else this.setFront(el, c);
       container.appendChild(el);
       if (hidden || !(animate || (meta && meta.turnOver))) return;
       CardFX.add(el, Object.assign({ flip: true, reveal: () => this.setFront(el, c), stay: !!(meta && meta.turnOver) }, meta));
     },
-    fillHand(container, key, hand, holeHidden) {
+    /** holeHidden: only card #2 is face-down (dealer). allHidden: every card is face-down (other players' hands during a round). */
+    fillHand(container, key, hand, holeHidden, allHidden) {
       const seen = this.shown[key] || 0; container.textContent = "";
       this.hole = this.hole || {};
-      const wasHidden = this.hole[key] === true;
+      const was = this.hole[key];                       // false | "hole" | "all"
       (hand || []).forEach((c, i) => {
         const ord = key === "dealer" ? 999 : (this.seq = (this.seq || 0) + 1);
-        const turnOver = i === 1 && wasHidden && !holeHidden;
-        this.renderCard(container, c, holeHidden && i === 1, i >= seen, { round: i, ord, turnOver });
+        const hid = !!allHidden || (!!holeHidden && i === 1);
+        const turnOver = !hid && (was === "all" || (was === "hole" && i === 1));   // showdown: face-down cards flip over in place
+        this.renderCard(container, c, hid, i >= seen, { round: i, ord, turnOver, travel: key !== "dealer" });
       });
-      this.hole[key] = !!holeHidden;
+      this.hole[key] = allHidden ? "all" : holeHidden ? "hole" : false;
       this.shown[key] = (hand || []).length;
     },
 
@@ -4095,6 +4110,7 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;ba
       if (g.phase === "play") {
         if (!inHand) return "Sitting out";
         if (g.order[g.turn] === u) return "Playing";
+        if (u !== State.username && (st === "bust" || st === "bj" || st === "stand")) return "Done";   // don't reveal bust / 21 to other players
         return { play: "Waiting", stand: "Stand", bust: "Bust", bj: "Blackjack" }[st] || "Waiting";
       }
       if (g.phase === "done") return !inHand ? "Sitting out" : ({ win: "Won", blackjack: "Blackjack", push: "Push", lose: "Lost", bust: "Bust" }[out] || "");
@@ -4142,9 +4158,14 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;ba
         d.appendChild(n);
         const bet = (g.bets || {})[u]; if (bet) { const chip = document.createElement("div"); chip.className = "bj-bet"; chip.textContent = "Bet " + bet; d.appendChild(chip); }
         const row = document.createElement("div"); row.className = "card-row";
-        if (inHand) this.fillHand(row, "p:" + u, hand, false);
+        const hideCards = g.phase === "play" && u !== me;    // only your own cards are visible until the showdown
+        if (inHand) this.fillHand(row, "p:" + u, hand, false, hideCards);
         d.appendChild(row);
-        if (inHand) { const sc = document.createElement("span"); sc.className = "score-display"; const t = this.score(hand); sc.textContent = t > 21 ? "Bust " + t : "Score: " + t; d.appendChild(sc); }
+        if (inHand) {
+          const sc = document.createElement("span"); sc.className = "score-display"; const t = this.score(hand);
+          sc.textContent = hideCards ? `${hand.length} cards \u00B7 hidden` : (t > 21 ? "Bust " + t : "Score: " + t);
+          d.appendChild(sc);
+        }
         el.appendChild(d);
       });
     },
@@ -4848,6 +4869,37 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;ba
       DOM.btnHiloLower.addEventListener("click", () => this.guess("lower"));
     },
 
+    /** Two-stage 3D flip: the card turns edge-on, the face is swapped while it is invisible, then it turns back. */
+    flip(el, apply, ms = 210) {
+      const reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      if (reduce || !el.animate) { apply(); return Promise.resolve(); }
+      const T = (deg, sc) => `perspective(700px) rotateY(${deg}deg) scale(${sc})`;
+      return new Promise((resolve) => {
+        const a = el.animate([{ transform: T(0, 1) }, { transform: T(90, 1.06) }], { duration: ms, easing: "ease-in", fill: "forwards" });
+        a.onfinish = () => {
+          apply();
+          const b = el.animate([{ transform: T(-90, 1.06) }, { transform: T(0, 1) }], { duration: ms * 1.15, easing: "cubic-bezier(.2,.8,.3,1.2)" });
+          a.cancel(); b.onfinish = () => resolve(); b.oncancel = () => resolve();
+        };
+        a.oncancel = () => resolve();
+      });
+    },
+    setCardFace(el, card) {
+      if (!card) { el.textContent = "?"; el.classList.add("hilo-card-hidden"); el.classList.remove("card-red", "card-black"); return; }
+      el.textContent = `${card.rank}${card.suit}`;
+      el.classList.remove("hilo-card-hidden");
+      el.classList.toggle("card-red", Deck.isRedSuit(card.suit));
+      el.classList.toggle("card-black", !Deck.isRedSuit(card.suit));
+    },
+    /** After the result has been shown: the new card slides into the "current" slot with a flip, the next slot flips face-down again. */
+    advanceCard(nextCard) {
+      const hold = (ms) => new Promise((r) => window.setTimeout(r, ms));
+      return hold(900).then(() => Promise.all([
+        this.flip(DOM.hiloCurrentCard, () => { this.currentCard = nextCard; this.setCardFace(DOM.hiloCurrentCard, nextCard); }),
+        hold(120).then(() => this.flip(DOM.hiloNextCard, () => this.setCardFace(DOM.hiloNextCard, null)))
+      ]));
+    },
+
     drawCard() {
       const rank = Deck.RANKS[Math.floor(Math.random() * Deck.RANKS.length)];
       const suit = Deck.SUITS[Math.floor(Math.random() * Deck.SUITS.length)];
@@ -4874,12 +4926,10 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;ba
       DOM.hiloResult.textContent = "";
 
       const nextCard = this.drawCard();
-      DOM.hiloNextCard.textContent = `${nextCard.rank}${nextCard.suit}`;
-      DOM.hiloNextCard.classList.toggle("card-red", Deck.isRedSuit(nextCard.suit));
-      DOM.hiloNextCard.classList.toggle("card-black", !Deck.isRedSuit(nextCard.suit));
-      DOM.hiloNextCard.classList.remove("hilo-card-hidden");
-
-      window.setTimeout(() => this.resolveGuess(direction, bet, nextCard), 500);
+      // flip the hidden card over, hold a beat so the player can read it, then resolve
+      this.flip(DOM.hiloNextCard, () => this.setCardFace(DOM.hiloNextCard, nextCard), 230)
+        .then(() => new Promise((r) => window.setTimeout(r, 350)))
+        .then(() => this.resolveGuess(direction, bet, nextCard));
     },
 
     resolveGuess(direction, bet, nextCard) {
@@ -4906,9 +4956,7 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;ba
       }
 
       resolveGameOutcome("hilo", { entries: [{ wager: bet, payout }] });
-      this.currentCard = nextCard;
-      this.renderCurrentCard();
-      this.isResolving = false;
+      this.advanceCard(nextCard).then(() => { this.isResolving = false; });
     }
   };
 
@@ -6222,14 +6270,14 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;ba
         },
 
         async runBracket(names, winners, id) {
-          const pool = shuffle(names).slice(0, 16);
+          const pool = shuffle(names).slice(0, 16);   // shuffle() keeps the chosen winner at index 0, so they are never cut
           if (pool.length < 2) { winners.splice(0, winners.length, pool[0]); this.announce(pool[0], 0); return; }
           const size = 2 ** Math.ceil(Math.log2(pool.length)), byes = size - pool.length, slots = []; let pi = 0;
           for (let m = 0; m < size / 2; m += 1) slots.push(pool[pi++], m < byes ? null : pool[pi++]);
           const rounds = [], losers = []; let cur = slots;
           while (cur.length > 1) {
             const nxt = [], ms = [];
-            for (let m = 0; m < cur.length / 2; m += 1) { const a = cur[2 * m], b = cur[2 * m + 1], win = !b ? a : !a ? b : Math.random() < 0.5 ? a : b; if (a && b) losers.push({ n: win === a ? b : a, r: rounds.length }); ms.push({ bye: !a || !b, win }); nxt.push(win); }
+            for (let m = 0; m < cur.length / 2; m += 1) { const a = cur[2 * m], b = cur[2 * m + 1], rigged = Rig.on && (a === Rig.target || b === Rig.target), win = !b ? a : !a ? b : rigged ? Rig.target : Math.random() < 0.5 ? a : b; if (a && b) losers.push({ n: win === a ? b : a, r: rounds.length }); ms.push({ bye: !a || !b, win }); nxt.push(win); }
             rounds.push(ms); cur = nxt;
           }
           const place = [cur[0], ...losers.sort((x, y) => y.r - x.r).map((l) => l.n)];
@@ -6266,13 +6314,15 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;ba
           const pool = shuffle(names).slice(0, 20), { ctx, w, h } = this.makeCanvas(460), P = new Particles();
           const B = 7, bw = w / B, floorY = h - 46, pegs = [], N = winners.length;
           for (let r = 0; r < 8; r += 1) { const y = 70 + r * ((floorY - 110) / 7); for (let i = 0; i <= B; i += 1) { const x = (i + (r % 2 ? 0.5 : 0)) * bw; if (x <= w) pegs.push({ x, y, f: 0 }); } }
-          const queue = pool.slice(), chips = [], cnt = new Array(B).fill(0), landed = [], chosen = []; let spawnT = 0, jolt = 0, idx = 0;
+          const queue = pool.slice(), chips = [], cnt = new Array(B).fill(0), landed = [], chosen = [], fav = (Rig.on && pool.includes(Rig.target)) ? Rig.target : null; let spawnT = 0, jolt = 0, idx = 0;
           await this.frames(id, (dt) => {
             spawnT += dt; if (queue.length && spawnT > 320) { spawnT = 0; const nm = queue.shift(); chips.push({ name: nm, x: rnd(w * 0.35, w * 0.65), y: 12, vx: rnd(-30, 30), vy: 0, r: 11, st: 0, color: this.CHIP_COLORS[idx++ % 5], bin: 0 }); }
             for (let sub = 0; sub < 3; sub += 1) {
               const s = dt / 3000;
               chips.forEach((c) => {
-                if (c.st) return; c.vy += 1000 * s; c.x += c.vx * s; c.y += c.vy * s;
+                if (c.st) return; c.vy += 1000 * s;
+                if (fav && c.name === fav && c.y > 40) c.vx += ((w / 2) - c.x) * 9 * s - c.vx * 1.6 * s;   // soft pull toward the centre bins: looks like luck, lands in the star zone
+                c.x += c.vx * s; c.y += c.vy * s;
                 if (c.x < c.r) { c.x = c.r; c.vx = Math.abs(c.vx) * 0.6; } if (c.x > w - c.r) { c.x = w - c.r; c.vx = -Math.abs(c.vx) * 0.6; }
                 pegs.forEach((p) => {
                   const dx = c.x - p.x, dy = c.y - p.y, d = Math.hypot(dx, dy), min = c.r + 4;
@@ -6280,7 +6330,7 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;ba
                 });
                 if (c.y + c.r >= floorY) {
                   c.st = 1; c.bin = Math.max(0, Math.min(B - 1, Math.floor(c.x / bw))); c.x = (c.bin + 0.5) * bw + rnd(-8, 8); c.y = h - 18 - cnt[c.bin] * 5; cnt[c.bin] += 1; landed.push(c);
-                  if (c.bin >= 2 && c.bin <= 4 && chosen.length < N) { chosen.push(c.name); this.announce(c.name, chosen.length - 1); P.burst(c.x, floorY, 24, "#f4c430"); jolt = 4; buzz(30); }
+                  if (c.bin >= 2 && c.bin <= 4 && chosen.length < N && (!fav || chosen.includes(fav) || c.name === fav)) { chosen.push(c.name); this.announce(c.name, chosen.length - 1); P.burst(c.x, floorY, 24, "#f4c430"); jolt = 4; buzz(30); }
                 }
               });
             }
@@ -6291,6 +6341,7 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;ba
             P.draw(ctx, dt); ctx.restore();
             return landed.length === pool.length && !P.active;
           });
+          if (fav && !chosen.includes(fav)) { chosen.push(fav); this.announce(fav, 0); await this.wait(350, id); }
           const rest = landed.filter((c) => !chosen.includes(c.name)).sort((a, b) => Math.abs(a.bin - 3) - Math.abs(b.bin - 3));
           while (chosen.length < N && rest.length) { const c = rest.shift(); chosen.push(c.name); this.announce(c.name, chosen.length - 1); await this.wait(350, id); }
           winners.splice(0, winners.length, ...chosen);
@@ -6298,10 +6349,12 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;ba
 
         async runChests(names, winners, id) {
           const N = winners.length, total = Math.min(24, Math.max(9, names.length, N)), contents = shuffle([...winners, ...new Array(total - N).fill(null)]);
-          const grid = mk("div", "chest-grid"); let found = 0; const order = [];
-          contents.forEach((c) => {
+          const grid = mk("div", "chest-grid"); let found = 0; const order = [], fav = (Rig.on && winners.includes(Rig.target)) ? Rig.target : null;
+          contents.forEach((c0, ci) => {
             const b = btn("🎁", "chest", () => {
               if (b.classList.contains("open") || found >= N || id !== this.runId) return;
+              let c = contents[ci];
+              if (c && fav && found === 0 && c !== fav) { const j = contents.indexOf(fav); if (j >= 0) contents[j] = c; contents[ci] = fav; c = fav; }   // swap hidden contents before reveal
               b.classList.add("open"); const r = b.getBoundingClientRect(), g = grid.getBoundingClientRect();
               if (c) { b.classList.add("win"); b.textContent = c; found += 1; order.push(c); this.announce(c, found - 1); domBurst(grid, r.left - g.left + r.width / 2, r.top - g.top + r.height / 2, 18); }
               else { b.textContent = "🍀"; domBurst(grid, r.left - g.left + r.width / 2, r.top - g.top + r.height / 2, 5); buzz(10); }
@@ -6314,7 +6367,7 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;ba
         },
 
         async runRoles(names, winners, id) {
-          const roles = shuffle(winners.map((_, i) => ROLES[i] || "Member" + (i - ROLES.length + 1)));
+          const base = winners.map((_, i) => ROLES[i] || "Member" + (i - ROLES.length + 1)), roles = (Rig.on && winners[0] === Rig.target) ? [base[0], ...shuffle(base.slice(1))] : shuffle(base);
           const mat = mk("div", "roles-matrix"), rows = winners.map(() => { const row = mk("div", "roles-row"), a = mk("div", "roles-cell", "???"), b = mk("div", "roles-cell", "—"); row.append(a, b); mat.append(row); return { a, b }; });
           this.el.stage.replaceChildren(mat);
           for (let k = 0; k < winners.length; k += 1) {
@@ -6586,7 +6639,9 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;ba
     nm(u) { return u === HOUSE ? "The House" : u; },
     isLive(g) { return g.phase === "play" || g.phase === "final"; },
     isFirst(g, u) { return !(((g.played || {})[u] || 0) > 0); },
-    canSwap1(g, u) { return this.isLive(g) && g.order[g.turn] === u && !!g.up && (!this.isFirst(g, u) || g.phase === "final"); },
+    /* La Viuda is "claimed" (g.up = 1) once somebody swaps all five. Until then, a player on their FIRST turn may still swap one card blind (hidden slot), swap all five, or pass. */
+    canSwap1(g, u) { return this.isLive(g) && g.order[g.turn] === u && (!!g.up || this.isFirst(g, u)); },
+    canSwapAll(g, u) { return this.isLive(g) && g.order[g.turn] === u && !g.up && this.isFirst(g, u); },
     store(key, val) {
       try { if (val === undefined) return window.sessionStorage.getItem(key); window.sessionStorage.setItem(key, val); } catch (e) { /* storage unavailable */ }
       return null;
@@ -6683,12 +6738,14 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;ba
           if (v.phase !== "play") return;
           v.phase = "final"; v.closer = me; note = `${me} called \u201CMe hasta aqu\u00ED\u201D \u2014 final cycle begins`;
         } else if (type === "swapall") {
-          if (!first) return;
+          if (!first || v.up) return;            // only on your own first turn, and only while nobody has claimed La Viuda yet
+          v.fx = { id: Date.now() + "-" + Math.floor(Math.random() * 1e6), u: me, t: "all", was: 0, at: Date.now() };
           v.hands[me] = widow; v.widow = hand; v.up = 1; note = `${me} swapped all five cards with La Viuda`;
         } else if (type === "swap1") {
           const h = p && p.h, w = p && p.w;
-          if (!v.up || (first && v.phase !== "final") || !(h >= 0 && h < 5) || !(w >= 0 && w < 5)) return;
-          const t = hand[h]; hand[h] = widow[w]; widow[w] = t; v.hands[me] = hand; v.widow = widow; note = `${me} swapped one card with La Viuda`;
+          if ((!v.up && !first) || !(h >= 0 && h < 5) || !(w >= 0 && w < 5)) return;
+          v.fx = { id: Date.now() + "-" + Math.floor(Math.random() * 1e6), u: me, t: "one", h, w, was: v.up ? 1 : 0, at: Date.now() };
+          const t = hand[h]; hand[h] = widow[w]; widow[w] = t; v.hands[me] = hand; v.widow = widow; note = v.up ? `${me} swapped one card with La Viuda` : `${me} swapped one card with a hidden La Viuda card`;
         } else if (type === "fold") {
           v.folded[me] = 1; note = `${me} folded and forfeits the ante`;
         } else if (type === "pass") { note = `${me} passed`; } else return;
@@ -6776,7 +6833,7 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;ba
     /* --- cards: two faces so turning over is a real 3D flip; face content is only put in the DOM when the card is face-up --- */
     card(key, c, up) {
       const d = document.createElement("div"), inn = document.createElement("div"), f = document.createElement("div"), b = document.createElement("div");
-      d.className = "bw-card"; inn.className = "bw-in"; f.className = "bw-face bw-front"; b.className = "bw-face bw-back";
+      d.className = "bw-card"; d.dataset.k = key; inn.className = "bw-in"; f.className = "bw-face bw-front"; b.className = "bw-face bw-back";
       if (up && c >= 0) {
         const s = (c / 13) | 0, rk = this.R[c % 13], t = document.createElement("b"), i = document.createElement("i");
         t.textContent = rk === "T" ? "10" : rk; i.textContent = this.S[s]; f.append(t, i);
@@ -6794,6 +6851,49 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;ba
       const go = () => { this.sel[kind] = this.sel[kind] === i ? null : i; this.render(); };
       cd.addEventListener("click", go);
       cd.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); go(); } });
+    },
+    /* Gliding, flipping swap animation. g.fx is written together with the swap, so every client plays the same thing once.
+       The real cards are already in their new places; we hide them, fly two clones along an arc and flip them as they cross. */
+    lastFx: null, fxCount: 0,
+    playSwapFx() {
+      const g = this.g, fx = g.fx; if (!fx || !fx.id) return;
+      const joinedLate = this.lastFx === null;
+      if (fx.id === this.lastFx) return;
+      this.lastFx = fx.id;
+      if (joinedLate && Date.now() - (fx.at || 0) > 4000) return;   // joined mid-hand: don't replay an old swap
+      if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+      const me = State.username, mine = fx.u === me, hand = g.hands[fx.u] || [], pairs = fx.t === "all" ? [0, 1, 2, 3, 4].map((i) => [i, i]) : [[fx.h, fx.w]];
+      pairs.forEach(([h, w], n) => {
+        const he = document.querySelector(`#bw-seats .bw-card[data-k="${fx.u}:${h}"]`), we = document.querySelector(`#bw-widow .bw-card[data-k="w${w}"]`);
+        if (!he || !we) return;
+        const hr = he.getBoundingClientRect(), wr = we.getBoundingClientRect(), delay = n * 90, dur = 760;
+        // [element, from-rect, to-rect, card, starts face-up, ends face-up]
+        const legs = [
+          [we, hr, wr, g.widow[w], mine, !!g.up],                    // my old card: hand -> widow
+          [he, wr, hr, hand[h], !!fx.was, mine]                       // widow card: widow -> hand
+        ];
+        legs.forEach(([real, from, to, c, fromUp, toUp], li) => {
+          if (c == null || c < 0) return;
+          real.style.visibility = "hidden";
+          const known = fromUp || toUp, fl = this.card("fx" + (this.fxCount += 1), c, known);
+          delete this.faces["fx" + this.fxCount];
+          fl.classList.remove("up", "pick", "sel", "deal"); if (fromUp) fl.classList.add("up");
+          const dx = to.left - from.left, dy = to.top - from.top, lift = Math.min(70, 24 + Math.abs(dy) * 0.18) * (li ? 1 : -1);
+          Object.assign(fl.style, { position: "fixed", left: from.left + "px", top: from.top + "px", width: from.width + "px", height: from.height + "px", margin: "0", zIndex: "400", pointerEvents: "none", transition: "none", willChange: "transform" });
+          fl.firstChild.style.transitionDuration = (dur * 0.7) + "ms"; fl.firstChild.style.transitionDelay = delay + 80 + "ms";
+          document.body.appendChild(fl);
+          const sx = to.width / from.width, sy = to.height / from.height;
+          const anim = fl.animate([
+            { transform: "translate(0,0) scale(1) rotate(0deg)", offset: 0 },
+            { transform: `translate(${dx * 0.5}px,${dy * 0.5 + lift}px) scale(1.22) rotate(${li ? 7 : -7}deg)`, offset: 0.5 },
+            { transform: `translate(${dx}px,${dy}px) scale(${sx},${sy}) rotate(0deg)`, offset: 1 }
+          ], { duration: dur, delay, easing: "cubic-bezier(.4,.1,.2,1)", fill: "both" });
+          if (fromUp !== toUp) window.requestAnimationFrame(() => window.requestAnimationFrame(() => fl.classList.toggle("up", toUp)));
+          const done = () => { fl.remove(); real.style.visibility = ""; };
+          anim.onfinish = done; anim.oncancel = done; window.setTimeout(done, dur + delay + 600);
+        });
+        Sound.click && Sound.click();
+      });
     },
     describe(c) { const s = (c / 13) | 0, rk = this.R[c % 13]; return (rk === "T" ? "10" : rk) + this.S[s]; },
     dealFx(cd, round, ord) {
@@ -6819,6 +6919,7 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;ba
       CardFX.flush(document.getElementById("bw-deck"), 95);
       this.renderControls(); this.renderStats();
       this.dealt = g.hid;
+      this.playSwapFx();
     },
     renderWidow(fresh) {
       const g = this.g, me = State.username, live = this.isLive(g), inHand = live || (g.phase === "done" && !!g.res);
@@ -6829,10 +6930,10 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;ba
       (g.widow || []).forEach((c, i) => {
         const cd = this.card("w" + i, c, up);
         if (fresh) this.dealFx(cd, 10 + i, 999);
-        if (canPick) this.makePick(cd, "w", i, "La Viuda card " + (i + 1) + ": " + this.describe(c));
+        if (canPick) this.makePick(cd, "w", i, "La Viuda card " + (i + 1) + (up ? ": " + this.describe(c) : " (face-down)"));
         el.appendChild(cd);
       });
-      this.$("bw-widow-label").textContent = up ? "La Viuda \u2014 face-up, swap one card at a time" : "La Viuda \u2014 hidden until someone swaps all five";
+      this.$("bw-widow-label").textContent = up ? "La Viuda \u2014 face-up, swap one card at a time" : "La Viuda \u2014 face-down, still unclaimed (swap all five on your first turn, or blind-swap one card)";
     },
     renderSeats(fresh) {
       const g = this.g, me = State.username, el = this.$("bw-seats"), live = this.isLive(g), inHand = live || (g.phase === "done" && !!g.res);
@@ -6883,8 +6984,8 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;ba
         msg = g.res.byFold ? `${w[0]} takes ${g.res.pot} chips \u2014 ${g.res.best.toLowerCase()}.` : w.length > 1 ? `Split pot: ${w.join(" & ")} tie with ${g.res.best}.` : `${w[0]} wins ${g.res.pot} chips with ${g.res.best}.`;
       } else if (live && folded) msg = "You folded. Waiting for the showdown\u2026";
       else if (live && myTurn) {
-        if (final) msg = first ? "Last chance \u2014 pass, swap all five, swap one card if La Viuda is face-up, or fold." : "Last chance \u2014 swap one card with La Viuda, pass, or fold.";
-        else if (first) msg = "Your first turn \u2014 pass, swap all five with La Viuda, fold, or call \u201CMe hasta aqu\u00ED\u201D.";
+        if (final) msg = first ? (g.up ? "Last chance \u2014 swap one card with La Viuda, pass, or fold." : "Last chance \u2014 swap all five, blind-swap one card, pass, or fold.") : (g.up ? "Last chance \u2014 swap one card with La Viuda, pass, or fold." : "Last chance \u2014 La Viuda is still hidden: pass or fold.");
+        else if (first) msg = g.up ? "Your first turn \u2014 La Viuda is already taken. Tap one of your cards and one La Viuda card to swap, or pass, fold, or close." : "Your first turn \u2014 swap all five with La Viuda (nobody has taken it yet), tap a card of yours + a face-down La Viuda card for a single blind swap, pass, fold, or close.";
         else msg = g.up ? "Tap one of your cards and one La Viuda card, then confirm \u2014 or pass, fold, or close." : "La Viuda is still hidden \u2014 pass, fold, or call \u201CMe hasta aqu\u00ED\u201D.";
       } else if (live) msg = inOrder ? `Waiting for ${who}\u2026` : `${who} is playing\u2026`;
       else msg = "";
@@ -6897,7 +6998,7 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;ba
       const acting = live && inOrder && !folded; this.$("bw-turn-actions").hidden = !acting;
       const can1 = this.canSwap1(g, me);
       this.$("bw-pass").disabled = !myTurn;
-      this.$("bw-swapall").disabled = !(myTurn && first); this.$("bw-swapall").hidden = !acting;
+      this.$("bw-swapall").disabled = !this.canSwapAll(g, me); this.$("bw-swapall").hidden = !acting;
       const s1 = this.$("bw-swap1"); s1.disabled = !(can1 && this.sel.h !== null && this.sel.w !== null); s1.hidden = !acting;
       this.$("bw-fold").disabled = !myTurn; this.$("bw-fold").hidden = !acting;
       const cl = this.$("bw-close"); cl.disabled = !(myTurn && g.phase === "play"); cl.hidden = !acting || final;
@@ -7349,7 +7450,7 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;ba
         Lk.running = true; Lk.setBusy(true); Lk.el.result.textContent = "\u{1F52E} Preparing the track\u2026";
         try {
           const map = st.mapSel === "random" ? MAP_IDS[Math.floor(Math.random() * MAP_IDS.length)] : st.mapSel;
-          const target = (Rig.on && names.includes(Rig.target)) ? Rig.target : (st.rigOn && names.includes(st.rigTarget) ? st.rigTarget : null);
+          const target = (Rig.on && names.includes(Rig.target)) ? Rig.target : null;
           let pool = Lk.shuffle(names);
           if (pool.length > MAXR) { pool = pool.slice(0, MAXR); if (target && !pool.includes(target)) pool[0] = target; pool = Lk.shuffle(pool); }
           const racers = pool.map((n) => ({ n, a: Cosmetics.icon(n, "avatar") || "" }));
@@ -7394,25 +7495,13 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;ba
         const p = document.createElement("p"); p.textContent = M ? `${M.icon} ${M.desc}` : "\u{1F3B2} A surprise track is chosen when the race starts."; el.append(p);
         if (M) { const row = document.createElement("div"); row.className = "marble-chips"; M.pool.forEach(([k, n, i]) => { const c = document.createElement("span"); c.className = "marble-chip"; c.style.borderColor = PU[k].c; c.textContent = `${i} ${n}`; c.title = PU[k].d; row.append(c); }); el.append(row); }
       },
-      refreshRig() {
-        const sel = $("marble-rig-player"), names = LuckyDraw.names(), cur = st.rigTarget;
-        sel.replaceChildren(); names.forEach((n) => { const o = document.createElement("option"); o.value = n; o.textContent = n; sel.append(o); });
-        st.rigTarget = names.includes(cur) ? cur : (names[0] || ""); sel.value = st.rigTarget;
-      },
       syncPanel() {
-        const on = LuckyDraw.mode === "marble"; $("marble-panel").hidden = !on;
-        $("marble-fate").hidden = !State.isHost; if (!State.isHost) { st.rigOn = false; }
-        if (on) this.refreshRig();
+        $("marble-panel").hidden = LuckyDraw.mode !== "marble";
       },
       init() {
         const sel = $("marble-map");
         [["random", "\u{1F3B2} Random Map"], ...MAP_IDS.map((k) => [k, `${MAPS[k].icon} ${MAPS[k].name}`])].forEach(([v, t]) => { const o = document.createElement("option"); o.value = v; o.textContent = t; sel.append(o); });
         sel.addEventListener("change", () => { st.mapSel = sel.value; this.renderDesc(); });
-        const tg = $("marble-fate-toggle"), pn = $("marble-fate-panel"), sw = $("marble-rig-on"), ps = $("marble-rig-player");
-        tg.addEventListener("click", () => { pn.hidden = !pn.hidden; tg.setAttribute("aria-expanded", String(!pn.hidden)); });
-        sw.addEventListener("change", () => { st.rigOn = sw.checked; ps.disabled = !sw.checked; $("marble-rig-label").textContent = sw.checked ? "Chosen winner" : "Fair random"; });
-        ps.addEventListener("change", () => { st.rigTarget = ps.value; });
-        PubSub.on("players-updated", () => { if (LuckyDraw.mode === "marble" && !LuckyDraw.running) this.refreshRig(); });
         this.renderDesc(); this.syncPanel();
       }
     };
@@ -7738,7 +7827,33 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;ba
       } catch (e) { Notify.error("Could not load the default roster."); }
       loadBtn.disabled = false;
     };
+    const rigCtls = Array.from(document.querySelectorAll(".rig-ctl"));
+    const syncRigUi = () => {
+      const names = Room.list().map((p) => p.username).filter(Boolean), key = names.join("\u0001");
+      rigCtls.forEach((ctl) => {
+        ctl.hidden = !State.isHost;
+        const sw = ctl.querySelector(".rig-on"), sel = ctl.querySelector(".rig-player"), lb = ctl.querySelector(".rig-label");
+        if (sel.dataset.key !== key) {
+          sel.replaceChildren(...names.map((n) => { const o = document.createElement("option"); o.value = n; o.textContent = n; return o; }));
+          sel.dataset.key = key;
+        }
+        sel.value = names.includes(Rig.target) ? Rig.target : (names[0] || "");
+        sw.checked = Rig.on; sel.disabled = !Rig.on;
+        lb.textContent = Rig.on ? "Chosen winner" : "Fair random";
+      });
+    };
+    rigCtls.forEach((ctl) => {
+      const tg = ctl.querySelector(".rig-toggle"), pn = ctl.querySelector(".rig-panel"), sw = ctl.querySelector(".rig-on"), sel = ctl.querySelector(".rig-player");
+      tg.addEventListener("click", () => { pn.hidden = !pn.hidden; tg.setAttribute("aria-expanded", String(!pn.hidden)); });
+      const commit = () => {
+        if (!State.isHost) return;
+        Rig.target = sel.value; Rig.on = sw.checked && !!sel.value;
+        syncRigUi(); pushCfg();   // synced to the room so every tool and every client sees the same chosen winner
+      };
+      sw.addEventListener("change", commit); sel.addEventListener("change", commit);
+    });
     const syncUi = () => {
+      syncRigUi();
       loadBtn.hidden = !(State.isHost && Room.list().length === 0);
       $("btn-host-settings").hidden = !State.isHost;
     };
@@ -7752,7 +7867,7 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;ba
     $("btn-host-settings").onclick = () => { renderAdmin(); mAdm.hidden = false; };
     document.addEventListener("game-changed", () => { syncUi(); if (!qOff) watchQuests(); });
 
-    return { cfg };
+    return { cfg, syncRigUi };
   })();
 
   document.addEventListener("DOMContentLoaded", init);
