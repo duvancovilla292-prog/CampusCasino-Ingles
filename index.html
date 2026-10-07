@@ -454,6 +454,8 @@ button {
   transition: border-color 0.15s ease;
 }
 
+.player-card[hidden] { display: none !important; }
+
 .player-card:hover {
   border-color: var(--color-gold-dark);
 }
@@ -5931,35 +5933,72 @@ details.mx-det > summary::-webkit-details-marker { display: none; }
      ========================================================================= */
   const AuthScreen = {
     searchTerm: "",
+    searchRaf: 0,
+
+    /** Lowercase + strip accents so "andres" matches "Andrés", "penaloza" matches "PEÑALOZA". */
+    normalize(value) {
+      return String(value == null ? "" : value)
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase()
+        .trim();
+    },
 
     init() {
       DOM.loginForm.addEventListener("submit", (event) => this.handleCreatePlayer(event));
-      DOM.inputPlayerSearch.addEventListener("input", (event) => {
-        this.searchTerm = event.target.value.trim().toLowerCase();
-        this.render();
-      });
+      const onSearch = () => {
+        this.searchTerm = this.normalize(DOM.inputPlayerSearch.value);
+        // Coalesce rapid keystrokes into one paint-aligned update.
+        if (this.searchRaf) cancelAnimationFrame(this.searchRaf);
+        this.searchRaf = requestAnimationFrame(() => {
+          this.searchRaf = 0;
+          this.applyFilter();
+        });
+      };
+      DOM.inputPlayerSearch.addEventListener("input", onSearch);
+      DOM.inputPlayerSearch.addEventListener("search", onSearch); // native "x" clear button
       DOM.btnLeaveRoom.addEventListener("click", () => this.leaveRoom());
       PubSub.on("players-updated", () => {
         if (!DOM.viewAuth.hidden) this.render();
       });
     },
 
+    /** Rebuilds the roster from room data, then applies the current search term. */
     render() {
-      const allPlayers = Room.list().sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
-      const filtered = this.searchTerm
-        ? allPlayers.filter((p) => p.username.toLowerCase().includes(this.searchTerm))
-        : allPlayers;
+      const allPlayers = Room.list()
+        .filter((p) => p && p.username)
+        .sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
 
       DOM.playersCount.textContent = String(allPlayers.length);
-      DOM.playersGrid.innerHTML = "";
-      DOM.playersEmpty.hidden = allPlayers.length > 0;
-      DOM.playersEmpty.textContent = (allPlayers.length > 0 && filtered.length === 0)
+      DOM.playersGrid.textContent = "";
+      const frag = document.createDocumentFragment();
+      allPlayers.forEach((player) => {
+        const card = this.buildPlayerCard(player);
+        card.dataset.search = this.normalize(player.username);
+        frag.appendChild(card);
+      });
+      DOM.playersGrid.appendChild(frag);
+
+      // Re-sync the term from the input (it may have been typed before the list loaded).
+      this.searchTerm = this.normalize(DOM.inputPlayerSearch.value);
+      this.applyFilter(allPlayers.length);
+    },
+
+    /** Toggles card visibility only (no DOM rebuild) so typing stays instant. */
+    applyFilter(total) {
+      const cards = DOM.playersGrid.children;
+      const count = typeof total === "number" ? total : cards.length;
+      const term = this.searchTerm;
+      let visible = 0;
+      for (let i = 0; i < cards.length; i += 1) {
+        const match = !term || (cards[i].dataset.search || "").includes(term);
+        cards[i].hidden = !match;
+        if (match) visible += 1;
+      }
+      DOM.playersEmpty.hidden = visible > 0;
+      DOM.playersEmpty.textContent = (count > 0 && visible === 0)
         ? "No players match your search."
         : "No players have joined this room yet. Create the first profile on the right \u2192";
-
-      filtered.forEach((player) => {
-        DOM.playersGrid.appendChild(this.buildPlayerCard(player));
-      });
     },
 
     buildPlayerCard(player) {
