@@ -2086,6 +2086,62 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;ba
 .uno-bet{max-width:760px;margin:.4rem auto 0}
 @media(min-width:900px){.nav-menu-panel{grid-template-columns:repeat(3,1fr);width:min(900px,calc(100vw - 2rem))}}
 @media(max-width:560px){.uno-hand .uc{--uw:58px;margin-left:-30px}.uno-mid{gap:1rem}}
+/* ===== Parqués & Dominoes / Casual & Party Games ===== */
+.pk0{--k:#d8404a}.pk1{--k:#f0bf2e}.pk2{--k:#3f7fe6}.pk3{--k:#23b87c}
+.pq-table,.dm-table{position:relative;padding:1rem .6rem .8rem}
+.pq-players{display:flex;flex-wrap:wrap;gap:.5rem;justify-content:center;margin-bottom:.4rem}
+.pq-pl{min-width:130px;text-align:center;border-left:4px solid var(--k)}
+.pq-board{position:relative;width:min(100%,620px);aspect-ratio:1;margin:.4rem auto;border-radius:22px;background:radial-gradient(circle at 50% 50%,#12634c,#072a20 72%);border:4px solid #1a1206;box-shadow:0 0 0 2px var(--color-gold-dark),inset 0 0 60px rgba(0,0,0,.7),0 14px 34px rgba(0,0,0,.6)}
+.pq-board>div{position:absolute;transform:translate(-50%,-50%)}
+.pq-board>.pq-tokens{left:0;top:0;width:100%;height:100%;transform:none;pointer-events:none}
+.pq-sq{width:5.1%;height:5.1%;border-radius:26%;background:linear-gradient(145deg,#222c38,#0b1016);box-shadow:inset 0 0 0 1px rgba(233,196,106,.32),0 1px 3px rgba(0,0,0,.7)}
+.pq-sq.safe{box-shadow:inset 0 0 0 1px var(--color-gold),0 0 8px rgba(244,196,48,.4)}
+.pq-sq.safe::after{content:"\2726";position:absolute;inset:0;display:grid;place-items:center;font-size:clamp(7px,1.9vw,13px);color:var(--color-gold-strong)}
+.pq-sq.entry{background:linear-gradient(145deg,var(--k),rgba(0,0,0,.55))}
+.pq-sq.lane{background:linear-gradient(145deg,var(--k),rgba(0,0,0,.6));opacity:.9}
+.pq-yard{width:27%;height:27%;border-radius:20px;border:2px solid var(--k);background:linear-gradient(145deg,rgba(0,0,0,.55),rgba(0,0,0,.25));box-shadow:0 0 16px var(--k),inset 0 0 22px rgba(0,0,0,.6)}
+.pq-slot{width:4.9%;height:4.9%;border-radius:50%;background:rgba(0,0,0,.55);box-shadow:inset 0 0 0 2px var(--k)}
+.pq-center{width:12%;height:12%;border-radius:50%;background:conic-gradient(from -45deg,#d8404a 0 25%,#f0bf2e 0 50%,#3f7fe6 0 75%,#23b87c 0);box-shadow:0 0 0 3px var(--color-gold-strong),0 0 24px rgba(244,196,48,.6),inset 0 0 12px rgba(0,0,0,.6)}
+.pq-tok{position:absolute;width:4.3%;height:4.3%;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle at 35% 28%,rgba(255,255,255,.75),rgba(255,255,255,0) 42%),var(--k);border:2px solid rgba(255,255,255,.55);box-shadow:0 3px 7px rgba(0,0,0,.75);z-index:3;pointer-events:auto}
+.pq-tok.fin{width:2.7%;height:2.7%;border-width:1px;z-index:2}
+.pq-tok.wall{box-shadow:0 0 0 2px var(--color-gold-strong),0 0 10px var(--color-gold-strong)}
+.pq-tok.ok{z-index:8;cursor:pointer;animation:pq-pulse 1s ease-in-out infinite}
+.pq-tok.ok:focus-visible{outline:2px solid #fff;outline-offset:2px}
+@keyframes pq-pulse{50%{box-shadow:0 0 0 3px var(--color-gold-strong),0 0 18px rgba(245,210,122,.95)}}
+.pq-bar{display:flex;gap:1.4rem;align-items:center;justify-content:center;margin:.6rem 0}
+#pq-pot,#dm-pot{color:var(--color-gold-strong);font-weight:700}
+.pq-die{width:64px;height:64px;padding:10px;display:grid;grid-template:repeat(3,1fr)/repeat(3,1fr);border-radius:14px;background:linear-gradient(145deg,#fff9e8,#d9c78e);box-shadow:0 0 0 2px var(--color-gold-dark),0 6px 16px rgba(0,0,0,.65)}
+.pq-die i{width:11px;height:11px;margin:auto;border-radius:50%}
+.pq-die i.on{background:radial-gradient(circle at 35% 30%,#555,#0b0b0b)}
+.pq-die.can{cursor:pointer;animation:pq-pulse 1s ease-in-out infinite}
+.pq-die.rolling{animation:pq-tumble .24s linear infinite}
+@keyframes pq-tumble{from{transform:rotate(0) scale(1.08)}50%{transform:rotate(180deg) scale(.88)}to{transform:rotate(360deg) scale(1.08)}}
+.dm{--s:34px;position:relative;display:flex;flex:none;border-radius:calc(var(--s)*.2);background:linear-gradient(145deg,#fffbea,#e6d9a8);box-shadow:0 3px 8px rgba(0,0,0,.6),inset 0 0 0 1px rgba(184,134,11,.85);user-select:none}
+.dm.v{flex-direction:column;width:var(--s);height:calc(var(--s)*2)}
+.dm.h{flex-direction:row;width:calc(var(--s)*2);height:var(--s)}
+.dm::after{content:"";position:absolute;background:var(--color-gold-dark)}
+.dm.v::after{left:12%;right:12%;top:50%;height:2px}.dm.h::after{top:12%;bottom:12%;left:50%;width:2px}
+.dm .dh{flex:1;display:grid;grid-template:repeat(3,1fr)/repeat(3,1fr);padding:14%}
+.dm .dh i{width:72%;height:72%;margin:auto;border-radius:50%}
+.dm .dh i.on{background:radial-gradient(circle at 35% 30%,#555,#0b0b0b)}
+.dm.bk{background:radial-gradient(circle at 50% 30%,#232830,#07090b);box-shadow:0 0 0 1px var(--color-gold),0 3px 8px rgba(0,0,0,.6)}.dm.bk .dh{visibility:hidden}
+.dm.drop{animation:dm-drop .55s cubic-bezier(.2,.8,.2,1) backwards}
+@keyframes dm-drop{from{transform:translateY(-46px) scale(1.5);opacity:0}to{transform:none;opacity:1}}
+.dm-opps{display:flex;flex-wrap:wrap;gap:.6rem;justify-content:center}
+.dm-opp{min-width:130px;text-align:center}.dm-fan{display:flex;flex-wrap:wrap;gap:2px;justify-content:center;min-height:26px}
+.dm-chain{display:flex;flex-wrap:wrap;gap:3px;justify-content:center;align-items:center;min-height:96px;margin:1rem 0 .4rem;padding:.8rem;border-radius:18px;background:rgba(0,0,0,.28);box-shadow:inset 0 0 24px rgba(0,0,0,.55)}
+.dm-end{padding:.15rem .6rem;border-radius:99px;font-weight:800;color:#1a1206;background:linear-gradient(180deg,#fff2bf,#e0b64c 55%,#b8860b);box-shadow:0 0 10px rgba(245,210,122,.5)}
+.dm-empty{color:var(--color-gold);opacity:.85}
+.dm-mid{display:flex;gap:1.6rem;align-items:center;justify-content:center;margin:.6rem 0}
+.dm-yard{position:relative;display:flex;align-items:center;gap:4px;padding:.4rem .6rem;border-radius:12px;min-height:48px}.dm-yard .dm{--s:20px}
+.dm-count{color:var(--color-gold-strong);font-weight:800;margin-left:.3rem}
+.dm-yard.can{cursor:pointer;animation:uno-pulse 1.2s ease-in-out infinite}
+.dm-hand{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;padding:1.2rem .5rem .5rem;min-height:100px}
+.dm-hand .dm{--s:38px;transition:transform .18s,filter .2s}
+.dm-hand .dm.no{filter:brightness(.5)}
+.dm-hand .dm.ok{cursor:pointer;transform:translateY(-10px);box-shadow:0 0 0 2px var(--color-gold-strong),0 0 16px rgba(245,210,122,.6)}
+.dm-hand .dm.ok:hover,.dm-hand .dm.ok:focus-visible{transform:translateY(-18px);outline:none}
+@media(max-width:560px){.pq-die{width:54px;height:54px;padding:8px}.dm-hand .dm{--s:32px}.dm-mid{gap:1rem}}
 </style>
 </head>
 <body>
@@ -2309,6 +2365,8 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;ba
           <div class="nav-menu-group" role="group" aria-labelledby="nav-cat-party">
             <h3 id="nav-cat-party" class="nav-menu-heading">Casual &amp; Party Games<small>Social games with optional chip bets</small></h3>
             <button type="button" class="nav-menu-item" role="menuitem" data-game="uno"><span class="nav-menu-icon" aria-hidden="true">&#127924;</span><span>UNO</span></button>
+            <button type="button" class="nav-menu-item" role="menuitem" data-game="parques"><span class="nav-menu-icon" aria-hidden="true">&#127922;</span><span>Parqu&eacute;s</span></button>
+            <button type="button" class="nav-menu-item" role="menuitem" data-game="dominoes"><span class="nav-menu-icon" aria-hidden="true">&#127074;</span><span>Dominoes</span></button>
           </div>
         </div>
       </nav>
@@ -2697,6 +2755,49 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;ba
           <button type="button" class="btn btn-primary" id="uno-again" hidden>Back to table lobby</button>
           <button type="button" class="btn btn-ghost" id="uno-kick" hidden>Skip idle player</button>
           <button type="button" class="btn btn-ghost" id="uno-leave" hidden>Leave table</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="game-parques" class="game-section" data-game-section="parques" hidden aria-labelledby="pq-heading">
+      <h2 id="pq-heading">Parqu&eacute;s<span class="bw-title-sub">Casual &amp; Party Games</span></h2>
+      <p class="bw-info">2&ndash;4 players &middot; roll a 6 to leave base &middot; land on a rival to send it home (&#10022; squares are safe) &middot; two tokens form a blockade &middot; exact roll to reach the centre &middot; optional stake, first home takes the pot</p>
+      <div class="tl" id="pq-lobby" hidden></div>
+      <div id="pq-live" hidden>
+        <div class="bw-table pq-table">
+          <div class="pq-players" id="pq-players"></div>
+          <div class="pq-board" id="pq-board" role="group" aria-label="Parqu&eacute;s board"></div>
+          <div class="pq-bar"><div class="pq-die" id="pq-die" role="button" aria-label="Dice"></div><div id="pq-pot"></div></div>
+          <div class="bw-info" id="pq-status" aria-live="polite"></div>
+          <div class="bw-log" id="pq-log"></div>
+        </div>
+        <div class="bw-actions">
+          <button type="button" class="btn btn-action" id="pq-roll" hidden>Roll dice</button>
+          <button type="button" class="btn btn-primary" id="pq-again" hidden>Back to table lobby</button>
+          <button type="button" class="btn btn-ghost" id="pq-kick" hidden>Skip idle player</button>
+          <button type="button" class="btn btn-ghost" id="pq-leave" hidden>Leave table</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="game-dominoes" class="game-section" data-game-section="dominoes" hidden aria-labelledby="dm-heading">
+      <h2 id="dm-heading">Dominoes<span class="bw-title-sub">Casual &amp; Party Games</span></h2>
+      <p class="bw-info">2&ndash;4 players &middot; double-six set, 7 tiles each &middot; match an open end &middot; draw from the boneyard or pass &middot; optional stake, first to empty their hand takes the pot</p>
+      <div class="tl" id="dm-lobby" hidden></div>
+      <div id="dm-live" hidden>
+        <div class="bw-table dm-table">
+          <div class="dm-opps" id="dm-opps"></div>
+          <div class="dm-chain" id="dm-chain" aria-label="Domino line"></div>
+          <div class="dm-mid"><div class="dm-yard" id="dm-yard" role="button" tabindex="0" aria-label="Boneyard"></div><div id="dm-pot"></div></div>
+          <div class="bw-info" id="dm-status" aria-live="polite"></div>
+          <div class="bw-log" id="dm-log"></div>
+          <div class="dm-hand" id="dm-hand"></div>
+          <div class="uno-pick" id="dm-pick" hidden><b>Which end?</b><div><button type="button" class="btn btn-secondary" id="dm-pick-l"></button> <button type="button" class="btn btn-secondary" id="dm-pick-r"></button></div><button type="button" class="btn btn-ghost" id="dm-pick-x">Cancel</button></div>
+        </div>
+        <div class="bw-actions">
+          <button type="button" class="btn btn-primary" id="dm-again" hidden>Back to table lobby</button>
+          <button type="button" class="btn btn-ghost" id="dm-kick" hidden>Skip idle player</button>
+          <button type="button" class="btn btn-ghost" id="dm-leave" hidden>Leave table</button>
         </div>
       </div>
     </section>
@@ -3829,7 +3930,7 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;ba
     settled: new Set(),
     LABELS: {
       blackjack: "Blackjack", roulette: "Roulette", slots: "Slots", hilo: "Hi-Lo", craps: "Craps", crash: "Crash",
-      moneywheel: "Money Wheel", pokerdice: "Poker Dice", blackwidow: "Black Widow Poker", uno: "UNO", wheel: "Player Wheel"
+      moneywheel: "Money Wheel", pokerdice: "Poker Dice", blackwidow: "Black Widow Poker", uno: "UNO", parques: "Parqués", dominoes: "Dominoes", wheel: "Player Wheel"
     },
 
     label(gameId) {
@@ -7371,6 +7472,473 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;ba
   })();
   UNO.init();
   { const s0 = Social.start, s1 = Social.stop; Social.start = function () { s0.call(Social); UNO.start(); }; Social.stop = function () { s1.call(Social); UNO.stop(); }; }
+
+  /* =========================================================================
+     PARQUÉS & DOMINOES (Casual & Party Games) — real-time multiplayer at rooms/<code>/parques and rooms/<code>/dominoes
+     Both reuse the UNO table flow: shared lobby (host picks an optional stake, starts) -> match -> winner takes the pot.
+     The rules engines mutate the Firebase transaction value `g`; clients only render shared state and animate `fx` records.
+     Stake is charged to every seated player when the match starts (persisted per match, so a reload never double-charges).
+     ========================================================================= */
+  const pt$ = (s) => document.getElementById(s), ptMk = (t, c, x) => { const n = document.createElement(t); if (c) n.className = c; if (x != null) n.textContent = x; return n; };
+  const PT_PIPS = [[], [4], [0, 8], [0, 4, 8], [0, 2, 6, 8], [0, 2, 4, 6, 8], [0, 2, 3, 5, 6, 8]];
+
+  /** Shared table plumbing: lobby, seats, optional stake, turn actions, idle skip, forfeit, chip settlement. */
+  const Party = (o) => {
+    const el = (s) => pt$(o.p + "-" + s);
+    return {
+      MAX: o.max, IDLE: 45000, STAKES: [0, 10, 25, 50, 100, 250], E: o.E,
+      ref: null, cb: null, tick: null, pres: { armed: null }, ann: {}, g: { phase: "lobby" }, hid: null, paid: 0, dealt: null, lastFx: null,
+      store(k, v) { try { if (v === undefined) return window.sessionStorage.getItem(k); window.sessionStorage.setItem(k, v); } catch (e) { /* storage unavailable */ } return null; },
+      init() { el("kick").addEventListener("click", () => this.kick()); el("leave").addEventListener("click", () => this.leave()); el("again").addEventListener("click", () => this.again()); this.setup(); },
+      start() {
+        this.stop(); if (!Room.db || !Room.code) return;
+        this.ref = Room.db.ref(`rooms/${Room.code}/${o.node}`);
+        this.cb = (s) => {
+          const n = s.val() || { phase: "lobby" }; if (n.hid !== this.g.hid) this.onNew(); this.g = n;
+          Tables.announce(this.ann, n, o.label); Tables.badge(o.key, n, this.MAX); Tables.presence(this.pres, this.ref, n, State.username);
+          this.sync(); this.render();
+        };
+        this.ref.on("value", this.cb);
+        this.tick = window.setInterval(() => { if (this.g.phase === "play") this.controls(); }, 1000);
+        this.render();
+      },
+      stop() {
+        if (this.ref && this.cb) this.ref.off("value", this.cb);
+        if (this.tick) window.clearInterval(this.tick);
+        this.ref = this.cb = this.tick = null; this.g = { phase: "lobby" }; this.hid = this.dealt = this.lastFx = null; this.pres = { armed: null }; this.ann = {};
+        this.onNew(); Tables.badge(o.key, {}, this.MAX);
+      },
+      /* --- table, seats and optional stake --- */
+      canSit() { const b = this.g.bet || 0; if (State.balance < b) { Notify.error(`You need ${b} chips to join this table's stake.`); return false; } return true; },
+      openTable() { if (this.ref) Tables.open(this.ref, State.username, this.MAX); },
+      take(k) { if (this.ref && this.canSit()) Tables.take(this.ref, State.username, k, ["lobby", "done"]); },
+      closeTable() { if (this.ref) Tables.close(this.ref, State.username, State.isHost, ["lobby", "done"]).then((r) => { if (!r.committed) Notify.warning("Finish the match before closing the table."); }); },
+      setBet(n) { const me = State.username; if (this.ref) this.ref.transaction((v) => { if (!Tables.isOpen(v) || v.phase !== "lobby" || !Tables.canDrive(v, me)) return; v.bet = n; return v; }); },
+      leave() {
+        const me = State.username, g = this.g; if (!this.ref || !me) return;
+        if (g.phase !== "play" || !(g.order || []).includes(me)) return Tables.leave(this.ref, me);
+        if (!window.confirm("Leave the match? You forfeit your stake.")) return;
+        this.ref.transaction((v) => {
+          if (!v || v.phase !== "play" || !v.order.includes(me)) return;
+          o.E.leave(v, me);
+          const k = Tables.seatOf(v.seats, me); if (k) delete v.seats[k];
+          if (v.owner === me) v.owner = Tables.names(v.seats)[0] || "";
+          v.fx = null; v.last = `${me} left the match`; return v;
+        });
+      },
+      again() {
+        const me = State.username; if (!this.ref) return;
+        this.ref.transaction((v) => { if (!Tables.isOpen(v) || v.phase !== "done" || !Tables.canDrive(v, me)) return; return { phase: "lobby", owner: v.owner, seats: v.seats, max: v.max, rot: v.rot || 0, bet: v.bet || 0, hid: Date.now(), turnAt: Date.now() }; });
+      },
+      deal() {
+        const me = State.username, g = this.g, bet = g.bet || 0; if (!this.ref) return;
+        const poor = Tables.names(g.seats).filter((u) => (u === me ? State.balance : ((Room.get(u) || {}).balance || 0)) < bet);
+        if (poor.length) return Notify.error(`${poor.join(", ")} can't cover the ${bet}-chip stake.`);
+        this.ref.transaction((v) => {
+          if (!Tables.isOpen(v) || v.phase !== "lobby" || !Tables.canDrive(v, me)) return;
+          const n = Tables.names(v.seats); if (n.length < 2 || !n.includes(me)) return;
+          return o.E.deal(v);
+        });
+      },
+      /* --- turn actions: the engine validates and applies them inside the transaction; `auto` plays for an idle player --- */
+      act(type, p, who) {
+        const me = State.username, u = who || me, g0 = this.g; if (!this.ref || !me || g0.phase !== "play" || (g0.order || [])[g0.turn] !== u) return;
+        this.ref.transaction((v) => {
+          if (!v || v.phase !== "play" || v.order[v.turn] !== u) return; v.idle = v.idle || {};
+          if (who && Date.now() - (v.turnAt || 0) < this.IDLE) return;
+          const id = Date.now() + "-" + Math.floor(Math.random() * 1e6); let note;
+          if (type === "auto") {
+            v.idle[u] = (v.idle[u] || 0) + 1;
+            if (v.idle[u] >= 3) { o.E.leave(v, u); const k = Tables.seatOf(v.seats, u); if (k) delete v.seats[k]; if (v.owner === u) v.owner = Tables.names(v.seats)[0] || ""; v.fx = null; note = `${u} was removed for inactivity`; }
+            else note = o.E.auto(v, u, id) || `${u} timed out`;
+          } else { note = o.E.act(v, u, type, p, id); if (!note) return; }
+          if (!who) v.idle[u] = 0; v.last = note; return v;
+        }).catch(() => {});
+      },
+      kick() {
+        const g = this.g, u = g.order && g.order[g.turn]; if (g.phase !== "play" || !u || u === State.username) return;
+        if (Date.now() - (g.turnAt || 0) < this.IDLE) return Notify.warning("Give them a little longer.");
+        this.act("auto", null, u);
+      },
+      /* --- chips: stake charged once per match from shared state; the winner(s) split the pot --- */
+      sync() {
+        const g = this.g, me = State.username; if (!me || !g.hid || !g.in) return;
+        const pk = `${o.key}-paid-${Room.code}-${g.hid}-${me}`;
+        if (this.hid !== g.hid) { this.hid = g.hid; this.paid = Number(this.store(pk)) || 0; }
+        const owed = (g.in[me] || 0) - this.paid;
+        if (owed > 0) { State.debit(Math.min(owed, State.balance)); this.paid += owed; this.store(pk, String(this.paid)); }
+        if (g.phase !== "done" || !g.res) return;
+        const dk = `${o.key}-done-${Room.code}-${g.hid}-${me}`; if (this.store(dk)) return; this.store(dk, "1");
+        const ws = g.res.ws || [], won = ws.includes(me), pot = g.res.pot || 0, share = won ? Math.floor(pot / ws.length) + (ws[0] === me ? pot % ws.length : 0) : 0;
+        if (this.paid > 0) resolveGameOutcome(o.key, { roundId: g.hid + "-" + me, entries: [{ wager: this.paid, payout: share }] });
+        if (won) { Effects.celebrate(`${o.label}! You win${share ? " " + share + " chips" : ""}!`); BW.sparkle(); Notify.success(share ? `You won ${share} chips!` : "You won the match!"); }
+      },
+      /* --- rendering --- */
+      render() {
+        if (CardFX.deferRender(this)) return;
+        const g = this.g, live = g.phase === "play" || (g.phase === "done" && !!g.res), lobby = !Tables.isOpen(g) || !live;
+        el("lobby").hidden = !lobby; el("live").hidden = lobby;
+        if (lobby) {
+          Tables.renderLobby(el("lobby"), g, {
+            title: o.label + " table", game: o.label, max: this.MAX, minStart: 2, soloNote: `${o.label} needs at least 2 players. Wait for someone to take a seat.`,
+            onOpen: () => this.openTable(), onTake: (k) => this.take(k), onLeave: () => this.leave(), onStart: () => this.deal(), onClose: () => this.closeTable(), onClaim: () => Tables.claim(this.ref, State.username)
+          });
+          this.betUi(); this.dealt = g.hid; return;
+        }
+        const fresh = this.dealt !== g.hid; this.view(fresh); this.controls(); this.dealt = g.hid; this.playFx();
+      },
+      betUi() {
+        const g = this.g; if (!Tables.isOpen(g)) return;
+        const can = g.phase === "lobby" && Tables.canDrive(g, State.username), box = ptMk("div", "uno-bet"), row = ptMk("div", "tl-actions");
+        box.appendChild(ptMk("p", "tl-msg", g.bet ? `Table stake: ${g.bet} chips each \u2014 the winner takes the pot. Charged when the game starts.` : "No stake set \u2014 friendly match. The host can pick an optional chip stake below."));
+        this.STAKES.forEach((n) => { const b = ptMk("button", "btn " + ((g.bet || 0) === n ? "btn-primary" : "btn-secondary"), n ? String(n) : "No bet"); b.type = "button"; b.disabled = !can; b.addEventListener("click", () => this.setBet(n)); row.appendChild(b); });
+        box.appendChild(row); el("lobby").appendChild(box);
+      },
+      /** Shared bottom controls: pot label, idle-skip countdown, forfeit/leave and "back to lobby". */
+      common(my) {
+        const g = this.g, me = State.username, order = g.order || [], inGame = order.includes(me), live = g.phase === "play", seated = Tables.names(g.seats).includes(me);
+        el("pot").textContent = g.bet ? `Pot ${(g.pot || 0).toLocaleString("en-US")} \u00B7 stake ${g.bet}` : "Friendly match";
+        const wait = live && inGame && !my ? Math.ceil((this.IDLE - (Date.now() - (g.turnAt || 0))) / 1000) : 0, k = el("kick");
+        k.hidden = !(live && inGame && !my && seated); k.disabled = wait > 0; k.textContent = wait > 0 ? `Skip idle player (${wait}s)` : "Skip idle player";
+        el("leave").hidden = !(seated && (!live || inGame)); el("leave").textContent = live ? "Forfeit match" : "Leave table";
+        el("again").hidden = !(g.phase === "done" && seated && Tables.canDrive(g, me));
+      }
+    };
+  };
+
+  /* =========================================================================
+     PARQUÉS — 4 tokens each, 68-square ring (an 18x18 grid perimeter), 7-square home lane, centre target.
+     Progress per token: -1 base | 0..67 ring (0 = own entry square) | 68..74 home lane | 75 centre (exact roll needed).
+     Rules: a 6 brings a token out (capturing a lone rival on the entry square); 6 / capture / reaching the centre = roll again;
+            three sixes in a row lose the turn; landing on a lone rival off a safe square (entries + corners) sends it to base;
+            two tokens of one colour on a square form a blockade that rivals can neither land on nor pass.
+     ========================================================================= */
+  const PQ = (() => {
+    const CN = ["Ruby", "Gold", "Sapphire", "Emerald"];
+    const rotN = (x, y, n) => { for (let i = 0; i < n; i++) { const t = x; x = 17 - y; y = t; } return [x, y]; };
+    const trk = (i) => { const s = Math.floor(i / 17), p = i % 17; return s === 0 ? [p, 0] : s === 1 ? [17, p] : s === 2 ? [17 - p, 17] : [0, 17 - p]; };
+    const fin = (c, k) => { let dx = -0.6 + 0.4 * k, dy = -0.75; for (let i = 0; i < c; i++) { const t = dx; dx = -dy; dy = t; } return [8.5 + dx, 8.5 + dy]; };
+    const cell = (c, p, k) => (p < 0 ? rotN(2 + (k % 2) * 2, 2 + (k >> 1) * 2, c) : p <= 67 ? trk((17 * c + 8 + p) % 68) : p <= 74 ? rotN(8, p - 67, c) : fin(c, k));
+    const pc = (v) => ((v + 0.5) / 18 * 100).toFixed(3) + "%";
+    const place = (e, x, y) => { e.style.left = pc(x); e.style.top = pc(y); };
+
+    /*E-START*/
+    const E = {
+      idx(c, p) { return (17 * c + 8 + p) % 68; },
+      safe(i) { return i % 17 === 8 || i % 17 === 0; },
+      at(g, i) { const r = []; g.order.forEach((w) => g.tok[w].forEach((p, k) => { if (p >= 0 && p <= 67 && E.idx(g.col[w], p) === i) r.push({ u: w, k }); })); return r; },
+      wall(g, u, i) { const m = {}; E.at(g, i).forEach((t) => { if (t.u !== u) m[t.u] = (m[t.u] || 0) + 1; }); return Object.keys(m).some((w) => m[w] >= 2); },
+      moves(g, u, d) {
+        const c = g.col[u], out = [];
+        g.tok[u].forEach((p, k) => {
+          if (p === 75) return;
+          if (p < 0) { if (d === 6 && !E.wall(g, u, E.idx(c, 0))) out.push(k); return; }
+          const np = p + d; if (np > 75) return;
+          for (let q = p + 1; q <= Math.min(np, 67); q++) if (E.wall(g, u, E.idx(c, q))) return;
+          out.push(k);
+        });
+        return out;
+      },
+      adv(g) { g.turn = (g.turn + 1) % g.order.length; g.ph = "roll"; g.six = 0; g.turnAt = Date.now(); },
+      win(g, u, left) { g.phase = "done"; g.turnAt = Date.now(); g.res = { ws: [u], pot: g.pot || 0, left: left ? 1 : 0 }; return "win"; },
+      roll(g, u) {
+        const d = 1 + Math.floor(Math.random() * 6); g.die = d; g.turnAt = Date.now();
+        if (d === 6 && (g.six = (g.six || 0) + 1) >= 3) { E.adv(g); return "triple"; }
+        const m = E.moves(g, u, d);
+        if (!m.length) { if (d === 6) g.ph = "roll"; else E.adv(g); return "none"; }
+        g.ph = "move"; return m.length === 1 ? "one" : "pick";
+      },
+      move(g, u, k) {
+        const c = g.col[u], p = g.tok[u][k], d = g.die, np = p < 0 ? 0 : p + d, cap = [];
+        g.tok[u][k] = np;
+        if (np <= 67) { const i = E.idx(c, np); if (np === 0 || !E.safe(i)) E.at(g, i).forEach((t) => { if (t.u !== u) cap.push({ u: t.u, k: t.k, i }); }); }
+        cap.forEach((x) => { g.tok[x.u][x.k] = -1; });
+        const mv = { k, from: p, to: np, cap };
+        if (g.tok[u].every((x) => x === 75)) { E.win(g, u); return mv; }
+        if (d === 6 || cap.length || np === 75) { g.ph = "roll"; g.turnAt = Date.now(); } else E.adv(g);
+        return mv;
+      },
+      say(g, mv) {
+        let s = mv.from < 0 ? "brings a token out of base" : `moves token ${mv.k + 1}`;
+        if (mv.cap.length) s += ` and captures ${mv.cap.map((x) => x.u).join(", ")}`;
+        if (mv.to === 75) s += " into the centre";
+        if (g.phase === "done") s += " \u2014 all four tokens are home!";
+        return s;
+      },
+      act(g, u, type, p, id) {
+        let mv = null, d = null, t;
+        if (type === "roll") {
+          if (g.ph !== "roll") return null;
+          const r = E.roll(g, u); d = g.die; t = `${u} rolled a ${d}`;
+          if (r === "triple") t += " \u2014 three sixes in a row, the turn is lost";
+          else if (r === "none") t += " \u2014 no legal move" + (d === 6 ? ", roll again" : "");
+          else if (r === "one") { mv = E.move(g, u, E.moves(g, u, d)[0]); t += " and " + E.say(g, mv); }
+          else t += " \u2014 choose a token";
+        } else if (type === "move") {
+          if (g.ph !== "move" || !p || !E.moves(g, u, g.die).includes(+p.k)) return null;
+          mv = E.move(g, u, +p.k); t = `${u} ` + E.say(g, mv);
+        } else return null;
+        g.fx = { id, at: Date.now(), u, d, m: mv }; return t;
+      },
+      auto(g, u, id) {
+        let t = null;
+        if (g.ph === "roll") t = E.act(g, u, "roll", null, id);
+        if (g.phase === "play" && g.order[g.turn] === u && g.ph === "move") { const k = E.moves(g, u, g.die).sort((a, b) => g.tok[u][b] - g.tok[u][a])[0]; t = E.act(g, u, "move", { k }, id) || t; }
+        return t ? `${u} timed out \u2014 ${t}` : null;
+      },
+      leave(g, u) {
+        const i = g.order.indexOf(u); if (i < 0) return false;
+        g.order.splice(i, 1); delete g.tok[u]; delete g.col[u];
+        if (g.order.length < 2) return E.win(g, g.order[0], 1);
+        if (i < g.turn) g.turn--; else if (i === g.turn) { g.turn %= g.order.length; g.ph = "roll"; g.six = 0; g.turnAt = Date.now(); }
+        return true;
+      },
+      deal(v) {
+        const names = Tables.names(v.seats).slice(0, 4), rot = (v.rot || 0) + 1, order = names.map((_, i) => names[(i + rot) % names.length]), bet = v.bet || 0, n = order.length;
+        const cols = n === 2 ? [0, 2] : [0, 1, 2, 3], col = {}, tok = {};
+        order.forEach((u, i) => { col[u] = cols[i]; tok[u] = [-1, -1, -1, -1]; });
+        const g = { seats: v.seats, owner: v.owner, max: v.max, rot, bet, phase: "play", hid: Date.now(), order, col, tok, turn: 0, ph: "roll", die: 0, six: 0, in: {}, pot: bet * n, turnAt: Date.now(), last: "Roll a 6 to bring a token out of base", fx: null, res: null };
+        order.forEach((u) => { g.in[u] = bet; });
+        return g;
+      }
+    };
+    /*E-END*/
+
+    const P = Object.assign(Party({ key: "parques", p: "pq", node: "parques", label: "Parqu\u00E9s", max: 4, E }), {
+      onNew() { /* no pending local UI state */ },
+      setup() {
+        const b = pt$("pq-board"), add = (cls, x, y) => { const d = ptMk("div", cls); place(d, x, y); b.appendChild(d); };
+        for (let c = 0; c < 4; c++) { add("pq-yard pk" + c, ...rotN(3, 3, c)); for (let k = 0; k < 4; k++) add("pq-slot pk" + c, ...cell(c, -1, k)); }
+        add("pq-center", 8.5, 8.5);
+        for (let i = 0; i < 68; i++) { const e = i % 17 === 8; add("pq-sq" + (e || i % 17 === 0 ? " safe" : "") + (e ? " entry pk" + (i - 8) / 17 : ""), ...trk(i)); }
+        for (let c = 0; c < 4; c++) for (let j = 0; j < 7; j++) add("pq-sq lane pk" + c, ...rotN(8, 1 + j, c));
+        b.appendChild(ptMk("div", "pq-tokens")).id = "pq-tokens";
+        const d = pt$("pq-die"); for (let i = 0; i < 9; i++) d.appendChild(ptMk("i"));
+        const roll = () => this.act("roll");
+        pt$("pq-roll").addEventListener("click", roll); d.addEventListener("click", roll);
+        d.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); roll(); } });
+      },
+      face(v) { Array.from(pt$("pq-die").children).forEach((c, i) => c.classList.toggle("on", PT_PIPS[v || 0].includes(i))); },
+      view() {
+        const g = this.g, me = State.username, order = g.order || [], inGame = order.includes(me), live = g.phase === "play", who = live ? order[g.turn] : null, myTurn = live && inGame && who === me;
+        const legal = myTurn && g.ph === "move" ? E.moves(g, me, g.die) : [];
+        const strip = pt$("pq-players"); strip.textContent = "";
+        order.forEach((u) => {
+          const c = g.col[u], d = ptMk("div", `bw-seat pq-pl pk${c}` + (u === who ? " turn" : "") + (g.res && (g.res.ws || []).includes(u) ? " win" : ""));
+          d.appendChild(ptMk("div", "bw-name", (u === who ? "\u25B6 " : "") + u + (u === me ? " (you)" : "")));
+          d.appendChild(ptMk("div", "bw-info", `${CN[c]} \u00B7 ${g.tok[u].filter((x) => x === 75).length}/4 home`)); strip.appendChild(d);
+        });
+        const L = pt$("pq-tokens"); L.textContent = "";
+        const items = []; order.forEach((u) => g.tok[u].forEach((p, k) => items.push({ u, k, p, c: g.col[u], xy: cell(g.col[u], p, k) })));
+        const grp = {}; items.forEach((t) => { if (t.p >= 0 && t.p < 75) (grp[t.xy.join()] = grp[t.xy.join()] || []).push(t); });
+        items.forEach((t) => {
+          const gp = grp[t.xy.join()], n = gp ? gp.length : 1, i = gp ? gp.indexOf(t) : 0, off = (i - (n - 1) / 2) * 0.34;
+          const wall = !!gp && t.p <= 67 && gp.filter((x) => x.u === t.u).length >= 2;
+          const e = ptMk("div", `pq-tok pk${t.c}` + (t.p === 75 ? " fin" : "") + (wall ? " wall" : "")); e.dataset.u = t.u; e.dataset.k = t.k;
+          place(e, t.xy[0] + off, t.xy[1] + off); e.setAttribute("aria-label", `${t.u}, ${CN[t.c]} token ${t.k + 1}`);
+          if (t.u === me && legal.includes(t.k)) {
+            e.classList.add("ok"); e.tabIndex = 0; e.setAttribute("role", "button");
+            const go = () => this.act("move", { k: t.k }); e.addEventListener("click", go);
+            e.addEventListener("keydown", (ev) => { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); go(); } });
+          }
+          L.appendChild(e);
+        });
+      },
+      controls() {
+        const g = this.g, me = State.username, order = g.order || [], inGame = order.includes(me), live = g.phase === "play", who = live ? order[g.turn] : null, my = live && inGame && who === me;
+        const d = pt$("pq-die"); if (!d.classList.contains("rolling")) this.face(g.die || 0);
+        d.classList.toggle("can", my && g.ph === "roll"); d.tabIndex = my && g.ph === "roll" ? 0 : -1;
+        let m = "";
+        if (g.phase === "done" && g.res) m = g.res.left ? `${g.res.ws[0]} wins by default${g.res.pot ? " \u2014 " + g.res.pot + " chips" : ""}.` : `${g.res.ws[0]} brings every token home and wins${g.res.pot ? " " + g.res.pot + " chips" : ""}!`;
+        else if (my) m = g.ph === "roll" ? "Your turn \u2014 roll the dice." : `You rolled a ${g.die}. Tap a glowing token to move it.`;
+        else if (live) m = `${who}'s turn\u2026`;
+        pt$("pq-status").textContent = m; pt$("pq-log").textContent = g.last || "";
+        pt$("pq-roll").hidden = !(my && g.ph === "roll"); this.common(my);
+      },
+      /* --- animations: the die tumbles, then the token hops square by square; captured tokens glide back to their base --- */
+      rollAnim(v) {
+        const d = pt$("pq-die"); d.classList.add("rolling"); let n = 0;
+        const iv = window.setInterval(() => { this.face(1 + Math.floor(Math.random() * 6)); Sound.tone(300 + Math.random() * 200, 25, "square", 0.02); if (++n > 7) { window.clearInterval(iv); d.classList.remove("rolling"); this.face(v); } }, 90);
+      },
+      tokEl(u, k) { return Array.from(pt$("pq-tokens").children).find((e) => e.dataset.u === u && +e.dataset.k === k); },
+      playFx() {
+        const g = this.g, fx = g.fx; if (!fx || fx.id === this.lastFx) return;
+        const late = this.lastFx === null; this.lastFx = fx.id;
+        if ((late && Date.now() - fx.at > 4000) || CardFX.reduced() || Router.currentGameKey !== "parques") return;
+        let t = 0; if (fx.d) { this.rollAnim(fx.d); t = 800; }
+        const m = fx.m, c = g.col[fx.u], e = m && c != null ? this.tokEl(fx.u, m.k) : null;
+        if (e) {
+          const pts = [cell(c, m.from, m.k)]; if (m.from < 0) pts.push(cell(c, 0, m.k)); else for (let q = m.from + 1; q <= m.to; q++) pts.push(cell(c, q, m.k));
+          const dur = Math.max(320, 150 * (pts.length - 1)), last = pts.length - 1;
+          const kf = pts.map((p, i) => ({ left: pc(p[0]), top: pc(p[1]), transform: `translate(-50%,-50%) scale(${i && i < last && i % 2 ? 1.22 : 1})` }));
+          kf[last].left = e.style.left; kf[last].top = e.style.top; kf[last].transform = "translate(-50%,-50%) scale(1)";
+          e.style.zIndex = "9"; const a = e.animate(kf, { duration: dur, delay: t, easing: "ease-in-out", fill: "backwards" }); a.onfinish = () => { e.style.zIndex = ""; };
+          pts.forEach((_, i) => { if (i) window.setTimeout(() => Sound.tone(380 + i * 24, 35, "triangle", 0.03), t + (dur / last) * i); });
+          (m.cap || []).forEach((x) => {
+            const ce = this.tokEl(x.u, x.k); if (!ce) return; const [cx, cy] = trk(x.i);
+            ce.animate([{ left: pc(cx), top: pc(cy) }, { left: ce.style.left, top: ce.style.top }], { duration: 600, delay: t + dur, easing: "ease-in", fill: "backwards" });
+            window.setTimeout(() => Sound.tone(150, 180, "sawtooth", 0.05), t + dur);
+          });
+          t += dur + ((m.cap || []).length ? 600 : 0);
+        }
+        CardFX.until = performance.now() + t + 200;
+      }
+    });
+    return P;
+  })();
+
+  /* =========================================================================
+     DOMINOES — double-six set (28 tiles), 7 tiles each (2-4 players), linear line with two open ends.
+     Opening: the highest double (else the heaviest tile) is played first. A player with no playable tile draws from the
+     boneyard (tap it); with an empty boneyard the turn passes automatically. First empty hand wins the pot; if every player
+     is stuck the game is blocked and the lowest pip count wins (ties split the pot).
+     The line is stored as oriented codes a*10+b (left value, right value) so every client renders the same board.
+     ========================================================================= */
+  const DM = (() => {
+    const half = (n) => { const h = ptMk("div", "dh"); for (let i = 0; i < 9; i++) h.appendChild(ptMk("i", PT_PIPS[n].includes(i) ? "on" : "")); return h; };
+    const tile = (a, b, cls, s) => { const d = ptMk("div", "dm " + cls); if (s) d.style.setProperty("--s", s + "px"); d.append(half(a), half(b)); d.setAttribute("aria-label", cls.includes("bk") ? "Hidden tile" : `Tile ${a}-${b}`); return d; };
+
+    /*E-START*/
+    const T = []; for (let a = 0; a <= 6; a++) for (let b = a; b <= 6; b++) T.push([a, b]);
+    const E = {
+      ends(g) { const c = g.ch || []; return c.length ? [Math.floor(c[0] / 10), c[c.length - 1] % 10] : null; },
+      can(g, id) { const e = E.ends(g); if (!e) return id === g.open; const [a, b] = T[id]; return a === e[0] || b === e[0] || a === e[1] || b === e[1]; },
+      ok(g, u) { return (g.hands[u] || []).filter((id) => E.can(g, id)); },
+      sides(g, id) { const e = E.ends(g), [a, b] = T[id]; if (!e) return ["R"]; const l = a === e[0] || b === e[0], r = a === e[1] || b === e[1]; return l && r && e[0] !== e[1] ? ["L", "R"] : r ? ["R"] : l ? ["L"] : []; },
+      pips(g, u) { return (g.hands[u] || []).reduce((s, id) => s + T[id][0] + T[id][1], 0); },
+      adv(g) { g.turn = (g.turn + 1) % g.order.length; g.turnAt = Date.now(); },
+      draw(g, u) { const y = g.yard || (g.yard = []); if (!y.length) return false; (g.hands[u] || (g.hands[u] = [])).push(y.pop()); return true; },
+      starter(g) {
+        let best = -1, id = 0, who = g.order[0];
+        g.order.forEach((u) => (g.hands[u] || []).forEach((t) => { const [a, b] = T[t], s = a === b ? 100 + a : a + b + b / 10; if (s > best) { best = s; id = t; who = u; } }));
+        return { id, u: who };
+      },
+      win(g, u, left) { const pips = {}; g.order.forEach((w) => { if (w !== u) pips[w] = E.pips(g, w); }); g.phase = "done"; g.turnAt = Date.now(); g.res = { ws: [u], pot: g.pot || 0, left: left ? 1 : 0, pips }; return "win"; },
+      block(g) {
+        const pips = {}; g.order.forEach((u) => { pips[u] = E.pips(g, u); });
+        const low = Math.min(...g.order.map((u) => pips[u]));
+        g.phase = "done"; g.turnAt = Date.now(); g.res = { ws: g.order.filter((u) => pips[u] === low), pot: g.pot || 0, blocked: 1, pips };
+      },
+      /** Auto-passes players who cannot move while the boneyard is empty; a full round of passes blocks the game. Returns who passed. */
+      settle(g) {
+        const out = [];
+        for (let i = 0; i < 6 && g.phase === "play"; i++) {
+          const u = g.order[g.turn]; if (E.ok(g, u).length || (g.yard || []).length) break;
+          out.push(u); g.passes = (g.passes || 0) + 1;
+          if (g.passes >= g.order.length) { E.block(g); break; }
+          E.adv(g);
+        }
+        return out;
+      },
+      play(g, u, id, side) {
+        const h = g.hands[u] || [], i = h.indexOf(id); if (i < 0 || !E.can(g, id)) return false;
+        const [a, b] = T[id], ch = g.ch || (g.ch = []), e = E.ends(g);
+        if (!e) ch.push(a * 10 + b);
+        else if (side === "L" ? E.sides(g, id).includes("L") : !E.sides(g, id).includes("R")) { if (b === e[0]) ch.unshift(a * 10 + b); else ch.unshift(b * 10 + a); }
+        else { if (a === e[1]) ch.push(a * 10 + b); else ch.push(b * 10 + a); }
+        h.splice(i, 1); g.passes = 0;
+        if (!h.length) E.win(g, u); else E.adv(g);
+        return true;
+      },
+      act(g, u, type, p, id) {
+        let t;
+        if (type === "play") {
+          if (!p || !E.play(g, u, +p.id, p.side)) return null;
+          const [a, b] = T[+p.id]; t = `${u} played ${a}-${b}`; g.fx = { id, at: Date.now(), u, c: +p.id, s: p.side === "L" ? "L" : "R" };
+        } else if (type === "draw") {
+          if (E.ok(g, u).length || !E.draw(g, u)) return null; t = `${u} drew from the boneyard`; g.fx = { id, at: Date.now(), u, d: 1 };
+        } else return null;
+        const ps = E.settle(g);
+        if (g.phase === "done") t += g.res.blocked ? " \u2014 the game is blocked" : g.res.left ? "" : " \u2014 Domino!";
+        else if (ps.length) t += ` \u2014 ${ps.join(", ")} had no move and passed`;
+        return t;
+      },
+      auto(g, u, id) {
+        while (!E.ok(g, u).length && (g.yard || []).length) E.draw(g, u);
+        const ok = E.ok(g, u).sort((a, b) => T[b][0] + T[b][1] - T[a][0] - T[a][1]);
+        if (ok.length) { const r = E.act(g, u, "play", { id: ok[0], side: E.sides(g, ok[0])[0] }, id); return r ? `${u} timed out \u2014 ${r}` : null; }
+        const ps = E.settle(g); g.fx = null; return `${u} timed out` + (ps.length ? " and passed" : "");
+      },
+      leave(g, u) {
+        const i = g.order.indexOf(u); if (i < 0) return false;
+        g.yard = (g.yard || []).concat(g.hands[u] || []); delete g.hands[u]; g.order.splice(i, 1);
+        if (g.order.length < 2) return E.win(g, g.order[0], 1);
+        if (i < g.turn) g.turn--; else if (i === g.turn) { g.turn %= g.order.length; g.turnAt = Date.now(); }
+        if (!(g.ch || []).length) { const s = E.starter(g); g.open = s.id; g.turn = g.order.indexOf(s.u); g.turnAt = Date.now(); }
+        E.settle(g); return true;
+      },
+      deal(v) {
+        const names = Tables.names(v.seats).slice(0, 4), rot = (v.rot || 0) + 1, order = names.map((_, i) => names[(i + rot) % names.length]), bet = v.bet || 0;
+        const ids = Array.from({ length: 28 }, (_, i) => i); for (let i = ids.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [ids[i], ids[j]] = [ids[j], ids[i]]; }
+        const hands = {}; order.forEach((u) => { hands[u] = ids.splice(-7); });
+        const g = { seats: v.seats, owner: v.owner, max: v.max, rot, bet, phase: "play", hid: Date.now(), order, hands, yard: ids, ch: [], passes: 0, in: {}, pot: bet * order.length, turnAt: Date.now(), fx: null, res: null, turn: 0, open: 0 };
+        const s = E.starter(g); g.open = s.id; g.turn = order.indexOf(s.u); g.last = `${s.u} opens with ${T[s.id][0]}-${T[s.id][1]}`;
+        order.forEach((u) => { g.in[u] = bet; });
+        return g;
+      }
+    };
+    /*E-END*/
+
+    return Object.assign(Party({ key: "dominoes", p: "dm", node: "dominoes", label: "Dominoes", max: 4, E }), {
+      pend: null, prev: new Set(),
+      onNew() { this.pend = null; this.prev = new Set(); },
+      setup() {
+        const y = pt$("dm-yard"); y.addEventListener("click", () => this.drawTile());
+        y.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); this.drawTile(); } });
+        pt$("dm-pick-l").addEventListener("click", () => this.choose("L")); pt$("dm-pick-r").addEventListener("click", () => this.choose("R"));
+        pt$("dm-pick-x").addEventListener("click", () => { this.pend = null; pt$("dm-pick").hidden = true; });
+      },
+      drawTile() { const g = this.g, me = State.username; if (g.phase === "play" && (g.order || [])[g.turn] === me && !E.ok(g, me).length && (g.yard || []).length) this.act("draw"); },
+      choose(side) { const id = this.pend; this.pend = null; pt$("dm-pick").hidden = true; if (id != null) this.act("play", { id, side }); },
+      pick(id) {
+        const s = E.sides(this.g, id); if (s.length === 1) return this.act("play", { id, side: s[0] });
+        const e = E.ends(this.g); this.pend = id; pt$("dm-pick-l").textContent = `Left end (${e[0]})`; pt$("dm-pick-r").textContent = `Right end (${e[1]})`; pt$("dm-pick").hidden = false;
+      },
+      view(fresh) {
+        const g = this.g, me = State.username, order = g.order || [], inGame = order.includes(me), live = g.phase === "play", who = live ? order[g.turn] : null, my = live && inGame && who === me, done = g.phase === "done";
+        const fx = g.fx && g.fx.id !== this.lastFx && Date.now() - g.fx.at < 4000 ? g.fx : null;
+        const opps = pt$("dm-opps"); opps.textContent = "";
+        order.filter((u) => u !== me).forEach((u) => {
+          const h = g.hands[u] || [], d = ptMk("div", "bw-seat dm-opp" + (u === who ? " turn" : "") + (g.res && (g.res.ws || []).includes(u) ? " win" : "")), fan = ptMk("div", "dm-fan");
+          d.appendChild(ptMk("div", "bw-name", (u === who ? "\u25B6 " : "") + u + " \u00B7 " + h.length + (h.length === 1 ? " tile" : " tiles")));
+          h.forEach((id) => fan.appendChild(done ? tile(T[id][0], T[id][1], "v", 16) : tile(0, 0, "v bk", 14))); d.appendChild(fan); opps.appendChild(d);
+        });
+        const ch = pt$("dm-chain"), code = g.ch || [], e = E.ends(g); ch.textContent = "";
+        if (!code.length) ch.appendChild(ptMk("div", "dm-empty", live ? `Opening tile: ${T[g.open][0]}-${T[g.open][1]}` : ""));
+        else {
+          ch.appendChild(ptMk("span", "dm-end", "\u25C0 " + e[0]));
+          code.forEach((c, i) => { const a = Math.floor(c / 10), b = c % 10, t = tile(a, b, a === b ? "v" : "h", 30); if (fx && fx.c != null && i === (fx.s === "L" ? 0 : code.length - 1)) t.classList.add("drop"); ch.appendChild(t); });
+          ch.appendChild(ptMk("span", "dm-end", e[1] + " \u25B6"));
+        }
+        const yl = (g.yard || []).length, yd = pt$("dm-yard"); yd.textContent = "";
+        for (let i = 0; i < Math.min(3, yl); i++) yd.appendChild(tile(0, 0, "v bk"));
+        yd.appendChild(ptMk("span", "dm-count", yl ? `Boneyard \u00B7 ${yl}` : "Boneyard empty"));
+        yd.classList.toggle("can", my && !E.ok(g, me).length && yl > 0);
+        const hand = pt$("dm-hand"), mine = (g.hands[me] || []).slice().sort((a, b) => a - b); hand.textContent = ""; hand.hidden = !inGame;
+        mine.forEach((id, i) => {
+          const t = tile(T[id][0], T[id][1], "v", 38), can = my && E.can(g, id);
+          if (my) t.classList.add(can ? "ok" : "no");
+          if (can) { t.tabIndex = 0; t.setAttribute("role", "button"); t.addEventListener("click", () => this.pick(id)); t.addEventListener("keydown", (ev) => { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); this.pick(id); } }); }
+          if (fresh) { t.classList.add("drop"); t.style.animationDelay = i * 70 + "ms"; } else if (fx && fx.d && fx.u === me && !this.prev.has(id)) t.classList.add("drop");
+          hand.appendChild(t);
+        });
+        this.prev = new Set(mine); if (!my) this.pend = null; pt$("dm-pick").hidden = this.pend == null;
+      },
+      controls() {
+        const g = this.g, me = State.username, order = g.order || [], inGame = order.includes(me), live = g.phase === "play", who = live ? order[g.turn] : null, my = live && inGame && who === me;
+        const ok = my ? E.ok(g, me) : [], yl = (g.yard || []).length; let m = "";
+        if (g.phase === "done" && g.res) {
+          const r = g.res, w = (r.ws || []).join(" & "), pot = r.pot ? ` \u2014 ${r.pot} chips${r.ws.length > 1 ? " split" : ""}` : "";
+          m = r.left ? `${w} wins by default${pot}.` : r.blocked ? `Blocked game \u2014 ${w} ${r.ws.length > 1 ? "tie" : "wins"} with the lowest count (${r.pips[r.ws[0]]} pips)${pot}.` : `${w} played the last tile \u2014 Domino!${pot}`;
+        } else if (my) m = ok.length ? ((g.ch || []).length ? "Play a highlighted tile." : `Open with the ${T[g.open][0]}-${T[g.open][1]}.`) : yl ? "No playable tile \u2014 tap the boneyard to draw." : "No tiles to play \u2014 passing\u2026";
+        else if (live) m = `${who}'s turn\u2026`;
+        pt$("dm-status").textContent = m; pt$("dm-log").textContent = g.last || ""; this.common(my);
+      },
+      playFx() { const fx = this.g.fx; if (!fx || fx.id === this.lastFx) return; const late = this.lastFx === null; this.lastFx = fx.id; if (!(late && Date.now() - fx.at > 4000) && !CardFX.reduced()) { Sound.tone(fx.c != null ? 420 : 300, 60, "triangle", 0.04); CardFX.until = performance.now() + 600; } }
+    });
+  })();
+  PQ.init(); DM.init();
+  { const s0 = Social.start, s1 = Social.stop; Social.start = function () { s0.call(Social); PQ.start(); DM.start(); }; Social.stop = function () { s1.call(Social); PQ.stop(); DM.stop(); }; }
 
   /* =========================================================================
      MARBLE GRAVITY RACE — DETERMINISTIC PHYSICS CORE
