@@ -2142,7 +2142,176 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;ba
 .dm-hand .dm.ok{cursor:pointer;transform:translateY(-10px);box-shadow:0 0 0 2px var(--color-gold-strong),0 0 16px rgba(245,210,122,.6)}
 .dm-hand .dm.ok:hover,.dm-hand .dm.ok:focus-visible{transform:translateY(-18px);outline:none}
 @media(max-width:560px){.pq-die{width:54px;height:54px;padding:8px}.dm-hand .dm{--s:32px}.dm-mid{gap:1rem}}
-</style>
+
+/* =========================================================================
+   VIP UPGRADE — obsidian / brushed metal / gold
+   Shop v2, reward popups, confetti canvas, mission board, host control tabs
+   ========================================================================= */
+:root {
+  --vip-metal: repeating-linear-gradient(90deg, rgba(255,255,255,.022) 0 1px, rgba(0,0,0,0) 1px 3px), linear-gradient(160deg, #1b212a 0%, #0d1015 55%, #07090c 100%);
+  --vip-gold-line: linear-gradient(90deg, transparent, rgba(244,196,48,.75), transparent);
+  --rc-common: #b8c4cf; --rc-rare: #4aa3ff; --rc-epic: #b46bff; --rc-legendary: #f4c430;
+}
+
+/* ---------- Modal transitions (shop, missions, host settings) ---------- */
+@keyframes cx-fade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes cx-fade-out { from { opacity: 1; } to { opacity: 0; } }
+@keyframes cx-card-in { 0% { opacity: 0; transform: translateY(28px) scale(.94); } 100% { opacity: 1; transform: none; } }
+@keyframes cx-card-out { to { opacity: 0; transform: translateY(14px) scale(.97); } }
+@keyframes cx-spin { to { transform: rotate(360deg); } }
+@keyframes cx-float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-7px); } }
+@keyframes cx-pop-in { 0% { opacity: 0; transform: scale(.55) translateY(30px); } 60% { opacity: 1; transform: scale(1.06); } 100% { transform: none; } }
+@keyframes cx-pulse-gold { 0%,100% { box-shadow: 0 0 0 0 rgba(244,196,48,.55), 0 4px 14px rgba(244,196,48,.25); } 50% { box-shadow: 0 0 0 9px rgba(244,196,48,0), 0 4px 22px rgba(244,196,48,.55); } }
+@keyframes cx-card-rise { from { opacity: 0; transform: translateY(14px) scale(.96); } to { opacity: 1; transform: none; } }
+@keyframes cx-shine { from { transform: translateX(-120%) skewX(-20deg); } to { transform: translateX(260%) skewX(-20deg); } }
+@keyframes cx-aurora { 0% { box-shadow: 0 0 0 3px #3ef0c4, 0 0 16px #3ef0c4; } 33% { box-shadow: 0 0 0 3px #7a6bff, 0 0 16px #7a6bff; } 66% { box-shadow: 0 0 0 3px #ff5fd2, 0 0 16px #ff5fd2; } 100% { box-shadow: 0 0 0 3px #3ef0c4, 0 0 16px #3ef0c4; } }
+@keyframes cx-claim-flash { 0% { background: rgba(244,196,48,.5); } 100% { background: rgba(255,255,255,.03); } }
+
+#shop-modal:not([hidden]), .px-modal:not([hidden]) { animation: cx-fade-in .25s ease both; }
+#shop-modal:not([hidden]) > .modal, .px-modal:not([hidden]) > .px-card { animation: cx-card-in .42s cubic-bezier(.2,.9,.25,1.12) both; }
+#shop-modal.cx-closing, .px-modal.cx-closing { animation: cx-fade-out .2s ease forwards !important; }
+#shop-modal.cx-closing > .modal, .px-modal.cx-closing > .px-card { animation: cx-card-out .2s ease forwards !important; }
+
+/* ---------- Avatar / frame / borders / title (HUD) ---------- */
+.top-panel-avatar { position: relative; }
+.top-panel-avatar.has-av { font-size: 1.15rem; }
+.cx-av-in { width: 100%; height: 100%; border-radius: 50%; overflow: hidden; display: grid; place-items: center; }
+.cx-svg { display: block; width: 100%; height: 100%; object-fit: contain; pointer-events: none; user-select: none; -webkit-user-drag: none; }
+.cx-frame { position: absolute; left: -22%; top: -22%; width: 144%; height: 144%; max-width: none; pointer-events: none; z-index: 2; }
+.top-panel-avatar.bd-aurora { animation: cx-aurora 4s linear infinite; }
+.cx-title { display: inline-block; margin-left: .4rem; padding: 0 .5rem; border-radius: 99px; font-size: .68rem; font-weight: 700; letter-spacing: .04em; color: var(--color-gold-strong); border: 1px solid rgba(244,196,48,.45); background: rgba(244,196,48,.08); vertical-align: middle; }
+.cx-title[hidden], .cosmetic-badge[hidden] { display: none; }
+.cosmetic-badge .cx-svg, .cx-chat-ic { display: inline-block; width: 1.15em; height: 1.15em; vertical-align: -0.2em; }
+.cx-chat-title { font-style: normal; font-size: .68rem; color: var(--color-gold); opacity: .9; border: 1px solid rgba(244,196,48,.35); border-radius: 99px; padding: 0 .4rem; }
+
+/* ---------- Shop v2 ---------- */
+#shop-modal > .modal { max-width: 760px; background: var(--vip-metal); border: 1px solid rgba(244,196,48,.4); box-shadow: 0 30px 80px rgba(0,0,0,.75), 0 0 40px rgba(244,196,48,.09); padding: 1.4rem; }
+#shop-modal > .modal::before { content: ""; position: absolute; left: 8%; right: 8%; top: 0; height: 2px; background: var(--vip-gold-line); }
+.cx-shop-head { display: flex; align-items: center; justify-content: space-between; gap: .8rem; flex-wrap: wrap; margin-bottom: .6rem; }
+.cx-shop-head h2 { margin: 0; letter-spacing: .04em; }
+.cx-balance { display: inline-flex; align-items: center; gap: .45rem; padding: .35rem .85rem; border-radius: 99px; background: rgba(0,0,0,.45); border: 1px solid rgba(244,196,48,.5); color: var(--color-gold-strong); font-weight: 800; box-shadow: inset 0 0 12px rgba(244,196,48,.12); }
+.cx-balance small { color: var(--color-text-muted); font-weight: 600; }
+.cx-tabs { display: flex; gap: .4rem; overflow-x: auto; padding: .2rem 0 .6rem; scrollbar-width: none; }
+.cx-tabs::-webkit-scrollbar { display: none; }
+.cx-tab { flex: 0 0 auto; cursor: pointer; padding: .4rem .85rem; border-radius: 99px; border: 1px solid var(--color-border); background: rgba(255,255,255,.03); color: var(--color-text-muted); font-weight: 600; font-size: .82rem; transition: .18s; }
+.cx-tab:hover { color: var(--color-text); border-color: var(--color-gold-dark); }
+.cx-tab[aria-pressed="true"] { color: #10151a; background: linear-gradient(135deg, var(--color-gold-strong), var(--color-gold-dark)); border-color: transparent; box-shadow: 0 4px 14px rgba(244,196,48,.3); }
+.cx-sec-title { margin: 1rem 0 .5rem; font-size: .8rem; letter-spacing: .12em; text-transform: uppercase; color: var(--color-gold); display: flex; align-items: center; gap: .6rem; }
+.cx-sec-title::after { content: ""; flex: 1; height: 1px; background: var(--vip-gold-line); opacity: .5; }
+.cx-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(138px, 1fr)); gap: .7rem; }
+.cx-card { --rc: var(--rc-common); position: relative; overflow: hidden; display: flex; flex-direction: column; align-items: center; gap: .35rem; padding: .8rem .6rem .7rem; border-radius: 14px; text-align: center; background: linear-gradient(170deg, rgba(255,255,255,.045), rgba(255,255,255,.01)), #0e1217; border: 1px solid color-mix(in srgb, var(--rc) 45%, #222a33); transition: transform .18s ease, box-shadow .18s ease; }
+.cx-grid.cx-anim .cx-card { animation: cx-card-rise .4s ease both; animation-delay: calc(var(--i, 0) * 22ms); }
+.cx-card:hover { transform: translateY(-3px); box-shadow: 0 10px 26px rgba(0,0,0,.5), 0 0 22px color-mix(in srgb, var(--rc) 35%, transparent); }
+.cx-card::after { content: ""; position: absolute; top: 0; bottom: 0; width: 40%; background: linear-gradient(90deg, transparent, rgba(255,255,255,.1), transparent); transform: translateX(-120%) skewX(-20deg); pointer-events: none; }
+.cx-card:hover::after { animation: cx-shine .8s ease; }
+.cx-card.r-rare { --rc: var(--rc-rare); } .cx-card.r-epic { --rc: var(--rc-epic); } .cx-card.r-legendary { --rc: var(--rc-legendary); }
+.cx-card.is-eq { border-color: var(--color-gold-strong); box-shadow: 0 0 0 1px rgba(244,196,48,.5), 0 0 22px rgba(244,196,48,.22); }
+.cx-card .cx-rar { position: absolute; top: 6px; left: 8px; font-size: .58rem; letter-spacing: .1em; text-transform: uppercase; color: var(--rc); font-weight: 800; }
+.cx-card .cx-own { position: absolute; top: 5px; right: 7px; font-size: .75rem; color: #7be0b0; }
+.cx-pv { width: 64px; height: 64px; margin-top: .65rem; position: relative; display: grid; place-items: center; font-size: 2rem; }
+.cx-pv-circle { width: 56px; height: 56px; border-radius: 50%; display: grid; place-items: center; overflow: hidden; background: linear-gradient(135deg, var(--color-felt-light), var(--color-felt-dark)); border: 1px solid var(--color-gold-dark); color: var(--color-gold); font-weight: 700; font-size: 1.5rem; }
+.cx-pv-circle.big { width: 92px; height: 92px; font-size: 2.6rem; }
+.cx-pv .cx-frame { left: -22%; top: -22%; width: 144%; height: 144%; }
+.cx-pv.sq { width: 56px; height: 56px; } .cx-pv.sq .cx-svg { width: 100%; height: 100%; }
+.cx-pv.big { width: 96px; height: 96px; }
+.cx-pv.title-pv { width: auto; height: auto; padding: .25rem 0; } 
+.cx-pv .cx-title { margin: 0; font-size: .78rem; padding: .15rem .6rem; }
+.cx-card .cx-name { font-weight: 700; font-size: .86rem; line-height: 1.2; min-height: 2.1em; display: flex; align-items: center; }
+.cx-card .cx-btn { width: 100%; padding: .4rem .5rem; font-size: .78rem; }
+.cx-need { font-size: .62rem; color: var(--color-text-muted); margin-top: -.15rem; }
+.cx-price::before { content: "\25CF"; color: var(--color-gold-strong); margin-right: .3rem; font-size: .7em; }
+.cx-empty { padding: 1.4rem; text-align: center; color: var(--color-text-muted); }
+
+/* ---------- Reward popup + confetti ---------- */
+#cx-confetti { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 980; }
+.cx-pop-layer { position: fixed; inset: 0; z-index: 960; display: grid; place-items: center; padding: 1rem; background: radial-gradient(circle at 50% 42%, rgba(244,196,48,.2), rgba(3,4,6,.86) 68%); animation: cx-fade-in .3s ease both; }
+.cx-pop-layer.out { animation: cx-fade-out .26s ease forwards; }
+.cx-pop-layer.out .cx-pop { animation: cx-card-out .26s ease forwards; }
+.cx-pop { position: relative; width: min(340px, 90vw); padding: 1.5rem 1.3rem 1.25rem; text-align: center; border-radius: 22px; overflow: hidden; border: 1px solid rgba(244,196,48,.55); box-shadow: 0 0 70px rgba(244,196,48,.32), 0 30px 70px rgba(0,0,0,.7); animation: cx-pop-in .62s cubic-bezier(.2,1.2,.3,1) both; }
+.cx-pop::before { content: ""; position: absolute; inset: -70%; background: conic-gradient(from 0deg, transparent 0 55%, rgba(244,196,48,.55) 72%, transparent 88%); animation: cx-spin 4.5s linear infinite; }
+.cx-pop::after { content: ""; position: absolute; inset: 2px; border-radius: 20px; background: var(--vip-metal); }
+.cx-pop > * { position: relative; z-index: 1; }
+.cx-ribbon { display: inline-block; padding: .22rem .9rem; border-radius: 99px; font-size: .68rem; font-weight: 800; letter-spacing: .2em; color: #10151a; background: linear-gradient(135deg, var(--color-gold-strong), var(--color-gold-dark)); box-shadow: 0 4px 14px rgba(244,196,48,.4); }
+.cx-pop-hero { display: grid; place-items: center; margin: 1.1rem auto .6rem; width: 120px; height: 120px; animation: cx-float 3s ease-in-out infinite; filter: drop-shadow(0 8px 18px rgba(244,196,48,.45)); font-size: 4.6rem; }
+.cx-pop-hero .cx-pv, .cx-pop-hero .cx-pv.big { transform: scale(1.15); }
+.cx-pop h3 { margin: .2rem 0 .1rem; font-size: 1.25rem; color: var(--rc, var(--color-gold-strong)); text-shadow: 0 0 18px color-mix(in srgb, var(--rc, #f4c430) 55%, transparent); }
+.cx-pop p { margin: 0 0 .6rem; color: var(--color-text-muted); font-size: .85rem; }
+.cx-amount { font-size: 2.1rem; font-weight: 900; color: var(--color-gold-strong); text-shadow: 0 0 22px rgba(244,196,48,.6); letter-spacing: .02em; }
+.cx-amount small { font-size: .75rem; color: var(--color-text-muted); font-weight: 700; margin-left: .3rem; letter-spacing: .1em; }
+.cx-pop-actions { display: flex; gap: .5rem; margin-top: .9rem; }
+.cx-pop-actions .btn { flex: 1; }
+
+/* ---------- Mission board ---------- */
+#px-missions > .px-card, #px-admin > .px-card { background: var(--vip-metal); position: relative; }
+#px-admin > .px-card { width: min(780px, 100%); }
+.mx-sum { display: flex; align-items: center; gap: .9rem; padding: .7rem .8rem; border-radius: 14px; border: 1px solid rgba(244,196,48,.35); background: rgba(0,0,0,.35); flex-wrap: wrap; }
+.mx-ring { --pct: 0; width: 54px; height: 54px; border-radius: 50%; display: grid; place-items: center; font-weight: 800; font-size: .8rem; color: var(--color-gold-strong); background: conic-gradient(var(--color-gold-strong) calc(var(--pct) * 1%), #222a33 0); position: relative; flex: 0 0 auto; }
+.mx-ring::before { content: ""; position: absolute; inset: 5px; border-radius: 50%; background: #0d1015; }
+.mx-ring span { position: relative; }
+.mx-sum-text { flex: 1; min-width: 120px; } .mx-sum-text b { display: block; } .mx-sum-text small { color: var(--color-text-muted); }
+.mx-chips { display: flex; gap: .35rem; flex-wrap: wrap; margin: .8rem 0 .3rem; }
+.mx-chip { cursor: pointer; border: 1px solid var(--color-border); background: transparent; color: var(--color-text-muted); border-radius: 99px; padding: .25rem .7rem; font: inherit; font-size: .78rem; font-weight: 600; transition: .15s; }
+.mx-chip[aria-pressed="true"] { color: #10151a; background: var(--color-gold); border-color: var(--color-gold); }
+.mx-row { display: flex; align-items: center; gap: .65rem; padding: .6rem .7rem; margin: .35rem 0; border-radius: 12px; border: 1px solid var(--color-border); background: rgba(255,255,255,.03); transition: border-color .2s, opacity .2s; }
+.mx-row.ready { border-color: var(--color-gold-strong); background: linear-gradient(90deg, rgba(244,196,48,.1), rgba(255,255,255,.02)); }
+.mx-row.claimed { opacity: .62; }
+.mx-row.off { opacity: .45; filter: grayscale(.8); }
+.mx-row.flash { animation: cx-claim-flash 1s ease; }
+.mx-ic { font-size: 1.5rem; width: 2rem; text-align: center; flex: 0 0 auto; }
+.mx-body { flex: 1; min-width: 0; } .mx-t { font-weight: 600; font-size: .9rem; } .mx-body small { color: var(--color-text-muted); font-size: .7rem; }
+.mx-bar { height: 6px; border-radius: 9px; background: #222a33; overflow: hidden; margin: 5px 0 2px; }
+.mx-bar i { display: block; height: 100%; border-radius: 9px; background: linear-gradient(90deg, var(--color-gold-dark), var(--color-gold-strong)); transition: width .6s cubic-bezier(.2,.8,.2,1); }
+.mx-btn { flex: 0 0 auto; min-width: 82px; padding: .45rem .7rem; font-size: .8rem; }
+.mx-btn.ready { animation: cx-pulse-gold 1.6s ease-in-out infinite; }
+#btn-missions { position: relative; }
+#btn-missions[data-n]::after { content: attr(data-n); position: absolute; top: -6px; right: -6px; min-width: 18px; height: 18px; padding: 0 4px; border-radius: 99px; background: var(--color-red); color: #fff; font-size: .68rem; font-weight: 800; display: grid; place-items: center; box-shadow: 0 0 10px rgba(224,72,62,.7); }
+
+/* ---------- Host control tabs ---------- */
+.mx-tabs { display: flex; gap: .4rem; margin-bottom: .8rem; border-bottom: 1px solid var(--color-border); }
+.mx-tab { cursor: pointer; background: transparent; border: 0; border-bottom: 2px solid transparent; color: var(--color-text-muted); padding: .55rem .9rem; font: inherit; font-weight: 700; }
+.mx-tab[aria-selected="true"] { color: var(--color-gold-strong); border-bottom-color: var(--color-gold-strong); }
+.mx-pane[hidden] { display: none; }
+.mx-form { display: grid; grid-template-columns: 1fr 1fr; gap: .6rem .8rem; }
+.mx-form label { display: flex; flex-direction: column; gap: .25rem; font-size: .78rem; color: var(--color-text-muted); font-weight: 600; }
+.mx-form label.wide, .mx-form .wide { grid-column: 1 / -1; }
+.mx-form input, .mx-form select, .mx-form textarea, .px-card .mx-in { background: #0d1015; color: var(--color-text); border: 1px solid var(--color-border); border-radius: 6px; padding: .45rem .6rem; font: inherit; width: 100%; }
+.mx-form textarea { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: .74rem; resize: vertical; min-height: 110px; }
+.mx-form input[type=color] { padding: 2px; height: 34px; }
+.mx-tools { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; }
+.mx-msg { font-size: .76rem; } .mx-msg.err { color: #ff8c84; } .mx-msg.ok { color: #7be0b0; }
+.mx-preview { display: flex; align-items: center; justify-content: center; gap: 1rem; min-height: 96px; border-radius: 12px; border: 1px dashed rgba(244,196,48,.4); background: rgba(0,0,0,.3); }
+.mx-hint { font-size: .72rem; color: var(--color-text-muted); margin: .2rem 0; line-height: 1.4; }
+.mx-item { display: flex; align-items: center; gap: .6rem; padding: .4rem .55rem; margin: .25rem 0; border-radius: 10px; border: 1px solid var(--color-border); background: rgba(255,255,255,.03); }
+.mx-item.hid { opacity: .55; }
+.mx-item .cx-pv { width: 40px; height: 40px; margin: 0; font-size: 1.3rem; flex: 0 0 auto; }
+.mx-item .cx-pv-circle { width: 36px; height: 36px; font-size: 1rem; }
+.mx-item .cx-pv .cx-title { font-size: .55rem; padding: 0 .3rem; }
+.mx-item .mx-nm { flex: 1; min-width: 0; font-size: .86rem; font-weight: 600; } .mx-item .mx-nm small { display: block; color: var(--color-text-muted); font-weight: 400; font-size: .7rem; }
+.mx-tag { font-size: .6rem; padding: 1px 6px; border-radius: 99px; border: 1px solid var(--color-border); color: var(--color-text-muted); margin-left: .3rem; vertical-align: middle; }
+.mx-tag.gold { color: var(--color-gold); border-color: var(--color-gold-dark); }
+details.mx-det { margin: .4rem 0; border: 1px solid var(--color-border); border-radius: 12px; padding: .1rem .6rem .4rem; background: rgba(0,0,0,.2); }
+details.mx-det > summary { cursor: pointer; padding: .5rem 0; font-weight: 700; color: var(--color-gold); list-style: none; }
+details.mx-det > summary::-webkit-details-marker { display: none; }
+.mx-switch { position: relative; width: 42px; height: 24px; flex: 0 0 auto; }
+.mx-switch input { position: absolute; inset: 0; opacity: 0; cursor: pointer; margin: 0; width: 100%; height: 100%; z-index: 2; }
+.mx-switch i { position: absolute; inset: 0; border-radius: 99px; background: #2a3542; transition: .2s; }
+.mx-switch i::after { content: ""; position: absolute; width: 18px; height: 18px; border-radius: 50%; left: 3px; top: 3px; background: #9aa7b4; transition: .2s; }
+.mx-switch input:checked + i { background: linear-gradient(135deg, var(--color-gold-strong), var(--color-gold-dark)); }
+.mx-switch input:checked + i::after { transform: translateX(18px); background: #10151a; }
+.mx-players { max-height: 170px; overflow: auto; border: 1px solid var(--color-border); border-radius: 10px; padding: .3rem; display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: .15rem .5rem; }
+.mx-players label { flex-direction: row; align-items: center; gap: .4rem; font-weight: 500; color: var(--color-text); padding: .15rem .25rem; border-radius: 6px; }
+.mx-players label:hover { background: rgba(255,255,255,.05); }
+.mx-players input { width: auto; }
+.mx-radio { display: flex; gap: 1rem; flex-wrap: wrap; margin: .3rem 0; } .mx-radio label { flex-direction: row; align-items: center; gap: .4rem; color: var(--color-text); }
+.mx-radio input { width: auto; }
+@media (max-width: 560px) { .mx-form { grid-template-columns: 1fr; } .cx-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (prefers-reduced-motion: reduce) {
+  .cx-card, .cx-pop, .cx-pop::before, .cx-pop-hero, .mx-btn.ready, .top-panel-avatar.bd-aurora, #shop-modal, .px-modal, #shop-modal > .modal, .px-modal > .px-card { animation: none !important; }
+}
+.cx-pv-circle.bd-aurora { animation: cx-aurora 4s linear infinite; }
+#px-adm [hidden] { display: none !important; }
+
+  </style>
 </head>
 <body>
 
@@ -2323,6 +2492,7 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;ba
           <span id="display-username" class="top-panel-value">--</span>
           <span id="lobby-host-badge" class="role-badge" hidden>HOST</span>
           <span id="display-badge" class="cosmetic-badge" hidden></span>
+          <span id="display-title" class="cx-title" hidden></span>
         </div>
       </div>
 
@@ -2826,8 +2996,11 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;ba
   <div id="shop-modal" class="modal-overlay" hidden>
     <div class="modal" role="dialog" aria-labelledby="shop-title">
       <button type="button" class="modal-close" id="btn-shop-close" aria-label="Close">&#10005;</button>
-      <h2 id="shop-title">&#128717; Profile Shop</h2>
-      <p class="modal-subtitle">Balance: <b id="shop-balance">0</b> chips &middot; unlock avatars, borders and chat badges</p>
+      <div class="cx-shop-head">
+        <h2 id="shop-title">&#128717; VIP Shop</h2>
+        <span class="cx-balance"><small>BALANCE</small> <b id="shop-balance">0</b> chips</span>
+      </div>
+      <div id="shop-tabs" class="cx-tabs" role="tablist" aria-label="Shop categories"></div>
       <div id="shop-body" class="shop-body"></div>
     </div>
   </div>
@@ -3576,7 +3749,6 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;ba
     update() {
       DOM.displayUsername.textContent = State.username || "--";
       DOM.displayBalance.textContent = State.balance.toLocaleString("en-US");
-      DOM.displayAvatar.textContent = State.username ? State.username.slice(0, 2).toUpperCase() : "--";
       DOM.displayRoomCode.textContent = State.roomCode || "------";
       DOM.lobbyHostBadge.hidden = !State.isHost;
       Cosmetics.applyHud();
@@ -6548,51 +6720,349 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;ba
      22. APP BOOTSTRAP
      ========================================================================= */
   /* =========================================================================
-     21c. SHOP, ROOM CHAT + REACTIONS, COMMUNITY JACKPOT VAULT
-     All three live under rooms/{code}/... in the same hardcoded Firebase DB.
+     21c. SHOP v2, ROOM CHAT + REACTIONS, COMMUNITY JACKPOT VAULT
+     Everything lives under rooms/{code}/... in the same hardcoded Firebase DB:
+       shop/items/{slot:id}   host-added items (incl. sanitized raw SVG)
+       shop/hidden/{slot:id}  items the host removed from sale (kept for owners)
+       players/{u}/cosmetics  owned + equipped items (atomic purchases)
      ========================================================================= */
-  const CATALOG = {
-    avatar: [
-      { id: "fox", icon: "\u{1F98A}", name: "Fox", price: 300 }, { id: "robot", icon: "\u{1F916}", name: "Robot", price: 450 },
-      { id: "dragon", icon: "\u{1F409}", name: "Dragon", price: 600 }, { id: "unicorn", icon: "\u{1F984}", name: "Unicorn", price: 800 },
-      { id: "crown", icon: "\u{1F451}", name: "Crown", price: 1000 }
-    ],
-    border: [
-      { id: "gold", icon: "\u{1F7E1}", name: "Gold Border", price: 250, css: "bd-gold" },
-      { id: "emerald", icon: "\u{1F7E2}", name: "Emerald Border", price: 400, css: "bd-emerald" },
-      { id: "ruby", icon: "\u{1F534}", name: "Ruby Border", price: 500, css: "bd-ruby" }
-    ],
-    badge: [
-      { id: "roller", icon: "\u2660\uFE0F", name: "High Roller", price: 200 }, { id: "lucky", icon: "\u{1F340}", name: "Lucky", price: 350 },
-      { id: "diamond", icon: "\u{1F48E}", name: "Diamond", price: 700 }
-    ]
-  };
-  const SLOT_LABEL = { avatar: "Avatars", border: "Gold & Colored Borders", badge: "Chat Badges" };
-  const findItem = (slot, id) => (CATALOG[slot] || []).find((i) => i.id === id) || null;
+  const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const $id = (id) => document.getElementById(id);
 
+  /* ---------- Raw-SVG sanitizer (admin SVG is synced to every client) ----------
+     Defense in depth: (1) parse as XML and keep only a whitelist of graphic elements,
+     (2) strip event handlers / external references, (3) always render through <img src="data:...">,
+     which browsers sandbox (no scripts, no network) even if something slipped through. */
+  const Svg = (() => {
+    const OK = new Set(("svg g defs path circle ellipse rect line polyline polygon text tspan lineargradient radialgradient stop clippath mask pattern use title desc symbol " +
+      "filter fegaussianblur fecolormatrix feoffset femerge femergenode feflood fecomposite animate animatetransform").split(" "));
+    const BAD = /javascript:|vbscript:|data:|expression\s*\(|@import|<script/i;
+    const MAX_LEN = 12000, MAX_NODES = 400, cache = new Map();
+
+    function scrub(node) {
+      Array.from(node.childNodes).forEach((ch) => {
+        if (ch.nodeType === 8) { node.removeChild(ch); return; }          // comments
+        if (ch.nodeType !== 1) return;                                     // text stays
+        const name = ch.localName.toLowerCase();
+        if (!OK.has(name)) { node.removeChild(ch); return; }
+        if (name === "animate" && /href/i.test(ch.getAttribute("attributeName") || "")) { node.removeChild(ch); return; }
+        Array.from(ch.attributes).forEach((a) => {
+          const n = a.name.toLowerCase(), v = a.value;
+          if (n.startsWith("on") || BAD.test(v) || !/^[a-z_:][-\w:.]*$/i.test(a.name)) { ch.removeAttribute(a.name); return; }
+          if ((n === "href" || n === "xlink:href") && !v.trim().startsWith("#")) { ch.removeAttribute(a.name); return; }
+          if (/url\(\s*['"]?\s*(?!#)/i.test(v)) ch.removeAttribute(a.name);
+        });
+        scrub(ch);
+      });
+    }
+
+    function run(raw) {
+      let src = raw.replace(/<\?xml[^>]*\?>/gi, "").replace(/<!DOCTYPE[^>]*>/gi, "").replace(/<!--[\s\S]*?-->/g, "").trim();
+      if (!/^<svg[\s>]/i.test(src)) return null;
+      if (!/<svg[^>]*\sxmlns\s*=/i.test(src)) src = src.replace(/^<svg/i, '<svg xmlns="http://www.w3.org/2000/svg"');
+      if (/xlink:/i.test(src) && !/xmlns:xlink/i.test(src)) src = src.replace(/^<svg/i, '<svg xmlns:xlink="http://www.w3.org/1999/xlink"');
+      const doc = new DOMParser().parseFromString(src, "image/svg+xml");
+      const root = doc.documentElement;
+      if (!root || root.localName !== "svg" || doc.getElementsByTagName("parsererror").length) return null;
+      scrub(root);
+      Array.from(root.attributes).forEach((a) => { if (a.name.toLowerCase() === "width" || a.name.toLowerCase() === "height" || a.name.toLowerCase() === "style") root.removeAttribute(a.name); });
+      if (!root.getAttribute("viewBox")) root.setAttribute("viewBox", "0 0 100 100");
+      if (root.getElementsByTagName("*").length > MAX_NODES) return null;
+      return new XMLSerializer().serializeToString(root);
+    }
+
+    return {
+      MAX_LEN,
+      /** Returns a sanitized SVG string, or null when the input is not acceptable SVG. */
+      clean(raw) {
+        raw = String(raw || "").trim();
+        if (!raw || raw.length > MAX_LEN) return null;
+        if (cache.has(raw)) return cache.get(raw);
+        let out = null;
+        try { out = run(raw); } catch (e) { out = null; }
+        if (cache.size > 300) cache.clear();
+        cache.set(raw, out);
+        return out;
+      },
+      url(clean) { return "data:image/svg+xml;charset=utf-8," + encodeURIComponent(clean); }
+    };
+  })();
+
+  /* ---------- Catalog definitions ---------- */
+  const SLOTS = ["avatar", "frame", "border", "badge", "title"];
+  const SLOT_LABEL = { avatar: "Avatars", frame: "Custom Frames", border: "Glow Borders", badge: "Chat Badges", title: "Titles" };
+  const SLOT_ONE = { avatar: "Avatar", frame: "Frame", border: "Border", badge: "Badge", title: "Title" };
+  const RARITY = { common: "Common", rare: "Rare", epic: "Epic", legendary: "Legendary" };
+  const rarityOf = (p) => (p >= 1000 ? "legendary" : p >= 600 ? "epic" : p >= 300 ? "rare" : "common");
+
+  const GOLD_DEFS = '<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff3b0"/><stop offset=".5" stop-color="#f4c430"/><stop offset="1" stop-color="#9a6b08"/></linearGradient></defs>';
+  const SV = (inner) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">${inner}</svg>`;
+  const ring = (n, fn) => Array.from({ length: n }, (_, i) => fn(i)).join("");
+  const star = (pts, ro, ri) => Array.from({ length: pts * 2 }, (_, i) => { const a = (Math.PI * i) / pts - Math.PI / 2, r = i % 2 ? ri : ro; return `${(50 + r * Math.cos(a)).toFixed(1)},${(50 + r * Math.sin(a)).toFixed(1)}`; }).join(" ");
+
+  const SVG_LIB = {
+    chip: SV(`<defs><radialGradient id="g" cx=".4" cy=".35" r=".7"><stop offset="0" stop-color="#ffe9a0"/><stop offset=".55" stop-color="#e9c46a"/><stop offset="1" stop-color="#8a5d06"/></radialGradient></defs><circle cx="50" cy="50" r="48" fill="url(#g)"/><circle cx="50" cy="50" r="38" fill="none" stroke="#fff6cf" stroke-width="3.5" stroke-dasharray="9 7"/><circle cx="50" cy="50" r="27" fill="#14171c"/><text x="50" y="61" text-anchor="middle" font-size="32" font-family="Georgia,serif" font-weight="700" fill="#f4c430">$</text>`),
+    ace: SV(`${GOLD_DEFS}<circle cx="50" cy="50" r="48" fill="#0b0d11" stroke="url(#g)" stroke-width="3"/><path d="M50 18C50 18 22 42 22 58C22 68 31 73 39 70C42 69 44 67 45 65C44 72 42 78 36 82L64 82C58 78 56 72 55 65C56 67 58 69 61 70C69 73 78 68 78 58C78 42 50 18 50 18Z" fill="url(#g)"/>`),
+    gem: SV(`<defs><linearGradient id="a" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#d9b3ff"/><stop offset="1" stop-color="#5b2bb8"/></linearGradient></defs><circle cx="50" cy="50" r="48" fill="#120d1f"/><polygon points="50,16 80,40 50,86 20,40" fill="url(#a)" stroke="#f4c430" stroke-width="2.5"/><polyline points="20,40 80,40 50,16 36,40 50,86 64,40 50,16" fill="none" stroke="#fff3b0" stroke-width="1.6" stroke-opacity=".8"/>`),
+    seven: SV(`<defs><radialGradient id="r" cx=".4" cy=".3" r=".8"><stop offset="0" stop-color="#ff6a5e"/><stop offset="1" stop-color="#7d1410"/></radialGradient></defs><circle cx="50" cy="50" r="48" fill="url(#r)" stroke="#f4c430" stroke-width="3"/><text x="50" y="70" text-anchor="middle" font-size="62" font-family="Georgia,serif" font-weight="900" fill="#ffe9a0" stroke="#7d1410" stroke-width="1.5">7</text>`),
+    seal: SV(`${GOLD_DEFS}<polygon points="${star(14, 48, 40)}" fill="url(#g)"/><circle cx="50" cy="50" r="30" fill="#14171c"/><text x="50" y="58" text-anchor="middle" font-size="22" font-family="Georgia,serif" font-weight="800" fill="#f4c430">VIP</text>`),
+    deco: SV(`${GOLD_DEFS}<circle cx="50" cy="50" r="41" fill="none" stroke="url(#g)" stroke-width="4"/><circle cx="50" cy="50" r="46.5" fill="none" stroke="url(#g)" stroke-width="1.2"/><g fill="url(#g)">${ring(8, (i) => `<path d="M50 0L54.5 5L50 10L45.5 5Z" transform="rotate(${i * 45} 50 50)"/>`)}</g>`),
+    laurel: SV(`<defs><linearGradient id="l" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#9be58f"/><stop offset="1" stop-color="#2b8a4b"/></linearGradient></defs><g fill="url(#l)">${ring(8, (i) => { const a = 200 + i * 17; return `<ellipse cx="50" cy="7" rx="3.4" ry="8" transform="rotate(${a} 50 50) rotate(32 50 7)"/><ellipse cx="50" cy="7" rx="3.4" ry="8" transform="rotate(${360 - a} 50 50) rotate(-32 50 7)"/>`; })}</g><circle cx="50" cy="50" r="38" fill="none" stroke="#f4c430" stroke-width="1.4" stroke-opacity=".8"/>`),
+    neon: SV(`<defs><filter id="b" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="2.4"/></filter></defs><g><circle cx="50" cy="50" r="42" fill="none" stroke="#22ffd0" stroke-width="5" filter="url(#b)"/><circle cx="50" cy="50" r="42" fill="none" stroke="#c9fff2" stroke-width="1.8"/><circle cx="50" cy="50" r="46.5" fill="none" stroke="#ff3df2" stroke-width="1.6"/><animate attributeName="opacity" values="1;.55;1" dur="2.2s" repeatCount="indefinite"/></g>`),
+    crown: SV(`${GOLD_DEFS}<circle cx="50" cy="56" r="39" fill="none" stroke="url(#g)" stroke-width="4.5"/><path d="M28 24L33 6L42 17L50 2L58 17L67 6L72 24Z" fill="url(#g)" stroke="#8a5d06" stroke-width="1"/><circle cx="33" cy="6" r="2.2" fill="#e0483e"/><circle cx="50" cy="2.5" r="2.2" fill="#4aa3ff"/><circle cx="67" cy="6" r="2.2" fill="#2ecc8f"/>`),
+    sunburst: SV(`${GOLD_DEFS}<g><g fill="url(#g)">${ring(24, (i) => `<path d="M50 1L52.4 12L47.6 12Z" transform="rotate(${i * 15} 50 50)"/>`)}</g><animateTransform attributeName="transform" type="rotate" from="0 50 50" to="360 50 50" dur="24s" repeatCount="indefinite"/></g><circle cx="50" cy="50" r="38" fill="none" stroke="url(#g)" stroke-width="2.4"/>`),
+    chain: SV(`${GOLD_DEFS}<circle cx="50" cy="50" r="42" fill="none" stroke="url(#g)" stroke-width="5.5" stroke-dasharray="7 3.5"/><circle cx="50" cy="50" r="37" fill="none" stroke="#f4c430" stroke-width="1" stroke-opacity=".7"/>`)
+  };
+
+  const BUILTIN = [];
+  const B = (slot, id, name, price, icon, x) => BUILTIN.push(Object.assign({ slot, id, name, price, icon: icon || "", rarity: rarityOf(price), builtin: true }, x || {}));
+  /* Avatars */
+  B("avatar", "cat", "Alley Cat", 250, "\u{1F431}"); B("avatar", "fox", "Fox", 300, "\u{1F98A}"); B("avatar", "owl", "Night Owl", 300, "\u{1F989}");
+  B("avatar", "panda", "Panda", 350, "\u{1F43C}"); B("avatar", "ghost", "Ghost", 400, "\u{1F47B}"); B("avatar", "robot", "Robot", 450, "\u{1F916}");
+  B("avatar", "wolf", "Lone Wolf", 500, "\u{1F43A}"); B("avatar", "ninja", "Ninja", 550, "\u{1F977}"); B("avatar", "dragon", "Dragon", 600, "\u{1F409}");
+  B("avatar", "alien", "Visitor", 650, "\u{1F47D}"); B("avatar", "tiger", "Tiger", 650, "\u{1F42F}"); B("avatar", "lion", "Lion", 700, "\u{1F981}");
+  B("avatar", "wizard", "Wizard", 750, "\u{1F9D9}"); B("avatar", "unicorn", "Unicorn", 800, "\u{1F984}"); B("avatar", "shark", "Card Shark", 850, "\u{1F988}");
+  B("avatar", "astro", "Astronaut", 900, "\u{1F9D1}\u200D\u{1F680}"); B("avatar", "chip", "Gold Chip", 900, "\u{1F4B0}", { svg: SVG_LIB.chip });
+  B("avatar", "seven", "Lucky Seven", 1000, "7", { svg: SVG_LIB.seven }); B("avatar", "crown", "Crown", 1000, "\u{1F451}");
+  B("avatar", "ace", "Obsidian Ace", 1100, "\u2660", { svg: SVG_LIB.ace }); B("avatar", "gem", "Royal Gem", 1400, "\u{1F48E}", { svg: SVG_LIB.gem });
+  /* Frames (SVG overlays) */
+  B("frame", "chain", "Gold Chain", 400, "\u26D3", { svg: SVG_LIB.chain }); B("frame", "deco", "Art Deco Gold", 500, "\u{1F3DB}", { svg: SVG_LIB.deco });
+  B("frame", "laurel", "Laurel Wreath", 700, "\u{1F33F}", { svg: SVG_LIB.laurel }); B("frame", "neon", "Neon Pulse", 800, "\u{1F4A0}", { svg: SVG_LIB.neon });
+  B("frame", "crownf", "Royal Crown", 1200, "\u{1F451}", { svg: SVG_LIB.crown }); B("frame", "sunburst", "Sunburst", 1500, "\u2600", { svg: SVG_LIB.sunburst });
+  /* Borders */
+  B("border", "gold", "Gold Border", 250, "\u{1F7E1}", { css: "bd-gold", color: "#f4c430" }); B("border", "emerald", "Emerald Border", 400, "\u{1F7E2}", { css: "bd-emerald", color: "#2ecc8f" });
+  B("border", "sapphire", "Sapphire Border", 450, "\u{1F535}", { color: "#3b82f6" }); B("border", "ruby", "Ruby Border", 500, "\u{1F534}", { css: "bd-ruby", color: "#e0483e" });
+  B("border", "amethyst", "Amethyst Border", 550, "\u{1F7E3}", { color: "#a855f7" }); B("border", "platinum", "Platinum Border", 650, "\u26AA", { color: "#dfe6ee" });
+  B("border", "mint", "Neon Mint Border", 700, "\u{1F4A0}", { color: "#22ffd0" }); B("border", "aurora", "Aurora Border", 1000, "\u{1F308}", { css: "bd-aurora", color: "#7a6bff" });
+  /* Badges */
+  B("badge", "cherry", "Cherry", 150, "\u{1F352}"); B("badge", "dice", "Lucky Dice", 180, "\u{1F3B2}"); B("badge", "roller", "High Roller", 200, "\u2660\uFE0F");
+  B("badge", "heart", "Heart", 220, "\u2764\uFE0F"); B("badge", "lucky", "Lucky", 350, "\u{1F340}"); B("badge", "fire", "On Fire", 400, "\u{1F525}");
+  B("badge", "star", "Star", 450, "\u2B50"); B("badge", "skull", "Bad Beat", 480, "\u{1F480}"); B("badge", "bolt", "Lightning", 500, "\u26A1");
+  B("badge", "rocket", "To the Moon", 600, "\u{1F680}"); B("badge", "money", "Money Bag", 650, "\u{1F4B0}"); B("badge", "diamond", "Diamond", 700, "\u{1F48E}");
+  B("badge", "trophy", "Trophy", 900, "\u{1F3C6}"); B("badge", "seal", "VIP Seal", 1100, "\u2605", { svg: SVG_LIB.seal });
+  /* Titles */
+  B("title", "rookie", "Rookie", 100, "\u{1F331}", { color: "#9be58f" }); B("title", "gambler", "The Gambler", 150, "\u{1F3B0}"); B("title", "shark", "Card Shark", 350, "\u{1F988}", { color: "#7be0ff" });
+  B("title", "charm", "Lucky Charm", 400, "\u{1F340}", { color: "#2ecc8f" }); B("title", "pokerface", "Poker Face", 450, "\u{1F610}"); B("title", "nemesis", "Dealer's Nemesis", 600, "\u2694\uFE0F", { color: "#ff8c84" });
+  B("title", "hunter", "Jackpot Hunter", 700, "\u{1F3AF}", { color: "#f4c430" }); B("title", "whale", "The Whale", 800, "\u{1F40B}", { color: "#4aa3ff" });
+  B("title", "baron", "Chip Baron", 1100, "\u{1F3A9}", { color: "#e9c46a" }); B("title", "legend", "Campus Legend", 1500, "\u{1F451}", { color: "#f4c430" });
+
+  const Catalog = {
+    raw: {}, hidden: {}, map: new Map(), ref: null, cb: null,
+    key: (slot, id) => slot + ":" + id,
+    /** Validates a host-written item (anyone could write to the DB, so nothing is trusted). */
+    norm(v) {
+      if (!v || typeof v !== "object") return null;
+      const slot = String(v.slot || ""), id = String(v.id || ""), name = String(v.name || "").trim().slice(0, 32);
+      if (!SLOTS.includes(slot) || !/^[a-z0-9_-]{1,40}$/.test(id) || !name) return null;
+      const price = Math.max(0, Math.min(1000000, Math.round(Number(v.price) || 0)));
+      const it = { slot, id, name, price, icon: String(v.icon || "").slice(0, 8), rarity: RARITY[v.rarity] ? v.rarity : rarityOf(price), custom: true };
+      if (v.svg) { const s = Svg.clean(v.svg); if (s) it.svg = s; }
+      if (/^#[0-9a-f]{6}$/i.test(String(v.color || ""))) it.color = v.color;
+      if (slot === "frame" && !it.svg) return null;
+      if (slot !== "frame" && slot !== "border" && !it.svg && !it.icon && slot !== "title") return null;
+      return it;
+    },
+    rebuild() {
+      const m = new Map();
+      BUILTIN.forEach((i) => m.set(this.key(i.slot, i.id), i));
+      Object.keys(this.raw).forEach((k) => { const it = this.norm(this.raw[k]); if (it) m.set(this.key(it.slot, it.id), it); });
+      this.map = m;
+    },
+    find(slot, id) { return (slot && id && this.map.get(this.key(slot, id))) || null; },
+    byKey(k) { return this.map.get(k) || null; },
+    isListed(slot, id) { return !!this.find(slot, id) && !this.hidden[this.key(slot, id)]; },
+    listed(slot) { return [...this.map.values()].filter((i) => (!slot || i.slot === slot) && !this.hidden[this.key(i.slot, i.id)]).sort((a, b) => a.price - b.price || a.name.localeCompare(b.name)); },
+    all() { return [...this.map.values()].sort((a, b) => SLOTS.indexOf(a.slot) - SLOTS.indexOf(b.slot) || a.price - b.price); },
+    start() {
+      this.stop();
+      if (!Room.db || !Room.code) return;
+      this.ref = Room.db.ref(`rooms/${Room.code}/shop`);
+      this.cb = (s) => { const v = s.val() || {}; this.raw = v.items || {}; this.hidden = v.hidden || {}; this.rebuild(); PubSub.emit("shop-updated"); };
+      this.ref.on("value", this.cb);
+    },
+    stop() {
+      if (this.ref && this.cb) this.ref.off("value", this.cb);
+      this.ref = this.cb = null; this.raw = {}; this.hidden = {}; this.rebuild();
+    }
+  };
+  Catalog.rebuild();
+
+  /* ---------- FX: confetti canvas, glowing reward popup, modal close transition ---------- */
+  const Fx = (() => {
+    const reduced = () => !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+    const COLORS = ["#f4c430", "#e9c46a", "#fff3b0", "#2ecc8f", "#e0483e", "#7be0ff", "#ffffff", "#b46bff"];
+    let canvas = null, ctx = null, parts = [], raf = 0, last = 0, dpr = 1;
+
+    const size = () => { if (!canvas) return; dpr = Math.min(2, window.devicePixelRatio || 1); canvas.width = Math.floor(innerWidth * dpr); canvas.height = Math.floor(innerHeight * dpr); };
+    const ensure = () => {
+      if (canvas) return;
+      canvas = document.createElement("canvas"); canvas.id = "cx-confetti"; canvas.setAttribute("aria-hidden", "true");
+      document.body.appendChild(canvas); ctx = canvas.getContext("2d"); size();
+      window.addEventListener("resize", size);
+    };
+    const frame = (t) => {
+      const dt = Math.min(2.2, (t - (last || t)) / 16.67); last = t;
+      ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, canvas.width, canvas.height); ctx.scale(dpr, dpr);
+      parts = parts.filter((p) => p.age < p.max && p.y < innerHeight + 40);
+      parts.forEach((p) => {
+        p.age += dt; p.vx *= Math.pow(p.drag, dt); p.vy = p.vy * Math.pow(p.drag, dt) + p.g * dt;
+        p.x += p.vx * dt + Math.sin(p.age * 0.12 + p.tilt) * p.sway; p.y += p.vy * dt; p.rot += p.vr * dt;
+        const fade = p.age > p.max * 0.72 ? 1 - (p.age - p.max * 0.72) / (p.max * 0.28) : 1;
+        ctx.save(); ctx.globalAlpha = Math.max(0, fade); ctx.translate(p.x, p.y); ctx.rotate(p.rot); ctx.fillStyle = p.color;
+        if (p.shape === "c") { ctx.shadowColor = p.color; ctx.shadowBlur = 8; ctx.beginPath(); ctx.arc(0, 0, p.w * 0.45, 0, 6.2832); ctx.fill(); }
+        else { ctx.scale(1, Math.abs(Math.cos(p.age * 0.15 + p.tilt)) * 0.9 + 0.1); ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h); }
+        ctx.restore();
+      });
+      if (parts.length) raf = requestAnimationFrame(frame); else { raf = 0; last = 0; ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, canvas.width, canvas.height); }
+    };
+
+    /** Confetti cannon. angle = firing direction in radians (default straight up). */
+    function confetti(o) {
+      o = o || {}; ensure();
+      const n = reduced() ? Math.min(14, o.count || 90) : Math.min(o.count || 90, 220);
+      const x = o.x == null ? innerWidth / 2 : o.x, y = o.y == null ? innerHeight * 0.6 : o.y, angle = o.angle == null ? -Math.PI / 2 : o.angle;
+      const spread = o.spread == null ? 1.1 : o.spread, power = o.power || 11, colors = o.colors || COLORS;
+      for (let i = 0; i < n && parts.length < 520; i += 1) {
+        const a = angle + (Math.random() - 0.5) * spread * 2, v = power * (0.45 + Math.random() * 0.75);
+        parts.push({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, g: 0.26 + Math.random() * 0.12, drag: 0.987, w: 5 + Math.random() * 7, h: 3 + Math.random() * 6,
+          rot: Math.random() * 6.28, vr: (Math.random() - 0.5) * 0.35, tilt: Math.random() * 6.28, sway: Math.random() * 0.6, shape: Math.random() < (o.coins ? 0.8 : 0.28) ? "c" : "r",
+          color: colors[(Math.random() * colors.length) | 0], age: 0, max: 100 + Math.random() * 80 });
+      }
+      if (!raf) raf = requestAnimationFrame(frame);
+    }
+    /** Big celebration: two side cannons + a centre burst + a short shower. */
+    function celebrate(o) {
+      o = o || {}; const colors = o.colors;
+      confetti({ x: 0, y: innerHeight * 0.85, angle: -Math.PI / 3.1, count: 70, power: 15, colors });
+      confetti({ x: innerWidth, y: innerHeight * 0.85, angle: -Math.PI + Math.PI / 3.1, count: 70, power: 15, colors });
+      window.setTimeout(() => confetti({ x: innerWidth / 2, y: innerHeight * 0.45, spread: 3.14, count: 90, power: 9, colors }), 220);
+      if (!reduced()) for (let i = 0; i < 6; i += 1) window.setTimeout(() => confetti({ x: Math.random() * innerWidth, y: -10, angle: Math.PI / 2, spread: 0.5, count: 16, power: 3, colors }), 400 + i * 160);
+    }
+    /** Gold coin pop from an element (mission claim buttons). */
+    function coinsFrom(el) {
+      const r = el && el.getBoundingClientRect ? el.getBoundingClientRect() : null;
+      confetti({ x: r ? r.left + r.width / 2 : innerWidth / 2, y: r ? r.top + r.height / 2 : innerHeight / 2, spread: 1.6, count: 46, power: 10, coins: true, colors: ["#f4c430", "#e9c46a", "#fff3b0", "#b8860b"] });
+    }
+
+    /* Reward popup (queued so back-to-back rewards never stack on top of each other). */
+    const queue = []; let showing = false;
+    function popup(o) { queue.push(o); if (!showing) next(); }
+    function next() {
+      const o = queue.shift();
+      if (!o) { showing = false; return; }
+      showing = true;
+      const el = (tag, cls, txt) => { const e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; };
+      const layer = el("div", "cx-pop-layer"), card = el("div", "cx-pop");
+      layer.setAttribute("role", "dialog"); layer.setAttribute("aria-modal", "true");
+      if (o.rarityColor) card.style.setProperty("--rc", o.rarityColor);
+      const hero = el("div", "cx-pop-hero");
+      if (o.node) hero.appendChild(o.node); else hero.textContent = o.icon || "\u{1F3C6}";
+      const h = el("h3", "", o.name || ""), p = el("p", "", o.sub || "");
+      card.append(el("span", "cx-ribbon", o.ribbon || "UNLOCKED"), hero, h, p);
+      let amt = null;
+      if (o.amount != null) { amt = el("div", "cx-amount", "+0"); amt.appendChild(el("small", "", "CHIPS")); card.appendChild(amt); }
+      const actions = el("div", "cx-pop-actions");
+      let closed = false;
+      const close = () => { if (closed) return; closed = true; document.removeEventListener("keydown", onKey); layer.classList.add("out"); window.setTimeout(() => { layer.remove(); next(); }, reduced() ? 0 : 260); };
+      const onKey = (e) => { if (e.key === "Escape" || e.key === "Enter") close(); };
+      (o.actions || []).forEach((a) => { const b = el("button", "btn " + (a.primary ? "btn-primary" : "btn-secondary"), a.label); b.type = "button"; b.addEventListener("click", () => { try { a.onClick && a.onClick(); } finally { close(); } }); actions.appendChild(b); });
+      const ok = el("button", "btn " + ((o.actions || []).length ? "btn-ghost" : "btn-primary"), o.okLabel || "Awesome!"); ok.type = "button"; ok.addEventListener("click", close); actions.appendChild(ok);
+      card.appendChild(actions); layer.appendChild(card); document.body.appendChild(layer);
+      layer.addEventListener("click", (e) => { if (e.target === layer) close(); });
+      document.addEventListener("keydown", onKey);
+      ok.focus({ preventScroll: true });
+      if (amt) {
+        const total = Math.round(o.amount), t0 = performance.now(), dur = reduced() ? 1 : 1100;
+        const tick = (t) => { const k = Math.min(1, (t - t0) / dur), e = 1 - Math.pow(1 - k, 3); amt.firstChild.textContent = "+" + Math.round(total * e).toLocaleString("en-US") + " "; if (k < 1 && !closed) requestAnimationFrame(tick); };
+        amt.firstChild.textContent = "+0 "; requestAnimationFrame(tick);
+      }
+    }
+
+    /** Animated modal close (opening is animated purely by CSS when [hidden] is removed). */
+    function closeModal(m) {
+      if (!m || m.hidden) return;
+      if (reduced()) { m.hidden = true; return; }
+      m.classList.add("cx-closing");
+      window.setTimeout(() => { m.hidden = true; m.classList.remove("cx-closing"); }, 200);
+    }
+    return { confetti, celebrate, coinsFrom, popup, closeModal, reduced };
+  })();
+
+  /* ---------- Cosmetics: ownership, rendering, atomic purchases ---------- */
   const Cosmetics = {
     of(username) { return (Room.get(username) || {}).cosmetics || {}; },
     owns(username, slot, id) { const c = this.of(username); return !!(c.owned && c.owned[`${slot}:${id}`]); },
-    icon(username, slot) { const i = findItem(slot, this.of(username)[slot]); return i ? i.icon : ""; },
-    applyHud() {
-      const av = document.getElementById("display-avatar"), bd = document.getElementById("display-badge");
-      if (!av || !State.username) return;
-      const c = this.of(State.username), a = findItem("avatar", c.avatar), b = findItem("border", c.border), g = findItem("badge", c.badge);
-      av.textContent = a ? a.icon : State.username.slice(0, 2).toUpperCase();
-      av.className = "top-panel-avatar" + (b ? " " + b.css : "");
-      bd.hidden = !g; bd.textContent = g ? g.icon : "";
+    equipped(username, slot) { return Catalog.find(slot, this.of(username)[slot]); },
+    /** Plain-text glyph (used by canvases / marble race / chat fallback). */
+    icon(username, slot) { const i = this.equipped(username, slot); return i ? (i.icon || "\u2605") : ""; },
+    /** Chat helper: key of an equipped item only when it needs SVG rendering. */
+    svgKey(username, slot) { const i = this.equipped(username, slot); return i && i.svg ? Catalog.key(slot, i.id) : null; },
+    /** DOM node for an avatar/badge/frame item: <img> for SVG items, plain text otherwise. */
+    node(item, cls) {
+      if (item.svg) { const im = document.createElement("img"); im.className = "cx-svg" + (cls ? " " + cls : ""); im.src = Svg.url(item.svg); im.alt = ""; im.draggable = false; return im; }
+      const s = document.createElement("span"); if (cls) s.className = cls; s.textContent = item.icon || "\u2605"; return s;
     },
+    initials() { return (State.username || "??").slice(0, 2).toUpperCase(); },
+    /** Shop / admin / popup preview of any item. */
+    preview(item, big) {
+      const wrap = document.createElement("div"); wrap.className = "cx-pv" + (big ? " big" : "");
+      const circle = (content) => { const c = document.createElement("div"); c.className = "cx-pv-circle" + (big ? " big" : ""); if (content) c.appendChild(content); return c; };
+      const mine = this.equipped(State.username, "avatar");
+      const sample = () => (mine ? this.node(mine) : document.createTextNode(this.initials()));
+      if (item.slot === "avatar") wrap.appendChild(circle(this.node(item)));
+      else if (item.slot === "frame") { wrap.appendChild(circle(sample())); const f = this.node(item, "cx-frame"); wrap.appendChild(f); }
+      else if (item.slot === "border") { const c = circle(sample()); if (item.css === "bd-aurora") c.classList.add("bd-aurora"); else if (item.color) c.style.boxShadow = `0 0 0 3px ${item.color}, 0 0 14px ${item.color}99`; wrap.appendChild(c); }
+      else if (item.slot === "badge") { wrap.classList.add("sq"); wrap.appendChild(this.node(item)); }
+      else { wrap.classList.add("title-pv"); const t = document.createElement("span"); t.className = "cx-title"; t.textContent = `${item.icon || ""} ${item.name}`.trim(); if (item.color) { t.style.color = item.color; t.style.borderColor = item.color + "88"; } wrap.appendChild(t); }
+      return wrap;
+    },
+    applyHud() {
+      const av = $id("display-avatar"), bd = $id("display-badge");
+      if (!av || !bd) return;
+      let tl = $id("display-title");
+      if (!tl) { tl = document.createElement("span"); tl.id = "display-title"; tl.className = "cx-title"; tl.hidden = true; bd.after(tl); }
+      if (!State.username) { av.textContent = "--"; av.className = "top-panel-avatar"; av.style.boxShadow = ""; av.dataset.sig = ""; bd.hidden = true; tl.hidden = true; return; }
+      const c = this.of(State.username), a = Catalog.find("avatar", c.avatar), b = Catalog.find("border", c.border), g = Catalog.find("badge", c.badge), f = Catalog.find("frame", c.frame), t = Catalog.find("title", c.title);
+      const sig = [State.username, ...[a, b, g, f, t].map((i) => (i ? i.slot + i.id + (i.svg ? i.svg.length : "") + i.icon + (i.color || "") : "-"))].join("|");
+      if (av.dataset.sig === sig) return;
+      av.dataset.sig = sig;
+      av.className = "top-panel-avatar cx-av" + (a ? " has-av" : "") + (b && b.css ? " " + b.css : "");
+      av.style.boxShadow = b && !b.css && b.color ? `0 0 0 3px ${b.color}, 0 0 14px ${b.color}99` : "";
+      const inner = document.createElement("span"); inner.className = "cx-av-in";
+      if (a) inner.appendChild(this.node(a)); else inner.textContent = this.initials();
+      av.replaceChildren(inner);
+      if (f && f.svg) av.appendChild(this.node(f, "cx-frame"));
+      bd.hidden = !g; bd.replaceChildren(g ? this.node(g) : "");
+      tl.hidden = !t; tl.textContent = t ? `${t.icon || ""} ${t.name}`.trim() : ""; tl.style.color = (t && t.color) || ""; tl.style.borderColor = t && t.color ? t.color + "88" : "";
+    },
+    busy: false,
     async buy(slot, id) {
-      const item = findItem(slot, id), u = State.username;
-      if (!item || !u || !Room.playersRef) return;
-      const res = await Room.playersRef.child(u).transaction((p) => {
-        if (!p) return p;
-        const c = (p.cosmetics = p.cosmetics || {}); c.owned = c.owned || {};
-        if (c.owned[`${slot}:${id}`] || (p.balance || 0) < item.price) return;
-        p.balance -= item.price; c.owned[`${slot}:${id}`] = true; c[slot] = id; p.updatedAt = Date.now();
-        return p;
-      });
-      if (res.committed) { Sound.win(); Notify.success(`Unlocked ${item.name}!`); } else Notify.error("Not enough chips, or already owned.");
+      const item = Catalog.find(slot, id), u = State.username;
+      if (!item || !u || !Room.playersRef || this.busy) return;
+      if (!Catalog.isListed(slot, id)) { Notify.error("This item was removed from the shop."); return; }
+      const key = `${slot}:${id}`; let reason = "";
+      this.busy = true;
+      try {
+        /* One atomic transaction: balance check + chip deduction + unlock + auto-equip. */
+        const res = await Room.playersRef.child(u).transaction((p) => {
+          if (!p) return p;
+          const c = (p.cosmetics = p.cosmetics || {}); c.owned = c.owned || {};
+          if (c.owned[key]) { reason = "owned"; return; }
+          if ((p.balance || 0) < item.price) { reason = "funds"; return; }
+          reason = "";
+          p.balance = (p.balance || 0) - item.price; c.owned[key] = true; c[slot] = id; p.updatedAt = Date.now();
+          return p;
+        });
+        if (!res.committed) { Notify.error(reason === "owned" ? "You already own this item." : "Not enough chips for this item."); return; }
+        Sound.jackpot();
+        Fx.celebrate({ colors: item.rarity === "legendary" ? ["#f4c430", "#fff3b0", "#e9c46a", "#ffffff"] : undefined });
+        Fx.popup({
+          ribbon: "ITEM UNLOCKED", name: item.name, sub: `${RARITY[item.rarity]} ${SLOT_ONE[item.slot]} \u00B7 equipped`, node: this.preview(item, true),
+          rarityColor: `var(--rc-${item.rarity})`, okLabel: "Awesome!"
+        });
+        PubSub.emit("shop-purchase", item);
+      } catch (err) { console.error("Purchase failed", err); Notify.error("Purchase failed. Please try again."); }
+      finally { this.busy = false; }
     },
     equip(slot, id) {
       if (!State.username || !Room.playersRef) return;
@@ -6602,32 +7072,61 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;ba
   };
 
   const Shop = {
+    tab: "all", animate: true,
     init() {
-      const modal = document.getElementById("shop-modal");
-      document.getElementById("btn-open-shop").addEventListener("click", () => { modal.hidden = false; this.render(); });
-      document.getElementById("btn-shop-close").addEventListener("click", () => { modal.hidden = true; });
-      modal.addEventListener("click", (e) => { if (e.target === modal) modal.hidden = true; });
+      const modal = $id("shop-modal");
+      $id("btn-open-shop").addEventListener("click", () => { this.animate = true; modal.hidden = false; this.render(); });
+      $id("btn-shop-close").addEventListener("click", () => Fx.closeModal(modal));
+      modal.addEventListener("click", (e) => { if (e.target === modal) Fx.closeModal(modal); });
+      document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !modal.hidden && !document.querySelector(".cx-pop-layer")) Fx.closeModal(modal); });
+      $id("shop-tabs").addEventListener("click", (e) => { const b = e.target.closest("[data-tab]"); if (!b) return; this.tab = b.dataset.tab; this.animate = true; this.render(); });
       PubSub.on("players-updated", () => { Cosmetics.applyHud(); if (!modal.hidden) this.render(); });
+      PubSub.on("shop-updated", () => { Cosmetics.applyHud(); if (!modal.hidden) this.render(); });
+    },
+    start() { Catalog.start(); },
+    stop() { Catalog.stop(); },
+    card(item, i) {
+      const u = State.username, c = Cosmetics.of(u), owned = Cosmetics.owns(u, item.slot, item.id), on = c[item.slot] === item.id, can = State.balance >= item.price;
+      const d = document.createElement("div"); d.className = `cx-card r-${item.rarity}` + (on ? " is-eq" : ""); d.style.setProperty("--i", Math.min(i, 24));
+      const rar = document.createElement("span"); rar.className = "cx-rar"; rar.textContent = RARITY[item.rarity];
+      const nm = document.createElement("div"); nm.className = "cx-name"; nm.textContent = item.name;
+      const bt = document.createElement("button"); bt.type = "button"; bt.className = "btn cx-btn " + (owned ? "btn-secondary" : "btn-primary");
+      d.append(rar);
+      if (owned) { const ow = document.createElement("span"); ow.className = "cx-own"; ow.textContent = "\u2713"; d.append(ow); }
+      d.append(Cosmetics.preview(item), nm);
+      if (!owned) {
+        const price = document.createElement("span"); price.className = "cx-price"; price.textContent = item.price.toLocaleString("en-US");
+        bt.appendChild(price); bt.disabled = !can; bt.addEventListener("click", () => Cosmetics.buy(item.slot, item.id));
+        d.append(bt);
+        if (!can) { const need = document.createElement("div"); need.className = "cx-need"; need.textContent = `Need ${(item.price - State.balance).toLocaleString("en-US")} more`; d.append(need); }
+      } else {
+        bt.textContent = on ? "Unequip" : "Equip"; bt.addEventListener("click", () => Cosmetics.equip(item.slot, on ? null : item.id)); d.append(bt);
+      }
+      return d;
     },
     render() {
-      const body = document.getElementById("shop-body"), c = Cosmetics.of(State.username);
-      document.getElementById("shop-balance").textContent = State.balance.toLocaleString("en-US");
-      body.textContent = "";
-      Object.keys(CATALOG).forEach((slot) => {
-        const sec = document.createElement("div"); sec.className = "shop-section";
-        const h = document.createElement("h3"); h.textContent = SLOT_LABEL[slot]; sec.appendChild(h);
-        CATALOG[slot].forEach((item) => {
-          const owned = Cosmetics.owns(State.username, slot, item.id), on = c[slot] === item.id;
-          const row = document.createElement("div"); row.className = "shop-item";
-          const ic = document.createElement("span"); ic.className = "si-icon"; ic.textContent = item.icon;
-          const nm = document.createElement("span"); nm.className = "si-name"; nm.textContent = item.name;
-          const bt = document.createElement("button"); bt.type = "button"; bt.className = "btn btn-small " + (owned ? "btn-secondary" : "btn-primary");
-          if (!owned) { bt.textContent = `${item.price} chips`; bt.disabled = !State.canAfford(item.price); bt.addEventListener("click", () => Cosmetics.buy(slot, item.id)); }
-          else { bt.textContent = on ? "Unequip" : "Equip"; bt.addEventListener("click", () => Cosmetics.equip(slot, on ? null : item.id)); }
-          row.append(ic, nm, bt); sec.appendChild(row);
-        });
-        body.appendChild(sec);
+      const body = $id("shop-body"), tabs = $id("shop-tabs");
+      $id("shop-balance").textContent = State.balance.toLocaleString("en-US");
+      tabs.textContent = "";
+      [["all", "All"], ...SLOTS.map((s) => [s, SLOT_LABEL[s]])].forEach(([k, label]) => {
+        const b = document.createElement("button"); b.type = "button"; b.className = "cx-tab"; b.dataset.tab = k; b.textContent = label; b.setAttribute("aria-pressed", String(this.tab === k)); tabs.appendChild(b);
       });
+      const sc = $id("shop-modal").querySelector(".modal"), keepScroll = sc ? sc.scrollTop : 0;
+      body.textContent = "";
+      const slots = this.tab === "all" ? SLOTS : [this.tab];
+      let any = false, idx = 0;
+      slots.forEach((slot) => {
+        const items = Catalog.listed(slot);
+        if (!items.length) return;
+        any = true;
+        if (this.tab === "all") { const h = document.createElement("div"); h.className = "cx-sec-title"; h.textContent = SLOT_LABEL[slot]; body.appendChild(h); }
+        const g = document.createElement("div"); g.className = "cx-grid" + (this.animate ? " cx-anim" : "");
+        items.forEach((it) => g.appendChild(this.card(it, idx++)));
+        body.appendChild(g);
+      });
+      if (!any) { const e = document.createElement("div"); e.className = "cx-empty"; e.textContent = "Nothing on sale here right now. Check back soon!"; body.appendChild(e); }
+      this.animate = false;
+      if (sc) sc.scrollTop = keepScroll;
     }
   };
 
@@ -6686,7 +7185,12 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;ba
     addMsg(m) {
       if (!m || !m.t) return;
       const d = document.createElement("div"); d.className = "chat-msg" + (m.u === State.username ? " mine" : "");
-      const u = document.createElement("b"); u.className = "mu"; u.textContent = `${m.a || ""} ${m.u}${m.b ? " " + m.b : ""}`.trim();
+      const u = document.createElement("b"); u.className = "mu";
+      const ai = m.ak && Catalog.byKey(m.ak), bi = m.bk && Catalog.byKey(m.bk);
+      if (ai && ai.svg) u.append(Cosmetics.node(ai, "cx-chat-ic"), " "); else if (m.a) u.append(m.a + " ");
+      u.append(m.u);
+      if (bi && bi.svg) u.append(" ", Cosmetics.node(bi, "cx-chat-ic")); else if (m.b) u.append(" " + m.b);
+      if (m.tt) { const tt = document.createElement("i"); tt.className = "cx-chat-title"; tt.textContent = m.tt; u.append(" ", tt); }
       const t = document.createElement("span"); t.textContent = m.t;
       d.append(u, t);
       const log = this.$("chat-log"); log.appendChild(d);
@@ -6697,7 +7201,7 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;ba
       const inp = this.$("chat-input"), t = inp.value.trim().slice(0, 200), now = Date.now();
       if (!t || !this.chatRef || !State.username || now - this.last < 600) return;
       this.last = now; inp.value = "";
-      this.chatRef.push({ u: State.username, t, a: Cosmetics.icon(State.username, "avatar"), b: Cosmetics.icon(State.username, "badge"), ts: window.firebase.database.ServerValue.TIMESTAMP });
+      this.chatRef.push({ u: State.username, t, a: Cosmetics.icon(State.username, "avatar"), b: Cosmetics.icon(State.username, "badge"), ak: Cosmetics.svgKey(State.username, "avatar"), bk: Cosmetics.svgKey(State.username, "badge"), tt: (Cosmetics.equipped(State.username, "title") || {}).name || null, ts: window.firebase.database.ServerValue.TIMESTAMP });
     },
     react(e) {
       const now = Date.now();
@@ -6774,8 +7278,8 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;ba
 
   const Social = {
     init() { Shop.init(); Chat.init(); },
-    start() { Chat.start(); Jackpot.start(); },
-    stop() { Chat.stop(); Jackpot.stop(); }
+    start() { Shop.start(); Chat.start(); Jackpot.start(); },
+    stop() { Chat.stop(); Jackpot.stop(); Shop.stop(); }
   };
 
 
@@ -8565,14 +9069,33 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;ba
   };
 
   const Plus = (() => {
+    /* Data-driven missions. metric: rounds | wins | profit | wager | bigbet | bigwin | streak | shop | checkin.
+       games (optional) limits a mission to specific game ids ("draw" also matches "draw:slots", etc.). */
     const QUESTS = [
-      { id: "play3", icon: "\u{1F3B2}", text: "Play 3 rounds of any game", goal: 3, reward: 150 },
-      { id: "bj", icon: "\u2660", text: "Play a round of Blackjack", goal: 1, reward: 100 },
-      { id: "spin", icon: "\u{1F3A1}", text: "Spin a wheel, reels or roulette", goal: 1, reward: 100 },
-      { id: "win", icon: "\u{1F4B0}", text: "Win 500 chips in total", goal: 500, reward: 250 }
+      { id: "checkin", cat: "bonus", icon: "\u{1F4C5}", text: "Daily check-in: open the casino lobby", goal: 1, reward: 50, metric: "checkin" },
+      { id: "shopper", cat: "bonus", icon: "\u{1F6CD}\uFE0F", text: "Buy any item from the Shop", goal: 1, reward: 200, metric: "shop" },
+      { id: "play3", cat: "casino", icon: "\u{1F3B2}", text: "Play 3 rounds of any game", goal: 3, reward: 150, metric: "rounds" },
+      { id: "play10", cat: "casino", icon: "\u{1F525}", text: "Play 10 rounds of any game", goal: 10, reward: 400, metric: "rounds" },
+      { id: "bj", cat: "casino", icon: "\u2660\uFE0F", text: "Play a round of Blackjack", goal: 1, reward: 100, metric: "rounds", games: ["blackjack"] },
+      { id: "bjwin", cat: "casino", icon: "\u{1F0CF}", text: "Win 2 Blackjack hands", goal: 2, reward: 250, metric: "wins", games: ["blackjack"] },
+      { id: "slots3", cat: "casino", icon: "\u{1F3B0}", text: "Spin the Slots 3 times", goal: 3, reward: 150, metric: "rounds", games: ["slots"] },
+      { id: "roulette3", cat: "casino", icon: "\u{1F534}", text: "Play 3 rounds of Roulette", goal: 3, reward: 150, metric: "rounds", games: ["roulette"] },
+      { id: "spin", cat: "casino", icon: "\u{1F3A1}", text: "Spin a wheel, reels or roulette", goal: 1, reward: 100, metric: "rounds", games: ["wheel", "roulette", "slots", "moneywheel"] },
+      { id: "spin5", cat: "casino", icon: "\u{1F300}", text: "Spin wheels, reels or roulette 5 times", goal: 5, reward: 300, metric: "rounds", games: ["wheel", "roulette", "slots", "moneywheel"] },
+      { id: "dice", cat: "casino", icon: "\u{1F3AF}", text: "Play 2 rounds of Craps, Crash or Poker Dice", goal: 2, reward: 150, metric: "rounds", games: ["craps", "crash", "pokerdice"] },
+      { id: "hilo", cat: "casino", icon: "\u{1F500}", text: "Play Hi-Lo 3 times", goal: 3, reward: 150, metric: "rounds", games: ["hilo"] },
+      { id: "poker", cat: "casino", icon: "\u{1F577}\uFE0F", text: "Play a Black Widow Poker hand", goal: 1, reward: 200, metric: "rounds", games: ["blackwidow"] },
+      { id: "casual", cat: "casual", icon: "\u{1F3B4}", text: "Play a round of UNO, Parqu\u00E9s or Dominoes", goal: 1, reward: 150, metric: "rounds", games: ["uno", "parques", "dominoes"] },
+      { id: "casualwin", cat: "casual", icon: "\u{1F3C5}", text: "Win a round of UNO, Parqu\u00E9s or Dominoes", goal: 1, reward: 300, metric: "wins", games: ["uno", "parques", "dominoes"] },
+      { id: "win", cat: "wins", icon: "\u{1F4B0}", text: "Win 500 chips in total", goal: 500, reward: 250, metric: "profit" },
+      { id: "win2000", cat: "wins", icon: "\u{1F3C6}", text: "Win 2,000 chips in total", goal: 2000, reward: 600, metric: "profit" },
+      { id: "bigwin", cat: "wins", icon: "\u{1F48E}", text: "Win 400+ chips profit in a single round", goal: 1, reward: 350, metric: "bigwin", min: 400 },
+      { id: "streak3", cat: "wins", icon: "\u26A1", text: "Win 3 rounds in a row", goal: 3, reward: 300, metric: "streak" },
+      { id: "bigbet", cat: "wins", icon: "\u{1F40B}", text: "Place a single bet of 200+ chips", goal: 1, reward: 150, metric: "bigbet", min: 200 },
+      { id: "wager1000", cat: "wins", icon: "\u{1F4C8}", text: "Wager 1,000 chips in total", goal: 1000, reward: 300, metric: "wager" }
     ];
-    const cfg = { roomName: "", bonusMult: 1, missionsOn: true, disabled: {}, names: {} };
-    const day = () => new Date().toISOString().slice(0, 10);
+    const cfg = { roomName: "", bonusMult: 1, missionsOn: true, disabled: {}, names: {}, mDisabled: {} };
+    const day = () => { const d = new Date(); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); };  // local calendar day
     const $ = (id) => document.getElementById(id);
     const qRef = () => Room.playersRef.child(State.username + "/quests/" + day());
     let qState = { p: {}, c: {} }, qOff = null;
@@ -8594,20 +9117,21 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;ba
 .px-load{margin-top:.6rem}`;
     document.head.appendChild(css);
 
-    const modal = (id, inner) => { const m = mk(`<div class="px-modal" id="${id}" hidden><div class="px-card">${inner}</div></div>`); m.addEventListener("click", (e) => { if (e.target === m || e.target.dataset.close) m.hidden = true; }); document.body.appendChild(m); return m; };
-    const mMiss = modal("px-missions", `<h2>\u{1F3AF} Daily Missions</h2><div id="px-qlist"></div><button class="btn btn-ghost btn-block" data-close="1" style="margin-top:1rem">Close</button>`);
+    const modal = (id, inner) => { const m = mk(`<div class="px-modal" id="${id}" hidden><div class="px-card">${inner}</div></div>`); m.addEventListener("click", (e) => { if (e.target === m || e.target.dataset.close) Fx.closeModal(m); }); document.body.appendChild(m); return m; };
+    const mMiss = modal("px-missions", `<h2>\u{1F3AF} Daily Missions</h2><div id="px-qhead"></div><div id="px-qlist"></div><button class="btn btn-ghost btn-block" data-close="1" style="margin-top:1rem">Close</button>`);
     const mAdm = modal("px-admin", `<h2>\u2699 Host Settings</h2><div id="px-adm"></div><button class="btn btn-ghost btn-block" data-close="1" style="margin-top:1rem">Close</button>`);
 
     /* ---------- Room config sync (Firebase: rooms/{code}/cfg) ---------- */
     const pushCfg = () => Room.db && Room.code && Room.db.ref(`rooms/${Room.code}/cfg`).set({ ...cfg, rig: { on: Rig.on, t: Rig.target } });
     const applyCfg = (v) => {
       v = v || {};
-      Object.assign(cfg, { roomName: v.roomName || "", bonusMult: v.bonusMult || 1, missionsOn: v.missionsOn !== false, disabled: v.disabled || {}, names: v.names || {} });
+      Object.assign(cfg, { roomName: v.roomName || "", bonusMult: v.bonusMult || 1, missionsOn: v.missionsOn !== false, disabled: v.disabled || {}, names: v.names || {}, mDisabled: v.mDisabled || {} });
       Rig.on = !!(v.rig && v.rig.on); Rig.target = (v.rig && v.rig.t) || "";
       document.querySelectorAll(".nav-menu-item[data-game]").forEach((b) => { b.hidden = !!cfg.disabled[b.dataset.game]; });
       $("btn-missions").hidden = !cfg.missionsOn;
       if (cfg.roomName) document.title = cfg.roomName + " \u2014 Casino Campus";
       if (cfg.disabled[Router.currentGameKey]) Router.selectGame("blackjack");
+      renderQuests(); adminRefresh();
     };
     const origAttach = Room.attachListeners.bind(Room);
     Room.attachListeners = function () {
@@ -8623,54 +9147,357 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;ba
     };
 
     /* ---------- Daily missions ---------- */
-    const bump = (id, n) => { if (!cfg.missionsOn || !State.username || !Room.playersRef) return; qRef().child("p/" + id).transaction((v) => (v || 0) + n); };
-    PubSub.on("round-resolved", ({ gameId, entries }) => {
-      const e = entries.find((x) => x.username === State.username && x.wager > 0);
-      if (!e) return;
-      bump("play3", 1);
-      if (gameId === "blackjack") bump("bj", 1);
-      if (["wheel", "roulette", "slots", "moneywheel"].includes(gameId)) bump("spin", 1);
-      if (e.payout > e.wager) bump("win", e.payout - e.wager);
-    });
-    const renderQuests = () => {
-      $("px-qlist").innerHTML = QUESTS.map((q) => {
-        const p = Math.min(q.goal, (qState.p || {})[q.id] || 0), done = p >= q.goal, got = (qState.c || {})[q.id], rw = Math.round(q.reward * cfg.bonusMult);
-        return `<div class="px-row ${done ? "done" : ""}"><span>${q.icon}</span><span>${q.text}<div class="px-bar"><i style="width:${p / q.goal * 100}%"></i></div></span>
-          <button class="btn btn-secondary" data-claim="${q.id}" ${!done || got ? "disabled" : ""}>${got ? "Claimed" : "+" + rw}</button></div>`;
-      }).join("");
+    const CATS = { all: "All", casino: "Casino", casual: "Casual", wins: "Wins", bonus: "Bonus" };
+    const Q = (id) => QUESTS.find((q) => q.id === id);
+    const enabled = (id) => cfg.missionsOn && !cfg.mDisabled[id];
+    let filter = "all", claiming = false, watchedDay = "", watchedUser = "", watchedRoom = "", prevState = null;
+    const flashIds = new Set();
+    const rw = (q) => Math.round(q.reward * cfg.bonusMult);
+    const prog = (q) => Math.min(q.goal, Number((qState.p || {})[q.id]) || 0);
+    const isDone = (q) => prog(q) >= q.goal;
+    const isClaimed = (q) => !!(qState.c || {})[q.id];
+    const claimable = () => QUESTS.filter((q) => enabled(q.id) && isDone(q) && !isClaimed(q));
+
+    /** One atomic transaction on today's node; `fn(q, add)` mutates it, nothing is written when nothing changed. */
+    const track = (fn) => {
+      if (!cfg.missionsOn || !State.username || !Room.playersRef) return;
+      qRef().transaction((q) => {
+        q = q || {}; q.p = q.p || {};
+        const before = JSON.stringify(q);
+        fn(q, (id, n) => { if (enabled(id) && n > 0) q.p[id] = (Number(q.p[id]) || 0) + n; });
+        return JSON.stringify(q) === before ? undefined : q;
+      }, undefined, false);
     };
-    $("px-qlist").addEventListener("click", (e) => {
-      const id = e.target.dataset && e.target.dataset.claim, q = QUESTS.find((x) => x.id === id); if (!q) return;
-      qRef().child("c/" + id).transaction((v) => v ? undefined : true, (err, ok) => {
-        if (ok) { const rw = Math.round(q.reward * cfg.bonusMult); State.credit(rw); Notify.success(`Mission complete! +${rw} chips`); }
+    PubSub.on("round-resolved", ({ gameId, entries }) => {
+      const e = (entries || []).find((x) => x.username === State.username && x.wager > 0);
+      if (!e) return;
+      const profit = e.payout - e.wager, won = profit > 0, lost = e.payout < e.wager;
+      track((q, add) => {
+        QUESTS.forEach((m) => {
+          if (m.games && !m.games.some((g) => gameId === g || String(gameId).indexOf(g + ":") === 0)) return;
+          switch (m.metric) {
+            case "rounds": add(m.id, 1); break;
+            case "wins": if (won) add(m.id, 1); break;
+            case "profit": if (won) add(m.id, profit); break;
+            case "wager": add(m.id, e.wager); break;
+            case "bigbet": if (e.wager >= m.min) add(m.id, 1); break;
+            case "bigwin": if (profit >= m.min) add(m.id, 1); break;
+            case "streak":
+              if (!enabled(m.id)) break;
+              if (won) { q.s = (q.s || 0) + 1; q.p[m.id] = Math.max(Number(q.p[m.id]) || 0, q.s); } else if (lost) q.s = 0;
+              break;
+            default: break;
+          }
+        });
       });
     });
-    const watchQuests = () => {
-      if (qOff) qOff(); if (!State.username || !Room.playersRef) return;
-      const r = qRef(), cb = r.on("value", (s) => { qState = s.val() || { p: {}, c: {} }; renderQuests(); });
-      qOff = () => r.off("value", cb);
+    PubSub.on("shop-purchase", () => track((q, add) => QUESTS.filter((m) => m.metric === "shop").forEach((m) => add(m.id, 1))));
+    const checkIn = () => track((q, add) => { if (!q.p.checkin) QUESTS.filter((m) => m.metric === "checkin").forEach((m) => add(m.id, 1)); });
+
+    const resetIn = () => { const n = new Date(), m = new Date(n.getFullYear(), n.getMonth(), n.getDate() + 1), s = Math.max(0, Math.floor((m - n) / 60000)); return `${Math.floor(s / 60)}h ${s % 60}m`; };
+    const updateMissionBadge = () => { const b = $("btn-missions"); if (!b) return; const n = claimable().length; if (n) b.dataset.n = String(n); else delete b.dataset.n; };
+    const renderQuests = () => {
+      updateMissionBadge();
+      const list = $("px-qlist"), head = $("px-qhead");
+      if (!list || !head) return;
+      const pool = QUESTS.filter((q) => enabled(q.id) || isClaimed(q)), got = pool.filter(isClaimed).length, ready = claimable();
+      const pct = pool.length ? Math.round((got / pool.length) * 100) : 0, sum = ready.reduce((a, q) => a + rw(q), 0);
+      head.innerHTML = `<div class="mx-sum"><div class="mx-ring" style="--pct:${pct}"><span>${got}/${pool.length}</span></div>
+        <div class="mx-sum-text"><b>${cfg.missionsOn ? "Today's missions" : "Missions are paused by the host"}</b><small>Resets in ${resetIn()}${cfg.bonusMult !== 1 ? " \u00B7 rewards x" + cfg.bonusMult : ""}</small></div>
+        <button type="button" class="btn btn-primary btn-small" data-all="1" ${ready.length ? "" : "disabled"}>Claim all${ready.length ? " (+" + sum.toLocaleString("en-US") + ")" : ""}</button></div>
+        <div class="mx-chips">${Object.keys(CATS).map((k) => `<button type="button" class="mx-chip" data-cat="${k}" aria-pressed="${filter === k}">${CATS[k]}</button>`).join("")}</div>`;
+      list.innerHTML = QUESTS.filter((q) => filter === "all" || q.cat === filter).map((q) => {
+        const p = prog(q), done = isDone(q), claimed = isClaimed(q), off = !enabled(q.id) && !claimed;
+        const cls = (off ? "off" : claimed ? "claimed" : done ? "ready" : "") + (flashIds.has(q.id) ? " flash" : "");
+        const btn = claimed ? `<button type="button" class="btn btn-secondary mx-btn" disabled>Claimed \u2713</button>`
+          : off ? `<button type="button" class="btn btn-secondary mx-btn" disabled>\u{1F512} Paused</button>`
+          : `<button type="button" class="btn ${done ? "btn-primary ready" : "btn-secondary"} mx-btn" data-claim="${q.id}" ${done ? "" : "disabled"}>${done ? "Claim " : ""}+${rw(q)}</button>`;
+        return `<div class="mx-row ${cls}" data-id="${q.id}"><span class="mx-ic">${q.icon}</span><div class="mx-body"><div class="mx-t">${q.text}</div>
+          <div class="mx-bar"><i style="width:${(p / q.goal) * 100}%"></i></div><small>${p.toLocaleString("en-US")} / ${q.goal.toLocaleString("en-US")}${off ? " \u00B7 disabled by host" : ""}</small></div>${btn}</div>`;
+      }).join("");
+      flashIds.clear();
     };
 
-    /* ---------- Host settings ---------- */
-    const renderAdmin = () => {
-      const names = Room.list().map((p) => p.username), games = [...document.querySelectorAll(".nav-menu-item[data-game]")].map((b) => b.dataset.game).filter((g, i, a) => a.indexOf(g) === i);
-      $("px-adm").innerHTML = `
-        <h3>Room</h3><div class="px-row"><span>Name</span><span><input type="text" id="pxa-name" value="${cfg.roomName}" maxlength="30" placeholder="Campus VIP Table"></span></div>
-        <div class="px-row"><span>Daily bonus multiplier</span><span><input type="number" id="pxa-mult" min="0" max="10" step="0.5" value="${cfg.bonusMult}"></span></div>
-        <div class="px-row"><span>Daily missions</span><span></span><input type="checkbox" id="pxa-miss" ${cfg.missionsOn ? "checked" : ""}></div>
-        <h3>Games</h3>${games.map((g) => `<div class="px-row"><span>${g}</span><span></span><input type="checkbox" data-game="${g}" ${cfg.disabled[g] ? "" : "checked"}></div>`).join("")}
-        <h3>Secret winner (all random tools)</h3>
-        <div class="px-row"><span>Enabled</span><span><select id="pxa-rt"><option value="">\u2014</option>${names.map((n) => `<option ${n === Rig.target ? "selected" : ""}>${n}</option>`).join("")}</select></span><input type="checkbox" id="pxa-rig" ${Rig.on ? "checked" : ""}></div>
-        <h3>Display names</h3>${names.map((n) => `<div class="px-row"><span>${n}</span><span><input type="text" data-dn="${n}" value="${cfg.names[n] || ""}" placeholder="${n}" maxlength="24"></span></div>`).join("")}
-        <button class="btn btn-primary btn-block" id="pxa-save" style="margin-top:1rem">Save &amp; sync</button>`;
-      $("pxa-save").onclick = () => {
-        cfg.roomName = $("pxa-name").value.trim(); cfg.bonusMult = Math.max(0, +$("pxa-mult").value || 1); cfg.missionsOn = $("pxa-miss").checked;
-        cfg.disabled = {}; document.querySelectorAll("#px-adm [data-game]").forEach((c) => { if (!c.checked) cfg.disabled[c.dataset.game] = true; });
-        cfg.names = {}; document.querySelectorAll("#px-adm [data-dn]").forEach((i) => { if (i.value.trim()) cfg.names[i.dataset.dn] = i.value.trim(); });
-        Rig.on = $("pxa-rig").checked && !!$("pxa-rt").value; Rig.target = $("pxa-rt").value;
-        pushCfg().then(() => { Notify.success("Room settings saved."); mAdm.hidden = true; });
-      };
+    /** Atomic check-and-claim: progress, disabled state and "already claimed" are all verified inside the transaction. */
+    const claim = (ids, src) => {
+      if (claiming || !State.username || !Room.playersRef || !ids.length) return;
+      claiming = true; let got = [];
+      qRef().transaction((q) => {
+        got = []; q = q || {}; q.p = q.p || {}; q.c = q.c || {};
+        ids.forEach((id) => { const m = Q(id); if (!m || !enabled(id) || q.c[id] || (Number(q.p[id]) || 0) < m.goal) return; q.c[id] = true; got.push(id); });
+        return got.length ? q : undefined;
+      }, (err, ok) => {
+        claiming = false;
+        if (err || !ok || !got.length) { Notify.warning("Nothing to claim right now."); return; }
+        const total = got.reduce((a, id) => a + rw(Q(id)), 0), one = got.length === 1 ? Q(got[0]) : null;
+        got.forEach((id) => flashIds.add(id));
+        Room.applyRound(State.username, { balance: total });      // atomic delta, never overwrites concurrent balance changes
+        Sound.jackpot(); Fx.coinsFrom(src);
+        if (got.length > 1) Fx.celebrate();
+        window.setTimeout(() => Fx.popup({ ribbon: got.length > 1 ? "MISSIONS COMPLETE" : "MISSION COMPLETE", icon: one ? one.icon : "\u{1F3C6}", name: one ? one.text : `${got.length} rewards claimed`, sub: "Reward added to your balance", amount: total, okLabel: "Collect" }), 260);
+        renderQuests();
+      }, false);
     };
+    mMiss.addEventListener("click", (e) => {
+      const t = e.target.closest("[data-claim],[data-all],[data-cat]");
+      if (!t || t.disabled) return;
+      if (t.dataset.cat) { filter = t.dataset.cat; renderQuests(); }
+      else if (t.dataset.all) claim(claimable().map((q) => q.id), t);
+      else claim([t.dataset.claim], t);
+    });
+    const watchQuests = () => {
+      if (qOff) { qOff(); qOff = null; }
+      if (!State.username || !Room.playersRef) return;
+      watchedDay = day(); watchedUser = State.username; watchedRoom = Room.code; prevState = null;
+      const r = qRef(), cb = r.on("value", (s) => {
+        const next = s.val() || {}; next.p = next.p || {}; next.c = next.c || {};
+        if (prevState && QUESTS.some((q) => (Number(prevState.p[q.id]) || 0) > (Number(next.p[q.id]) || 0) || (prevState.c[q.id] && !next.c[q.id]))) Notify.warning("The host reset some of your daily missions.");
+        prevState = qState = next; renderQuests();
+      });
+      qOff = () => r.off("value", cb);
+      checkIn();
+    };
+    const needsWatch = () => !qOff || watchedUser !== State.username || watchedRoom !== Room.code || watchedDay !== day();
+
+    /* ---------- Host control center: Room / Shop / Missions ---------- */
+    let admTab = "room", resetScope = "all", resetMission = "*", wipeHist = false;
+    const resetSel = new Set(), shopOpen = new Set();
+    const names = () => Room.list().map((p) => p.username).filter(Boolean).sort((a, b) => a.localeCompare(b));
+    const hasSvg = (slot) => slot === "avatar" || slot === "frame" || slot === "badge";
+    const hasColor = (slot) => slot === "border" || slot === "title";
+    const SAMPLE = {
+      avatar: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="48" fill="#14171c" stroke="#f4c430" stroke-width="3"/><polygon points="50,18 60,42 86,44 66,60 73,86 50,72 27,86 34,60 14,44 40,42" fill="#f4c430"/></svg>`,
+      frame: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="42" fill="none" stroke="#f4c430" stroke-width="5"/><circle cx="50" cy="50" r="47" fill="none" stroke="#fff3b0" stroke-width="1.5" stroke-dasharray="3 3"/></svg>`,
+      badge: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M50 8 L90 30 L90 70 L50 92 L10 70 L10 30 Z" fill="#14171c" stroke="#f4c430" stroke-width="5"/><text x="50" y="62" text-anchor="middle" font-size="40" font-weight="800" font-family="Georgia,serif" fill="#f4c430">A</text></svg>`
+    };
+    const HINT = {
+      avatar: "Square viewBox (e.g. 0 0 100 100). Rendered inside a circle.",
+      frame: "Overlay drawn around the avatar. Keep the centre (radius 35 of 100) transparent and draw the decoration between radius 35 and 50.",
+      badge: "Small icon shown next to the player's name (works from 24px up). Emoji in the icon field also works.",
+      border: "Glowing ring around the avatar. Pick the glow colour.",
+      title: "Short text shown next to the player's name. Pick an accent colour."
+    };
+
+    const shopFormHtml = () => `
+      <h3>Add shop item</h3>
+      <div class="mx-form">
+        <label>Category<select id="sf-slot">${SLOTS.map((s) => `<option value="${s}">${SLOT_ONE[s]}</option>`).join("")}</select></label>
+        <label><span id="sf-name-l">Item name</span><input type="text" id="sf-name" maxlength="32" placeholder="e.g. Midnight Ace"></label>
+        <label>Price (chips)<input type="number" id="sf-price" min="0" max="1000000" step="10" value="500"></label>
+        <label>Rarity<select id="sf-rar"><option value="">Auto (by price)</option>${Object.keys(RARITY).map((r) => `<option value="${r}">${RARITY[r]}</option>`).join("")}</select></label>
+        <label>Icon (emoji or short text)<input type="text" id="sf-icon" maxlength="8" placeholder="\u{1F3B0}"></label>
+        <label id="sf-color-wrap">Accent colour<input type="color" id="sf-color" value="#f4c430"></label>
+        <label class="wide" id="sf-svg-wrap">Custom SVG code (paste raw &lt;svg&gt;\u2026&lt;/svg&gt;)<textarea id="sf-svg" spellcheck="false" placeholder="&lt;svg viewBox='0 0 100 100'&gt;\u2026&lt;/svg&gt;"></textarea></label>
+        <div class="wide mx-tools" id="sf-tools">
+          <label class="btn btn-secondary btn-small btn-file" style="flex-direction:row;color:inherit">Load .svg file<input type="file" id="sf-file" accept=".svg,image/svg+xml" hidden></label>
+          <button type="button" class="btn btn-ghost btn-small" id="sf-sample">Insert sample</button><span class="mx-msg" id="sf-msg"></span>
+        </div>
+        <div class="wide mx-hint" id="sf-hint"></div>
+        <div class="wide mx-preview" id="sf-preview"></div>
+        <button type="button" class="btn btn-primary wide" id="sf-add">Add to shop</button>
+      </div>
+      <h3>Catalog</h3>
+      <input type="text" class="mx-in" id="sl-search" placeholder="Search items\u2026" style="margin-bottom:.4rem">
+      <div id="sl-list"></div>`;
+
+    const missionsHtml = () => `
+      <h3>Enable / disable missions</h3>
+      <p class="mx-hint">Changes sync instantly. A disabled mission is paused for everyone: no progress is tracked and it can't be claimed until re-enabled.</p>
+      <div class="mx-tools" style="margin-bottom:.4rem"><button type="button" class="btn btn-secondary btn-small" data-bulk="on">Enable all</button><button type="button" class="btn btn-secondary btn-small" data-bulk="off">Disable all</button></div>
+      <div id="mx-toggles"></div>
+      <h3>Reset progress (today)</h3>
+      <p class="mx-hint">Clears progress and claim status so players can complete and claim again. Players see the change live.</p>
+      <div class="mx-radio"><label><input type="radio" name="mx-scope" value="all" ${resetScope === "all" ? "checked" : ""}> Everyone</label><label><input type="radio" name="mx-scope" value="sel" ${resetScope === "sel" ? "checked" : ""}> Selected players</label></div>
+      <div id="mx-sel-box" ${resetScope === "sel" ? "" : "hidden"}>
+        <div class="mx-tools" style="margin:.3rem 0"><input type="text" class="mx-in" id="mx-psearch" placeholder="Filter players\u2026" style="flex:1;min-width:140px"><button type="button" class="btn btn-ghost btn-small" id="mx-all">Select all</button><button type="button" class="btn btn-ghost btn-small" id="mx-none">Clear</button></div>
+        <div class="mx-players" id="mx-players"></div>
+      </div>
+      <div class="mx-form" style="margin-top:.7rem">
+        <label class="wide">What to reset<select id="mx-mission"><option value="*">All missions</option>${QUESTS.map((q) => `<option value="${q.id}">${q.icon} ${q.text}</option>`).join("")}</select></label>
+        <label class="wide" id="mx-hist-wrap" style="flex-direction:row;align-items:center;gap:.5rem"><input type="checkbox" id="mx-hist" style="width:auto"> Also wipe previous days' mission history</label>
+        <button type="button" class="btn btn-danger wide" id="mx-reset">Reset missions</button>
+      </div>`;
+
+    const buildAdmin = () => {
+      $("px-adm").innerHTML = `
+        <div class="mx-tabs" role="tablist">${[["room", "Room"], ["shop", "Shop"], ["missions", "Missions"]].map(([k, l]) => `<button type="button" class="mx-tab" role="tab" data-tab="${k}" aria-selected="${admTab === k}">${l}</button>`).join("")}</div>
+        <div class="mx-pane" data-pane="room" ${admTab === "room" ? "" : "hidden"}><div id="pxa-room"></div></div>
+        <div class="mx-pane" data-pane="shop" ${admTab === "shop" ? "" : "hidden"}>${shopFormHtml()}</div>
+        <div class="mx-pane" data-pane="missions" ${admTab === "missions" ? "" : "hidden"}>${missionsHtml()}</div>`;
+      $("mx-mission").value = resetMission; $("mx-hist").checked = wipeHist;
+      fillRoom(); syncForm(); fillShopList(); fillMissions();
+    };
+
+    const fillRoom = () => {
+      const box = $("pxa-room"); if (!box) return;
+      const ns = names(), games = [...document.querySelectorAll(".nav-menu-item[data-game]")].map((b) => b.dataset.game).filter((g, i, a) => a.indexOf(g) === i);
+      box.innerHTML = `
+        <h3>Room</h3><div class="px-row"><span>Name</span><span><input type="text" id="pxa-name" value="${esc(cfg.roomName)}" maxlength="30" placeholder="Campus VIP Table"></span></div>
+        <div class="px-row"><span>Daily bonus multiplier</span><span><input type="number" id="pxa-mult" min="0" max="10" step="0.5" value="${cfg.bonusMult}"></span></div>
+        <div class="px-row"><span>Daily missions (master switch)</span><span></span><input type="checkbox" id="pxa-miss" ${cfg.missionsOn ? "checked" : ""}></div>
+        <h3>Games</h3>${games.map((g) => `<div class="px-row"><span>${esc(g)}</span><span></span><input type="checkbox" data-game="${esc(g)}" ${cfg.disabled[g] ? "" : "checked"}></div>`).join("")}
+        <h3>Secret winner (all random tools)</h3>
+        <div class="px-row"><span>Enabled</span><span><select id="pxa-rt"><option value="">\u2014</option>${ns.map((n) => `<option ${n === Rig.target ? "selected" : ""}>${esc(n)}</option>`).join("")}</select></span><input type="checkbox" id="pxa-rig" ${Rig.on ? "checked" : ""}></div>
+        <h3>Display names</h3>${ns.map((n) => `<div class="px-row"><span>${esc(n)}</span><span><input type="text" data-dn="${esc(n)}" value="${esc(cfg.names[n] || "")}" placeholder="${esc(n)}" maxlength="24"></span></div>`).join("")}
+        <button type="button" class="btn btn-primary btn-block" id="pxa-save" style="margin-top:1rem">Save &amp; sync</button>`;
+    };
+    const saveRoom = () => {
+      cfg.roomName = $("pxa-name").value.trim(); cfg.bonusMult = Math.max(0, +$("pxa-mult").value || 1); cfg.missionsOn = $("pxa-miss").checked;
+      cfg.disabled = {}; document.querySelectorAll("#pxa-room [data-game]").forEach((c) => { if (!c.checked) cfg.disabled[c.dataset.game] = true; });
+      cfg.names = {}; document.querySelectorAll("#pxa-room [data-dn]").forEach((i) => { if (i.value.trim()) cfg.names[i.dataset.dn] = i.value.trim(); });
+      Rig.on = $("pxa-rig").checked && !!$("pxa-rt").value; Rig.target = $("pxa-rt").value;
+      pushCfg().then(() => { Notify.success("Room settings saved."); Fx.closeModal(mAdm); });
+    };
+
+    /* ----- Shop management ----- */
+    const draft = () => {
+      const slot = $("sf-slot").value, raw = $("sf-svg").value.trim(), price = Math.max(0, Math.min(1000000, Math.round(Number($("sf-price").value) || 0)));
+      const svg = hasSvg(slot) && raw ? Svg.clean(raw) : null;
+      return { raw, svg, item: { slot, id: "preview", name: $("sf-name").value.trim() || "Preview", price, icon: $("sf-icon").value.trim().slice(0, 8), rarity: $("sf-rar").value || rarityOf(price), color: hasColor(slot) ? $("sf-color").value : undefined, svg: svg || undefined } };
+    };
+    const setMsg = (t, ok) => { const m = $("sf-msg"); if (m) { m.textContent = t || ""; m.className = "mx-msg" + (t ? (ok ? " ok" : " err") : ""); } };
+    const updatePreview = () => {
+      const { raw, svg, item } = draft(), box = $("sf-preview"); box.textContent = "";
+      if (raw && hasSvg(item.slot) && !svg) setMsg(raw.length > Svg.MAX_LEN ? `SVG is too large (max ${Svg.MAX_LEN.toLocaleString("en-US")} characters).` : "Invalid SVG: it must start with <svg> and be well-formed XML.", false);
+      else setMsg(raw && svg ? "SVG OK (sanitized)" : "", true);
+      if (item.slot === "frame" && !svg) { const t = document.createElement("div"); t.className = "mx-hint"; t.textContent = "Paste or load SVG code to preview the frame."; box.appendChild(t); return; }
+      box.appendChild(Cosmetics.preview(item, true));
+      if (item.slot !== "title" && item.slot !== "badge") box.appendChild(Cosmetics.preview(item, false));
+    };
+    const syncForm = () => {
+      const slot = $("sf-slot").value;
+      $("sf-svg-wrap").hidden = !hasSvg(slot); $("sf-tools").hidden = !hasSvg(slot); $("sf-color-wrap").hidden = !hasColor(slot);
+      $("sf-name-l").textContent = slot === "title" ? "Title text" : "Item name"; $("sf-hint").textContent = HINT[slot];
+      updatePreview();
+    };
+    const addItem = () => {
+      if (!Room.db || !Room.code) return;
+      const { raw, svg, item } = draft(), slot = item.slot, name = $("sf-name").value.trim();
+      if (!name) { setMsg("Enter a name first.", false); return; }
+      if (raw && hasSvg(slot) && !svg) { setMsg("Fix the SVG before adding.", false); return; }
+      if (slot === "frame" && !svg) { setMsg("A frame needs SVG code.", false); return; }
+      if (hasSvg(slot) && slot !== "frame" && !svg && !item.icon) { setMsg("Add SVG code or an icon.", false); return; }
+      const id = (name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 24) || "item") + "-" + Math.random().toString(36).slice(2, 6);
+      const rec = { slot, id, name, price: item.price, rarity: item.rarity, by: State.username, ts: window.firebase.database.ServerValue.TIMESTAMP };
+      if (item.icon) rec.icon = item.icon; if (svg) rec.svg = svg; if (item.color) rec.color = item.color;
+      $("sf-add").disabled = true;
+      Room.db.ref(`rooms/${Room.code}/shop/items/${Catalog.key(slot, id)}`).set(rec).then(() => {
+        Notify.success(`"${name}" added to the shop for all players.`);
+        $("sf-name").value = ""; $("sf-svg").value = ""; $("sf-icon").value = ""; updatePreview();
+      }).catch(() => Notify.error("Could not add the item.")).finally(() => { $("sf-add").disabled = false; });
+    };
+    const shopRow = (item) => {
+      const key = Catalog.key(item.slot, item.id), hid = !!Catalog.hidden[key];
+      const row = document.createElement("div"); row.className = "mx-item" + (hid ? " hid" : "");
+      const nm = document.createElement("div"); nm.className = "mx-nm";
+      nm.textContent = item.name;
+      const tag = (t, c) => { const s = document.createElement("span"); s.className = "mx-tag" + (c ? " " + c : ""); s.textContent = t; return s; };
+      nm.append(tag(item.custom ? "custom" : "built-in", item.custom ? "gold" : ""), ...(hid ? [tag("removed")] : []));
+      const sm = document.createElement("small"); sm.textContent = `${item.price.toLocaleString("en-US")} chips \u00B7 ${RARITY[item.rarity]}`; nm.appendChild(sm);
+      row.append(Cosmetics.preview(item), nm);
+      const btn = (label, act, cls) => { const b = document.createElement("button"); b.type = "button"; b.className = "btn btn-small " + cls; b.dataset.sh = act; b.dataset.key = key; b.textContent = label; return b; };
+      row.appendChild(hid ? btn("Restore", "show", "btn-secondary") : btn("Remove", "hide", "btn-secondary"));
+      if (item.custom) row.appendChild(btn("Delete", "purge", "btn-danger"));
+      return row;
+    };
+    const fillShopList = () => {
+      const box = $("sl-list"); if (!box) return;
+      const q = ($("sl-search").value || "").trim().toLowerCase(); box.textContent = "";
+      const all = Catalog.all();
+      SLOTS.forEach((slot) => {
+        const items = all.filter((i) => i.slot === slot && (!q || i.name.toLowerCase().includes(q)));
+        if (!items.length) return;
+        const d = document.createElement("details"); d.className = "mx-det"; d.open = !!q || shopOpen.has(slot);
+        const s = document.createElement("summary"); s.textContent = SLOT_LABEL[slot] + " "; const c = document.createElement("span"); c.className = "mx-tag"; c.textContent = String(items.length); s.appendChild(c); d.appendChild(s);
+        items.forEach((i) => d.appendChild(shopRow(i)));
+        d.addEventListener("toggle", () => { if (d.open) shopOpen.add(slot); else shopOpen.delete(slot); });
+        box.appendChild(d);
+      });
+      if (!box.children.length) box.innerHTML = '<div class="cx-empty">No items match.</div>';
+    };
+    const shopAction = (act, key) => {
+      if (!Room.db || !Room.code) return;
+      const ref = Room.db.ref(`rooms/${Room.code}/shop`), it = Catalog.byKey(key);
+      if (act === "hide") ref.child("hidden/" + key).set(true).then(() => Notify.success("Removed from sale. Players who already own it keep it."));
+      else if (act === "show") ref.child("hidden/" + key).remove().then(() => Notify.success("Back on sale."));
+      else if (act === "purge") {
+        if (!window.confirm(`Permanently delete "${it ? it.name : key}"?\nPlayers who own it will lose its look. Use Remove instead to keep their copies.`)) return;
+        ref.update({ ["items/" + key]: null, ["hidden/" + key]: null }).then(() => Notify.success("Item deleted."));
+      }
+    };
+
+    /* ----- Mission management ----- */
+    const fillMissions = () => {
+      const tg = $("mx-toggles"); if (!tg) return;
+      tg.innerHTML = QUESTS.map((q) => `<div class="mx-item ${cfg.mDisabled[q.id] ? "hid" : ""}"><span class="mx-ic">${q.icon}</span><div class="mx-nm">${q.text}<small>${CATS[q.cat]} \u00B7 +${q.reward} chips</small></div>
+        <label class="mx-switch" title="${cfg.mDisabled[q.id] ? "Disabled" : "Enabled"}"><input type="checkbox" data-mt="${q.id}" ${cfg.mDisabled[q.id] ? "" : "checked"}><i></i></label></div>`).join("");
+      const f = ($("mx-psearch").value || "").trim().toLowerCase(), box = $("mx-players"), ns = names();
+      [...resetSel].forEach((u) => { if (!ns.includes(u)) resetSel.delete(u); });
+      box.innerHTML = ns.filter((n) => !f || n.toLowerCase().includes(f)).map((n) => `<label><input type="checkbox" data-pl="${esc(n)}" ${resetSel.has(n) ? "checked" : ""}> ${esc(n)}</label>`).join("") || '<div class="mx-hint">No players.</div>';
+      $("mx-hist-wrap").hidden = $("mx-mission").value !== "*";
+    };
+    const setDisabled = (id, off) => Room.db && Room.code && Room.db.ref(`rooms/${Room.code}/cfg/mDisabled/${id}`).set(off ? true : null);
+    const bulk = (off) => { const o = {}; if (off) QUESTS.forEach((q) => { o[q.id] = true; }); return Room.db.ref(`rooms/${Room.code}/cfg/mDisabled`).set(off ? o : null); };
+    const doReset = () => {
+      if (!Room.playersRef) return;
+      const users = resetScope === "all" ? names() : [...resetSel].filter((u) => Room.exists(u));
+      if (!users.length) { Notify.warning("Select at least one player."); return; }
+      const id = $("mx-mission").value, m = id === "*" ? null : Q(id), d = day(), whole = id === "*" && $("mx-hist").checked;
+      const who = resetScope === "all" ? `ALL ${users.length} players` : `${users.length} selected player${users.length > 1 ? "s" : ""}`;
+      if (!window.confirm(`Reset ${m ? `"${m.text}"` : whole ? "ALL missions and history" : "ALL of today's missions"} for ${who}?`)) return;
+      const upd = {};
+      users.forEach((u) => {
+        if (!m) upd[whole ? `${u}/quests` : `${u}/quests/${d}`] = null;
+        else { upd[`${u}/quests/${d}/p/${m.id}`] = null; upd[`${u}/quests/${d}/c/${m.id}`] = null; if (m.metric === "streak") upd[`${u}/quests/${d}/s`] = null; }
+      });
+      Room.playersRef.update(upd).then(() => Notify.success(`Missions reset for ${who}.`)).catch(() => Notify.error("Reset failed."));
+    };
+
+    const adminRefresh = () => {
+      if (mAdm.hidden || !$("px-adm").firstElementChild) return;
+      const room = $("pxa-room"); if (room && !room.contains(document.activeElement)) fillRoom();
+      fillShopList(); fillMissions();
+    };
+    const adm = $("px-adm");
+    adm.addEventListener("click", (e) => {
+      const t = e.target;
+      const tab = t.closest(".mx-tab");
+      if (tab) { admTab = tab.dataset.tab; adm.querySelectorAll(".mx-tab").forEach((b) => b.setAttribute("aria-selected", String(b === tab))); adm.querySelectorAll(".mx-pane").forEach((p) => { p.hidden = p.dataset.pane !== admTab; }); return; }
+      const sh = t.closest("[data-sh]"); if (sh) { shopAction(sh.dataset.sh, sh.dataset.key); return; }
+      const bk = t.closest("[data-bulk]"); if (bk) { bulk(bk.dataset.bulk === "off"); return; }
+      if (t.id === "pxa-save") saveRoom();
+      else if (t.id === "sf-add") addItem();
+      else if (t.id === "sf-sample") { $("sf-svg").value = SAMPLE[$("sf-slot").value] || ""; updatePreview(); }
+      else if (t.id === "mx-reset") doReset();
+      else if (t.id === "mx-all") { names().forEach((n) => resetSel.add(n)); fillMissions(); }
+      else if (t.id === "mx-none") { resetSel.clear(); fillMissions(); }
+    });
+    adm.addEventListener("input", (e) => {
+      const id = e.target.id || "";
+      if (id.startsWith("sf-") && id !== "sf-file") updatePreview();
+      else if (id === "sl-search") fillShopList();
+      else if (id === "mx-psearch") fillMissions();
+    });
+    adm.addEventListener("change", (e) => {
+      const t = e.target;
+      if (t.dataset.mt) setDisabled(t.dataset.mt, !t.checked);
+      else if (t.dataset.pl) { if (t.checked) resetSel.add(t.dataset.pl); else resetSel.delete(t.dataset.pl); }
+      else if (t.name === "mx-scope") { resetScope = t.value; $("mx-sel-box").hidden = resetScope !== "sel"; fillMissions(); }
+      else if (t.id === "mx-mission") { resetMission = t.value; fillMissions(); }
+      else if (t.id === "mx-hist") wipeHist = t.checked;
+      else if (t.id === "sf-slot") syncForm();
+      else if (t.id === "sf-file") {
+        const f = t.files && t.files[0]; if (!f) return;
+        if (f.size > Svg.MAX_LEN * 4) { setMsg("File is too large for an SVG item.", false); t.value = ""; return; }
+        const r = new FileReader(); r.onload = () => { $("sf-svg").value = String(r.result || ""); updatePreview(); t.value = ""; }; r.readAsText(f);
+      }
+    });
+    PubSub.on("shop-updated", adminRefresh);
+    document.addEventListener("keydown", (e) => {
+      if (e.key !== "Escape" || document.querySelector(".cx-pop-layer")) return;
+      [mMiss, mAdm].forEach((m) => { if (!m.hidden) Fx.closeModal(m); });
+    });
+    window.setInterval(() => { if (State.username && Room.playersRef && needsWatch()) watchQuests(); else if (!mMiss.hidden) renderQuests(); }, 30000);
 
     /* ---------- Embedded default roster (replaces external data.json) ---------- */
     const DEFAULT_STUDENTS_ROSTER = {
@@ -8755,15 +9582,15 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;ba
       loadBtn.hidden = !(State.isHost && Room.list().length === 0);
       $("btn-host-settings").hidden = !State.isHost;
     };
-    PubSub.on("players-updated", () => { syncUi(); if (!mAdm.hidden) renderAdmin(); });
+    PubSub.on("players-updated", () => { syncUi(); adminRefresh(); });
 
     /* ---------- Top-bar buttons ---------- */
     const anchor = DOM.btnOpenAdminLobby;
     anchor.before(mk(`<button type="button" id="btn-missions" class="btn btn-secondary" title="Daily Missions">\u{1F3AF}</button>`));
     anchor.before(mk(`<button type="button" id="btn-host-settings" class="btn btn-secondary" title="Host Settings" hidden>\u{1F39B}</button>`));
-    $("btn-missions").onclick = () => { watchQuests(); renderQuests(); mMiss.hidden = false; };
-    $("btn-host-settings").onclick = () => { renderAdmin(); mAdm.hidden = false; };
-    document.addEventListener("game-changed", () => { syncUi(); if (!qOff) watchQuests(); });
+    $("btn-missions").onclick = () => { if (needsWatch()) watchQuests(); renderQuests(); mMiss.hidden = false; };
+    $("btn-host-settings").onclick = () => { buildAdmin(); mAdm.hidden = false; };
+    document.addEventListener("game-changed", () => { syncUi(); if (needsWatch()) watchQuests(); });
 
     return { cfg, syncRigUi };
   })();
