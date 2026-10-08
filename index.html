@@ -2144,6 +2144,55 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;ba
 .dm-hand .dm.ok{cursor:pointer;transform:translateY(-10px);box-shadow:0 0 0 2px var(--color-gold-strong),0 0 16px rgba(245,210,122,.6)}
 .dm-hand .dm.ok:hover,.dm-hand .dm.ok:focus-visible{transform:translateY(-18px);outline:none}
 @media(max-width:560px){.pq-die{width:54px;height:54px;padding:8px}.dm-hand .dm{--s:32px}.dm-mid{gap:1rem}}
+/* ===== Strategy duels: Chess, Chinese Checkers, Color Code Breaker, Picas y Fijas (obsidian + brushed metal + gold) ===== */
+.duel-table{position:relative;padding:1rem .6rem .8rem}
+.duel-live[data-res="win"] .duel-table{animation:duel-win 1.8s ease-out}
+.duel-live[data-res="lose"] .duel-table{animation:duel-lose .7s ease-in-out,duel-fade 1.2s .7s forwards}
+.duel-live[data-res="draw"] .duel-table{box-shadow:0 0 0 2px #cfd6de,0 0 26px rgba(207,214,222,.5)}
+@keyframes duel-win{0%{box-shadow:0 0 0 2px var(--color-gold-strong),0 0 0 rgba(244,196,48,0)}40%{box-shadow:0 0 0 4px var(--color-gold-strong),0 0 70px rgba(244,196,48,.95)}100%{box-shadow:0 0 0 2px var(--color-gold-strong),0 0 30px rgba(244,196,48,.6)}}
+@keyframes duel-lose{0%,100%{transform:none}20%{transform:translateX(-8px)}40%{transform:translateX(7px)}60%{transform:translateX(-5px)}80%{transform:translateX(3px)}}
+@keyframes duel-fade{to{filter:saturate(.45) brightness(.8);box-shadow:0 0 0 2px #a8302a,0 0 30px rgba(224,72,62,.5)}}
+.ch-board{display:grid;grid-template:repeat(8,1fr)/repeat(8,1fr);width:min(100%,560px);aspect-ratio:1;margin:.6rem auto;border:6px solid #1a1206;border-radius:10px;overflow:hidden;box-shadow:0 0 0 2px var(--color-gold-dark),0 0 0 4px #1a1206,0 14px 34px rgba(0,0,0,.65)}
+.ch-sq{position:relative;display:grid;place-items:center;cursor:pointer;user-select:none}
+.ch-sq.lt{background:repeating-linear-gradient(90deg,rgba(255,255,255,.07) 0 2px,transparent 2px 4px),linear-gradient(145deg,#d9dde2,#9aa3ad)}
+.ch-sq.dk{background:repeating-linear-gradient(90deg,rgba(255,255,255,.035) 0 2px,transparent 2px 4px),linear-gradient(145deg,#1d242c,#07090c)}
+.ch-sq .pc{display:block;font-size:clamp(26px,7.4vw,54px);line-height:1;pointer-events:none;will-change:transform}
+.ch-sq .pc.w{color:#ffe08a;-webkit-text-stroke:1px #6b4a00;text-shadow:0 2px 3px rgba(0,0,0,.65),0 0 9px rgba(244,196,48,.4)}
+.ch-sq .pc.b{color:#0b0d10;-webkit-text-stroke:1px #e9c46a;text-shadow:0 2px 3px rgba(0,0,0,.7)}
+.ch-sq.last{box-shadow:inset 0 0 0 100px rgba(244,196,48,.28)}
+.ch-sq.sel{box-shadow:inset 0 0 0 3px var(--color-gold-strong),inset 0 0 0 100px rgba(244,196,48,.32)}
+.ch-sq.tgt::after{content:"";position:absolute;width:30%;height:30%;border-radius:50%;background:radial-gradient(circle,#f4c430,#b8860b);box-shadow:0 0 10px rgba(244,196,48,.9);opacity:.92}
+.ch-sq.cap{box-shadow:inset 0 0 0 4px #e0483e}
+.ch-sq.chk{background:radial-gradient(circle,#ff5a4d,#7a1510 80%)}
+.ch-sq .rk,.ch-sq .fl{position:absolute;font-size:.6rem;font-style:normal;font-weight:700;opacity:.65;pointer-events:none;color:var(--color-gold-dark)}.ch-sq .rk{top:2px;left:3px}.ch-sq .fl{bottom:1px;right:3px}
+.cc-board{position:relative;width:min(100%,560px);margin:.6rem auto;border-radius:22px;background:radial-gradient(circle at 50% 50%,#1a232d,#06090c 75%),var(--brushed,none);border:4px solid #1a1206;box-shadow:0 0 0 2px var(--color-gold-dark),inset 0 0 60px rgba(0,0,0,.7),0 14px 34px rgba(0,0,0,.6)}
+.cc-hole{position:absolute;width:5.4%;aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle at 35% 30%,#2b3541,#05070a);box-shadow:inset 0 0 0 1px rgba(233,196,106,.3)}
+.cc-hole.z{box-shadow:inset 0 0 0 2px var(--k)}
+.cc-hole.hint{cursor:pointer;background:radial-gradient(circle,#fff3b0,#b8860b);box-shadow:0 0 14px rgba(244,196,48,.95);animation:pq-pulse 1s ease-in-out infinite;z-index:2}
+.cc-pcs{position:absolute;inset:0;pointer-events:none}
+.cc-pc{position:absolute;width:5.4%;aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle at 35% 28%,rgba(255,255,255,.85),rgba(255,255,255,0) 42%),var(--k);border:2px solid rgba(255,255,255,.5);box-shadow:0 3px 6px rgba(0,0,0,.75);pointer-events:auto;z-index:3}
+.cc-pc.ok{cursor:pointer}.cc-pc.sel{box-shadow:0 0 0 3px var(--color-gold-strong),0 0 18px var(--color-gold-strong);transform:translate(-50%,-50%) scale(1.18);z-index:5}
+.cd-boards{display:flex;flex-wrap:wrap;gap:1rem;justify-content:center;margin:.6rem 0}
+.cd-board{min-width:min(100%,290px);padding:.6rem;border-radius:16px;background:rgba(0,0,0,.34);box-shadow:inset 0 0 0 1px rgba(233,196,106,.2)}.cd-board.mine{box-shadow:inset 0 0 0 1px var(--color-gold),0 0 18px rgba(244,196,48,.18)}
+.cd-board .bw-name{text-align:center;margin-bottom:.3rem}
+.cd-row{display:flex;align-items:center;gap:.5rem;padding:.18rem .4rem;margin:2px 0;border-radius:10px;background:rgba(255,255,255,.035)}.cd-row.done{background:rgba(255,255,255,.07)}.cd-row.cracked{box-shadow:0 0 0 1px var(--color-gold-strong),0 0 14px rgba(244,196,48,.6)}.cd-row.secret{background:rgba(244,196,48,.12);box-shadow:inset 0 0 0 1px var(--color-gold)}
+.cd-row.new{animation:cd-in .45s cubic-bezier(.2,.8,.2,1)}@keyframes cd-in{from{transform:translateY(-12px) scale(1.06);opacity:0}}
+.cd-n{width:1.2rem;text-align:center;font-size:.72rem;color:var(--color-text-muted)}.cd-slots{display:flex;gap:6px}.cd-fb{margin-left:auto;font-size:.72rem;color:var(--color-gold);white-space:nowrap}
+.cd-peg{display:inline-block;width:38px;height:38px;border-radius:50%;border:2px solid rgba(255,255,255,.45);background:radial-gradient(circle at 35% 28%,rgba(255,255,255,.8),rgba(255,255,255,0) 42%),var(--k);box-shadow:0 3px 7px rgba(0,0,0,.65);padding:0}.cd-peg.sm{width:26px;height:26px}
+button.cd-peg{cursor:pointer;transition:transform .15s}button.cd-peg:hover:not(:disabled){transform:translateY(-4px)}button.cd-peg:disabled,.cd-key:disabled{opacity:.35;cursor:not-allowed}
+.cd-peg.c0{--k:#d8404a}.cd-peg.c1{--k:#f0bf2e}.cd-peg.c2{--k:#23b87c}.cd-peg.c3{--k:#3f7fe6}.cd-peg.c4{--k:#9b59d0}.cd-peg.c5{--k:#cfd6de}
+.cd-empty{display:inline-block;width:26px;height:26px;border-radius:50%;background:rgba(0,0,0,.45);box-shadow:inset 0 0 0 1px rgba(233,196,106,.25)}
+.cd-dig,.cd-key{display:inline-grid;place-items:center;width:26px;height:26px;border-radius:8px;font-weight:800;color:#1a1206;background:linear-gradient(180deg,#fff2bf,#e0b64c 55%,#b8860b);box-shadow:0 2px 5px rgba(0,0,0,.6)}
+.cd-key{width:40px;height:44px;border:0;font-size:1.15rem;cursor:pointer;font-family:inherit}.cd-key:hover:not(:disabled){filter:brightness(1.15)}
+.cd-pins{display:grid;grid-template:repeat(2,10px)/repeat(2,10px);gap:3px}.cd-pins i{border-radius:50%;background:rgba(0,0,0,.5);box-shadow:inset 0 0 0 1px rgba(255,255,255,.15)}
+.cd-pins i.k{background:radial-gradient(circle at 35% 30%,#fff3b0,#b8860b);animation:cd-pin .4s backwards}.cd-pins i.w{background:radial-gradient(circle at 35% 30%,#fff,#8e98a4);animation:cd-pin .4s backwards}
+@keyframes cd-pin{from{transform:scale(0)}60%{transform:scale(1.5)}}
+.cd-entry{display:flex;flex-direction:column;align-items:center;gap:.6rem;margin:.6rem 0}.cd-cur{display:flex;gap:8px;padding:.4rem .8rem;border-radius:14px;background:rgba(0,0,0,.4);box-shadow:inset 0 0 0 1px var(--color-gold-dark)}
+.cd-cur .cd-peg,.cd-cur .cd-empty{width:38px;height:38px}.cd-cur .cd-dig{width:38px;height:38px;font-size:1.3rem}
+.cd-pal{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;max-width:460px}
+.duel-solo{max-width:760px;margin:.8rem auto 0}
+@media(max-width:560px){.cd-peg{width:32px;height:32px}.cd-key{width:34px;height:40px}}
+@media(prefers-reduced-motion:reduce){.duel-live .duel-table,.cd-row.new,.cd-pins i{animation:none!important}}
 
 /* =========================================================================
    VIP UPGRADE — obsidian / brushed metal / gold
@@ -2539,6 +2588,10 @@ details.mx-det > summary::-webkit-details-marker { display: none; }
             <button type="button" class="nav-menu-item" role="menuitem" data-game="uno"><span class="nav-menu-icon" aria-hidden="true">&#127924;</span><span>UNO</span></button>
             <button type="button" class="nav-menu-item" role="menuitem" data-game="parques"><span class="nav-menu-icon" aria-hidden="true">&#127922;</span><span>Parqu&eacute;s</span></button>
             <button type="button" class="nav-menu-item" role="menuitem" data-game="dominoes"><span class="nav-menu-icon" aria-hidden="true">&#127074;</span><span>Dominoes</span></button>
+            <button type="button" class="nav-menu-item" role="menuitem" data-game="chess"><span class="nav-menu-icon" aria-hidden="true">&#9823;</span><span>Chess</span></button>
+            <button type="button" class="nav-menu-item" role="menuitem" data-game="checkers"><span class="nav-menu-icon" aria-hidden="true">&#11088;</span><span>Chinese Checkers</span></button>
+            <button type="button" class="nav-menu-item" role="menuitem" data-game="mastermind"><span class="nav-menu-icon" aria-hidden="true">&#127912;</span><span>Color Code Breaker</span></button>
+            <button type="button" class="nav-menu-item" role="menuitem" data-game="bullscows"><span class="nav-menu-icon" aria-hidden="true">&#128290;</span><span>Picas y Fijas</span></button>
           </div>
         </div>
       </nav>
@@ -2970,6 +3023,91 @@ details.mx-det > summary::-webkit-details-marker { display: none; }
           <button type="button" class="btn btn-primary" id="dm-again" hidden>Back to table lobby</button>
           <button type="button" class="btn btn-ghost" id="dm-kick" hidden>Skip idle player</button>
           <button type="button" class="btn btn-ghost" id="dm-leave" hidden>Leave table</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="game-chess" class="game-section" data-game-section="chess" hidden aria-labelledby="ch-heading">
+      <h2 id="ch-heading">Chess<span class="bw-title-sub">Casual &amp; Party Games</span></h2>
+      <p class="bw-info">2 players &middot; full chess rules: check, checkmate, castling, en passant, promotion &middot; optional stake, winner takes the pot &middot; no opponent? Play the AI</p>
+      <div class="tl" id="ch-lobby" hidden></div>
+      <div id="ch-live" class="duel-live" hidden>
+        <div class="bw-table duel-table">
+          <div class="pq-players" id="ch-players"></div>
+          <div class="ch-board" id="ch-board" role="group" aria-label="Chess board"></div>
+          <div class="uno-pick" id="ch-promo" hidden><b>Promote pawn to</b><div><button type="button" class="btn btn-secondary" data-p="Q">&#9819; Queen</button> <button type="button" class="btn btn-secondary" data-p="R">&#9820; Rook</button> <button type="button" class="btn btn-secondary" data-p="B">&#9821; Bishop</button> <button type="button" class="btn btn-secondary" data-p="N">&#9822; Knight</button></div><button type="button" class="btn btn-ghost" id="ch-promo-x">Cancel</button></div>
+          <div class="pq-bar"><div id="ch-pot"></div></div>
+          <div class="bw-info" id="ch-status" aria-live="polite"></div>
+          <div class="bw-log" id="ch-log"></div>
+        </div>
+        <div class="bw-actions">
+          <button type="button" class="btn btn-primary" id="ch-again" hidden>Back to table lobby</button>
+          <button type="button" class="btn btn-ghost" id="ch-kick" hidden>Skip idle player</button>
+          <button type="button" class="btn btn-ghost" id="ch-leave" hidden>Leave table</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="game-checkers" class="game-section" data-game-section="checkers" hidden aria-labelledby="cc-heading">
+      <h2 id="cc-heading">Chinese Checkers<span class="bw-title-sub">Casual &amp; Party Games</span></h2>
+      <p class="bw-info">2&ndash;4 players &middot; march all 10 marbles to the opposite star point &middot; step or chain jumps over any marble &middot; optional stake &middot; solo vs AI available</p>
+      <div class="tl" id="cc-lobby" hidden></div>
+      <div id="cc-live" class="duel-live" hidden>
+        <div class="bw-table duel-table">
+          <div class="pq-players" id="cc-players"></div>
+          <div class="cc-board" id="cc-board" role="group" aria-label="Chinese Checkers star board"></div>
+          <div class="pq-bar"><div id="cc-pot"></div></div>
+          <div class="bw-info" id="cc-status" aria-live="polite"></div>
+          <div class="bw-log" id="cc-log"></div>
+        </div>
+        <div class="bw-actions">
+          <button type="button" class="btn btn-primary" id="cc-again" hidden>Back to table lobby</button>
+          <button type="button" class="btn btn-ghost" id="cc-kick" hidden>Skip idle player</button>
+          <button type="button" class="btn btn-ghost" id="cc-leave" hidden>Leave table</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="game-mastermind" class="game-section" data-game-section="mastermind" hidden aria-labelledby="mm-heading">
+      <h2 id="mm-heading">Color Code Breaker<span class="bw-title-sub">Casual &amp; Party Games</span></h2>
+      <p class="bw-info">2 players race to crack their own secret 4-colour code in 10 tries &middot; gold pin = right colour &amp; place, silver pin = right colour only &middot; optional stake &middot; solo vs AI available</p>
+      <div class="tl" id="mm-lobby" hidden></div>
+      <div id="mm-live" class="duel-live" hidden>
+        <div class="bw-table duel-table">
+          <div class="pq-players" id="mm-players"></div>
+          <div class="cd-boards" id="mm-boards"></div>
+          <div class="cd-entry" id="mm-entry" hidden><div class="cd-cur" id="mm-cur" aria-live="polite"></div><div class="cd-pal" id="mm-pal"></div>
+            <div class="bw-actions"><button type="button" class="btn btn-secondary" id="mm-back">Undo</button><button type="button" class="btn btn-action" id="mm-submit">Submit guess</button></div></div>
+          <div class="pq-bar"><div id="mm-pot"></div></div>
+          <div class="bw-info" id="mm-status" aria-live="polite"></div>
+          <div class="bw-log" id="mm-log"></div>
+        </div>
+        <div class="bw-actions">
+          <button type="button" class="btn btn-primary" id="mm-again" hidden>Back to table lobby</button>
+          <button type="button" class="btn btn-ghost" id="mm-kick" hidden>Skip idle player</button>
+          <button type="button" class="btn btn-ghost" id="mm-leave" hidden>Leave table</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="game-bullscows" class="game-section" data-game-section="bullscows" hidden aria-labelledby="bc-heading">
+      <h2 id="bc-heading">Picas y Fijas<span class="bw-title-sub">Casual &amp; Party Games</span></h2>
+      <p class="bw-info">2 players race to crack a secret 4-digit code (no repeats) in 10 tries &middot; Fija = right digit &amp; place, Pica = right digit, wrong place &middot; optional stake &middot; solo vs AI available</p>
+      <div class="tl" id="bc-lobby" hidden></div>
+      <div id="bc-live" class="duel-live" hidden>
+        <div class="bw-table duel-table">
+          <div class="pq-players" id="bc-players"></div>
+          <div class="cd-boards" id="bc-boards"></div>
+          <div class="cd-entry" id="bc-entry" hidden><div class="cd-cur" id="bc-cur" aria-live="polite"></div><div class="cd-pal" id="bc-pal"></div>
+            <div class="bw-actions"><button type="button" class="btn btn-secondary" id="bc-back">Undo</button><button type="button" class="btn btn-action" id="bc-submit">Submit guess</button></div></div>
+          <div class="pq-bar"><div id="bc-pot"></div></div>
+          <div class="bw-info" id="bc-status" aria-live="polite"></div>
+          <div class="bw-log" id="bc-log"></div>
+        </div>
+        <div class="bw-actions">
+          <button type="button" class="btn btn-primary" id="bc-again" hidden>Back to table lobby</button>
+          <button type="button" class="btn btn-ghost" id="bc-kick" hidden>Skip idle player</button>
+          <button type="button" class="btn btn-ghost" id="bc-leave" hidden>Leave table</button>
         </div>
       </div>
     </section>
@@ -4104,7 +4242,7 @@ details.mx-det > summary::-webkit-details-marker { display: none; }
     settled: new Set(),
     LABELS: {
       blackjack: "Blackjack", roulette: "Roulette", slots: "Slots", hilo: "Hi-Lo", craps: "Craps", crash: "Crash",
-      moneywheel: "Money Wheel", pokerdice: "Poker Dice", blackwidow: "Black Widow Poker", uno: "UNO", parques: "Parqués", dominoes: "Dominoes", wheel: "Player Wheel"
+      moneywheel: "Money Wheel", pokerdice: "Poker Dice", blackwidow: "Black Widow Poker", uno: "UNO", parques: "Parqués", dominoes: "Dominoes", chess: "Chess", checkers: "Chinese Checkers", mastermind: "Color Code Breaker", bullscows: "Picas y Fijas", wheel: "Player Wheel"
     },
 
     label(gameId) {
@@ -8484,6 +8622,481 @@ details.mx-det > summary::-webkit-details-marker { display: none; }
   { const s0 = Social.start, s1 = Social.stop; Social.start = function () { s0.call(Social); PQ.start(); DM.start(); }; Social.stop = function () { s1.call(Social); PQ.stop(); DM.stop(); }; }
 
   /* =========================================================================
+     STRATEGY DUELS (Casual & Party Games) — Chess, Chinese Checkers, Color Code Breaker, Picas y Fijas
+     Real-time multiplayer at rooms/<code>/{chess,checkers,mastermind,bullscows} through the shared Party table flow
+     (lobby -> optional stake -> match -> winner takes the pot), plus single-player matches against the Casino Bot:
+     the bot sits at a LocalRef table that implements the Firebase transaction interface, so solo and online games run
+     the exact same rules engines, stake handling and chip settlement.
+     NOTE: the code-breaker secrets live in the shared match state (this is a serverless casual game, like the other tables).
+     ========================================================================= */
+(() => {
+  const BOT = "Casino Bot", $ = pt$, mk = ptMk;
+  /*DE-START*/
+  const rnd = (n) => Math.floor(Math.random() * n);
+  const shuf = (a) => { for (let i = a.length - 1; i > 0; i--) { const j = rnd(i + 1); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+  const finish = (g, ws, why, left) => { g.phase = "done"; g.turnAt = Date.now(); g.res = { ws, pot: g.pot || 0, why: why || "", left: left ? 1 : 0 }; };
+  const mkGame = (v, n, extra) => {
+    const names = Tables.names(v.seats).slice(0, n), rot = (v.rot || 0) + 1, order = names.map((_, i) => names[(i + rot) % names.length]), bet = v.bet || 0;
+    const g = { seats: v.seats, owner: v.owner, max: v.max, rot, bet, phase: "play", hid: Date.now(), order, turn: 0, in: {}, pot: bet * order.length, turnAt: Date.now(), fx: null, res: null };
+    order.forEach((u) => { g.in[u] = bet; });
+    return Object.assign(g, extra(order, g));
+  };
+  const autoOf = (E) => (g, u, id) => { const m = E.ai(g, u), r = m && E.act(g, u, m.type, m.p, id); return r ? `${u} timed out \u2014 ${r}` : null; };
+  const duelLeave = (g, u) => { const i = g.order.indexOf(u); if (i < 0) return false; g.order.splice(i, 1); finish(g, [g.order[0]], "opponent left", 1); return true; };
+
+  /* ---------------------------------- CHESS ---------------------------------- */
+  const CHE = (() => {
+    const isW = (p) => p !== "." && p === p.toUpperCase();
+    const N = [[-2, -1], [-2, 1], [-1, -2], [-1, 2], [1, -2], [1, 2], [2, -1], [2, 1]], K = [[-1, -1], [-1, 0], [-1, 1], [0, -1], [0, 1], [1, -1], [1, 0], [1, 1]];
+    const D = { B: K.filter((d) => d[0] && d[1]), R: K.filter((d) => !d[0] || !d[1]), Q: K };
+    const VAL = { p: 100, n: 320, b: 330, r: 500, q: 900, k: 0 }, sqn = (i) => "abcdefgh"[i & 7] + (8 - (i >> 3));
+    const START = "rnbqkbnrpppppppp" + ".".repeat(32) + "PPPPPPPPRNBQKBNR";
+    const att = (b, sq, w) => {
+      const r = sq >> 3, c = sq & 7, at = (rr, cc) => (rr >= 0 && rr < 8 && cc >= 0 && cc < 8 ? b[rr * 8 + cc] : null);
+      for (const dc of [-1, 1]) if (at(w ? r + 1 : r - 1, c + dc) === (w ? "P" : "p")) return true;
+      for (const [a, d] of N) if (at(r + a, c + d) === (w ? "N" : "n")) return true;
+      for (const [a, d] of K) {
+        if (at(r + a, c + d) === (w ? "K" : "k")) return true;
+        let rr = r + a, cc = c + d;
+        while (rr >= 0 && rr < 8 && cc >= 0 && cc < 8) { const p = b[rr * 8 + cc]; if (p !== ".") { const u = p.toUpperCase(); if (isW(p) === w && (u === "Q" || (a && d ? u === "B" : u === "R"))) return true; break; } rr += a; cc += d; }
+      }
+      return false;
+    };
+    const gen = (s) => {
+      const b = s.b, w = s.t === "w", out = [];
+      for (let i = 0; i < 64; i++) {
+        const p = b[i]; if (p === "." || isW(p) !== w) continue;
+        const r = i >> 3, c = i & 7, u = p.toUpperCase(), add = (t, x) => out.push(Object.assign({ f: i, t }, x || {}));
+        if (u === "P") {
+          const d = w ? -1 : 1, r1 = r + d, pr = w ? 0 : 7;
+          if (r1 < 0 || r1 > 7) continue;
+          const fwd = (t) => { if (t >> 3 === pr) ["Q", "R", "B", "N"].forEach((q) => add(t, { p: q })); else add(t); };
+          if (b[r1 * 8 + c] === ".") { fwd(r1 * 8 + c); if (r === (w ? 6 : 1) && b[(r + 2 * d) * 8 + c] === ".") add((r + 2 * d) * 8 + c); }
+          for (const dc of [-1, 1]) { const cc = c + dc; if (cc < 0 || cc > 7) continue; const t = r1 * 8 + cc; if (b[t] !== "." && isW(b[t]) !== w) fwd(t); else if (t === s.e) add(t, { ep: 1 }); }
+        } else if (u === "N" || u === "K") {
+          for (const [dr, dc] of u === "N" ? N : K) { const rr = r + dr, cc = c + dc; if (rr < 0 || rr > 7 || cc < 0 || cc > 7) continue; const t = rr * 8 + cc; if (b[t] === "." || isW(b[t]) !== w) add(t); }
+          const h = w ? 60 : 4, R = w ? "R" : "r";
+          if (u === "K" && i === h && !att(b, i, !w)) {
+            if (s.c.includes(w ? "K" : "k") && b[h + 1] === "." && b[h + 2] === "." && b[h + 3] === R && !att(b, h + 1, !w) && !att(b, h + 2, !w)) add(h + 2, { cs: 1 });
+            if (s.c.includes(w ? "Q" : "q") && b[h - 1] === "." && b[h - 2] === "." && b[h - 3] === "." && b[h - 4] === R && !att(b, h - 1, !w) && !att(b, h - 2, !w)) add(h - 2, { cs: -1 });
+          }
+        } else {
+          for (const [dr, dc] of D[u]) { let rr = r + dr, cc = c + dc; while (rr >= 0 && rr < 8 && cc >= 0 && cc < 8) { const t = rr * 8 + cc; if (b[t] === ".") add(t); else { if (isW(b[t]) !== w) add(t); break; } rr += dr; cc += dc; } }
+        }
+      }
+      return out;
+    };
+    const make = (s, m) => {
+      const b = s.b.split(""), p = b[m.f], w = s.t === "w", u = p.toUpperCase(); let cap = b[m.t] !== ".", c = s.c;
+      b[m.t] = m.p ? (w ? m.p : m.p.toLowerCase()) : p; b[m.f] = ".";
+      if (m.ep) { b[m.t + (w ? 8 : -8)] = "."; cap = true; }
+      if (m.cs) { const h = w ? 60 : 4; if (m.cs > 0) { b[h + 1] = b[h + 3]; b[h + 3] = "."; } else { b[h - 1] = b[h - 4]; b[h - 4] = "."; } }
+      const rights = { 60: "KQ", 4: "kq", 63: "K", 56: "Q", 7: "k", 0: "q" };
+      [m.f, m.t].forEach((q) => { if (rights[q]) for (const ch of rights[q]) c = c.replace(ch, ""); });
+      return { b: b.join(""), t: w ? "b" : "w", c, e: u === "P" && Math.abs(m.t - m.f) === 16 ? (m.f + m.t) / 2 : -1, h: u === "P" || cap ? 0 : s.h + 1 };
+    };
+    const legal = (s) => { const w = s.t === "w"; return gen(s).filter((m) => { const n = make(s, m); return !att(n.b, n.b.indexOf(w ? "K" : "k"), !w); }); };
+    const status = (s) => {
+      const ms = legal(s), w = s.t === "w", ks = s.b.indexOf(w ? "K" : "k"), chk = ks >= 0 && att(s.b, ks, !w); let end = "";
+      const rest = s.b.replace(/[.kK]/g, "");
+      if (!ms.length) end = chk ? "mate" : "stalemate"; else if (s.h >= 100) end = "50-move rule"; else if (rest === "" || /^[nNbB]$/.test(rest)) end = "insufficient material";
+      return { ms, chk, end };
+    };
+    const ev = (b) => {
+      let sc = 0;
+      for (let i = 0; i < 64; i++) {
+        const p = b[i]; if (p === ".") continue;
+        const w = isW(p), u = p.toLowerCase(), r = i >> 3, c = i & 7, cen = 3.5 - Math.max(Math.abs(r - 3.5), Math.abs(c - 3.5)); let v = VAL[u];
+        if (u === "n" || u === "b") v += cen * 8; else if (u === "p") v += (w ? 6 - r : r - 1) * 6 + cen * 2; else if (u === "q") v += cen * 3;
+        sc += w ? v : -v;
+      }
+      return sc;
+    };
+    const search = (s, d, a, bt) => {
+      if (!d) return (s.t === "w" ? 1 : -1) * ev(s.b);
+      const ms = gen(s).sort((x, y) => (VAL[s.b[y.t].toLowerCase()] || 0) - (VAL[s.b[x.t].toLowerCase()] || 0)); let best = -1e9;
+      for (const m of ms) {
+        if (s.b[m.t].toLowerCase() === "k") return 1e5 + d;
+        const v = -search(make(s, m), d - 1, -bt, -a); if (v > best) { best = v; if (v > a) a = v; if (a >= bt) break; }
+      }
+      return ms.length ? best : 0;
+    };
+    const cs = (g) => ({ b: g.b, t: g.tn, c: g.cr, e: g.ep, h: g.hm });
+    const E = {
+      isW, sqn, cs, legal, status, att,
+      ai(g) {
+        const s = cs(g), ms = legal(s); let best = null, bv = -1e9;
+        ms.forEach((m) => { const v = -search(make(s, m), 2, -1e9, 1e9) + Math.random() * 6; if (v > bv) { bv = v; best = m; } });
+        return best && { type: "move", p: { f: best.f, t: best.t, p: best.p } };
+      },
+      act(g, u, type, p, id) {
+        if (type !== "move" || !p) return null;
+        const s = cs(g), m = legal(s).find((x) => x.f === +p.f && x.t === +p.t && (!x.p || x.p === (p.p || "Q"))); if (!m) return null;
+        const cap = s.b[m.t] !== "." || m.ep ? 1 : 0, n = make(s, m), st = status(n);
+        Object.assign(g, { b: n.b, tn: n.t, cr: n.c, ep: n.e, hm: n.h, chk: st.chk ? 1 : 0, turn: n.t === "w" ? 0 : 1, turnAt: Date.now() });
+        g.fx = { id, at: Date.now(), u, f: m.f, t: m.t, cap, cs: m.cs || 0 };
+        let note = `${u}: ${sqn(m.f)}\u2192${sqn(m.t)}${m.p ? "=" + m.p : ""}`;
+        if (st.end === "mate") { finish(g, [u], "checkmate"); note += " \u2014 checkmate!"; }
+        else if (st.end) { finish(g, g.order.slice(), st.end); note += ` \u2014 draw (${st.end})`; }
+        else if (st.chk) note += " +";
+        return note;
+      },
+      leave: duelLeave,
+      deal(v) { return mkGame(v, 2, () => ({ b: START, tn: "w", cr: "KQkq-", ep: -1, hm: 0, chk: 0 })); }
+    };
+    E.auto = autoOf(E);
+    return E;
+  })();
+
+  /* ------------------------------- CHINESE CHECKERS ------------------------------- */
+  const CCE = (() => {
+    const CELLS = [], IDX = {};
+    for (let x = -8; x <= 8; x++) for (let y = -8; y <= 8; y++) {
+      const z = -x - y; if (Math.abs(z) > 8) continue;
+      const hex = Math.max(Math.abs(x), Math.abs(y), Math.abs(z)) <= 4;
+      const tip = (x >= 5 && y >= -4 && z >= -4) || (x <= -5 && y <= 4 && z <= 4) || (y >= 5 && x >= -4 && z >= -4) || (y <= -5 && x <= 4 && z <= 4) || (z >= 5 && x >= -4 && y >= -4) || (z <= -5 && x <= 4 && y <= 4);
+      if (hex || tip) { IDX[x + "," + y] = CELLS.length; CELLS.push([x, y, z]); }
+    }
+    const DIRS = [[1, -1], [-1, 1], [1, 0], [-1, 0], [0, 1], [0, -1]];
+    const NB = CELLS.map(([x, y]) => DIRS.map(([a, b]) => { const j = IDX[(x + a) + "," + (y + b)]; return j == null ? -1 : j; }));
+    /* ring order (clockwise from the top): -z, +x, -y, +z, -x, +y; the opposite corner is always +3 */
+    const RING = [(c) => c[2] <= -5, (c) => c[0] >= 5, (c) => c[1] <= -5, (c) => c[2] >= 5, (c) => c[0] <= -5, (c) => c[1] >= 5];
+    const CORNER = RING.map((f) => CELLS.map((c, i) => (f(c) ? i : -1)).filter((i) => i >= 0));
+    const hd = (c, t) => (Math.abs(c[0] - t[0]) + Math.abs(c[1] - t[1]) + Math.abs(c[2] - t[2])) / 2;
+    const occ = (g) => { const o = {}; g.order.forEach((u) => (g.pc[u] || []).forEach((i) => { o[i] = u; })); return o; };
+    const reach = (g, f) => {
+      const o = occ(g), res = {}; o[f] = null;
+      NB[f].forEach((a) => { if (a >= 0 && !o[a]) res[a] = [f, a]; });
+      const q = [f], seen = { [f]: [f] };
+      while (q.length) {
+        const c = q.shift();
+        NB[c].forEach((a, k) => { if (a < 0 || !o[a]) return; const b = NB[a][k]; if (b < 0 || o[b] || seen[b]) return; seen[b] = seen[c].concat(b); q.push(b); if (!res[b]) res[b] = seen[b]; });
+      }
+      return res;
+    };
+    const won = (g, u) => { const t = CORNER[(g.cn[u] + 3) % 6], mine = g.pc[u].filter((i) => t.includes(i)).length; return mine === 10 || (mine >= 9 && t.every((i) => occ(g)[i] != null)); };
+    const adv = (g) => {
+      const n = g.order.length;
+      for (let k = 0; k < n; k++) { g.turn = (g.turn + 1) % n; if (g.pc[g.order[g.turn]].some((f) => Object.keys(reach(g, f)).length)) break; }
+      g.turnAt = Date.now();
+    };
+    const E = {
+      CELLS, CORNER, reach,
+      ai(g, u) {
+        const tgt = CORNER[(g.cn[u] + 3) % 6], ts = new Set(tgt), ap = tgt.reduce((a, i) => (hd(CELLS[i], [0, 0, 0]) > hd(CELLS[a], [0, 0, 0]) ? i : a), tgt[0]), d = (i) => hd(CELLS[i], CELLS[ap]); let best = null, bs = -1e9;
+        g.pc[u].forEach((f) => { const r = reach(g, f); for (const k in r) { const t = +k; let s = (d(f) - d(t)) * 10 + d(f) * 0.35 + Math.random() * 1.5; if (ts.has(t) && !ts.has(f)) s += 4; else if (ts.has(f) && !ts.has(t)) s -= 12; if (s > bs) { bs = s; best = { type: "move", p: { f, t } }; } } });
+        return best;
+      },
+      act(g, u, type, p, id) {
+        if (type !== "move" || !p || !g.pc[u].includes(+p.f)) return null;
+        const path = reach(g, +p.f)[+p.t]; if (!path) return null;
+        g.pc[u][g.pc[u].indexOf(+p.f)] = +p.t; g.fx = { id, at: Date.now(), u, path };
+        if (won(g, u)) { finish(g, [u], "all marbles home"); return `${u} moves every marble home!`; }
+        adv(g); return `${u} ${path.length > 2 ? "hops" : "steps"} (${path.length - 1} ${path.length > 2 ? "jumps" : "step"})`.replace("(1 jumps)", "(1 jump)");
+      },
+      leave(g, u) {
+        const i = g.order.indexOf(u); if (i < 0) return false;
+        g.order.splice(i, 1); delete g.pc[u]; delete g.cn[u];
+        if (g.order.length < 2) { finish(g, [g.order[0]], "opponents left", 1); return true; }
+        if (i < g.turn) g.turn--; else if (i === g.turn) { g.turn %= g.order.length; g.turnAt = Date.now(); }
+        return true;
+      },
+      deal(v) {
+        return mkGame(v, 4, (order) => {
+          const cs = order.length === 2 ? [0, 3] : order.length === 3 ? [0, 2, 4] : [0, 1, 3, 4], pc = {}, cn = {};
+          order.forEach((u, i) => { cn[u] = cs[i]; pc[u] = CORNER[cs[i]].slice(); });
+          return { pc, cn };
+        });
+      }
+    };
+    E.auto = autoOf(E);
+    return E;
+  })();
+
+  /* ----------------- CODE BREAKERS: Color Code (Mastermind) + Picas y Fijas (Bulls & Cows) ----------------- */
+  const CDE = (cfg) => {
+    const fb = (sec, gu) => {
+      let ex = 0; const cs = {}, cg = {};
+      for (let i = 0; i < cfg.len; i++) if (sec[i] === gu[i]) ex++; else { cs[sec[i]] = (cs[sec[i]] || 0) + 1; cg[gu[i]] = (cg[gu[i]] || 0) + 1; }
+      let co = 0; for (const k in cg) co += Math.min(cg[k], cs[k] || 0);
+      return [ex, co];
+    };
+    const valid = (c) => Array.isArray(c) && c.length === cfg.len && c.every((x) => Number.isInteger(x) && x >= 0 && x < cfg.sym) && (cfg.dup || new Set(c).size === c.length);
+    const all = (() => { const out = []; const go = (a) => { if (a.length === cfg.len) return out.push(a.slice()); for (let s = 0; s < cfg.sym; s++) if (cfg.dup || !a.includes(s)) { a.push(s); go(a); a.pop(); } }; go([]); return out; })();
+    const secret = () => (cfg.dup ? Array.from({ length: cfg.len }, () => rnd(cfg.sym)) : shuf(Array.from({ length: cfg.sym }, (_, i) => i)).slice(0, cfg.len));
+    const E = {
+      fb, valid,
+      ai(g, u) {
+        const h = g.gs[u] || [], cands = all.filter((c) => h.every((x) => { const r = fb(c, x.c); return r[0] === x.e && r[1] === x.p; }));
+        const pick = h.length || !cfg.first ? cands[rnd(cands.length)] : cfg.first;
+        return { type: "guess", p: { c: pick || all[0] } };
+      },
+      act(g, u, type, p, id) {
+        if (type !== "guess" || !p || !valid(p.c)) return null;
+        g.gs = g.gs || {}; g.sv = g.sv || {}; const h = (g.gs[u] = g.gs[u] || []); if (h.length >= cfg.tries) return null;
+        const [ex, co] = fb(g.sec[u], p.c); h.push({ c: p.c.map(Number), e: ex, p: co });
+        g.fx = { id, at: Date.now(), u, n: h.length - 1, ex }; if (ex === cfg.len) g.sv[u] = h.length;
+        let note = `${u} guessed \u2014 ${ex} ${cfg.fija}, ${co} ${cfg.pica}`;
+        g.turn = (g.turn + 1) % g.order.length; g.turnAt = Date.now();
+        if (g.turn === 0) {
+          const ws = g.order.filter((x) => g.sv[x]);
+          if (ws.length) { finish(g, ws, "cracked"); note += ws.length > 1 ? " \u2014 both cracked the code!" : ` \u2014 ${ws[0]} cracked the code!`; }
+          else if (g.order.every((x) => (g.gs[x] || []).length >= cfg.tries)) { finish(g, g.order.slice(), "out of tries"); note += " \u2014 nobody cracked it"; }
+        }
+        return note;
+      },
+      leave: duelLeave,
+      deal(v) { return mkGame(v, 2, (order) => { const sec = {}; order.forEach((u) => { sec[u] = secret(); }); return { sec, gs: {}, sv: {} }; }); }
+    };
+    E.auto = autoOf(E);
+    return E;
+  };
+  const MME = CDE({ len: 4, sym: 6, dup: true, tries: 10, first: [0, 0, 1, 1], fija: "exact", pica: "colour-only" });
+  const BCE = CDE({ len: 4, sym: 10, dup: false, tries: 10, fija: "fijas", pica: "picas" });
+  /*DE-END*/
+
+  /* ---- Local table: same interface as a Firebase ref, so solo AI matches reuse the whole Party flow (lobby, stake, chips) ---- */
+  class LocalRef {
+    constructor(v) { this.v = v; this.cbs = []; }
+    snap() { const v = this.v == null ? null : JSON.parse(JSON.stringify(this.v)); return { val: () => v }; }
+    on(e, cb) { this.cbs.push(cb); cb(this.snap()); }
+    off(e, cb) { this.cbs = this.cbs.filter((c) => c !== cb); }
+    child() { return { onDisconnect: () => ({ remove() {}, cancel() {} }) }; }
+    transaction(fn) {
+      const r = fn(this.snap().val()); if (r === undefined) return Promise.resolve({ committed: false });
+      this.v = r; this.cbs.slice().forEach((c) => c(this.snap())); return Promise.resolve({ committed: true });
+    }
+  }
+
+  /** Party table + optional single-player match against the Casino Bot (runs entirely in the browser). */
+  const Duel = (o) => {
+    const P = Party(o), B = { stop: P.stop, leave: P.leave, closeTable: P.closeTable, deal: P.deal, common: P.common, render: P.render, sync: P.sync }, el = (s) => $(o.p + "-" + s);
+    return Object.assign(P, {
+      local: false, aiT: 0, snd: null,
+      stop() { B.stop.call(this); clearTimeout(this.aiT); this.local = false; },
+      solo() {
+        const me = State.username; if (!me) return; this.stop(); this.local = true;
+        this.ref = new LocalRef({ phase: "lobby", owner: me, seats: { s0: me, s1: BOT }, max: 2, rot: 0, bet: 0, hid: Date.now(), turnAt: Date.now() });
+        this.cb = (s) => { const n = s.val() || { phase: "lobby" }; if (n.hid !== this.g.hid) this.onNew(); this.g = n; this.sync(); this.render(); this.think(); };
+        this.ref.on("value", this.cb);
+        this.tick = window.setInterval(() => { if (this.g.phase === "play") this.controls(); }, 1000);
+      },
+      deal() {
+        if (!this.local) return B.deal.call(this);
+        const bet = this.g.bet || 0; if (State.balance < bet) return Notify.error(`You need ${bet} chips to cover the stake.`);
+        this.ref.transaction((v) => (v && v.phase === "lobby" ? o.E.deal(v) : undefined));
+      },
+      leave() {
+        if (!this.local) return B.leave.call(this);
+        const g = this.g, me = State.username;
+        if (g.phase === "play") {
+          if (!window.confirm("Forfeit the match? You lose your stake.")) return;
+          this.store(`${o.key}-done-${Room.code}-${g.hid}-${me}`, "1");
+          if (this.paid > 0) resolveGameOutcome(o.key, { roundId: g.hid + "-" + me, entries: [{ wager: this.paid, payout: 0 }] });
+          Sound.lose();
+        }
+        this.start();
+      },
+      closeTable() { if (this.local) this.start(); else B.closeTable.call(this); },
+      /** Same chip settlement as every table game; a split pot (draw) settles quietly with no "you win" fanfare. */
+      sync() {
+        const r = this.g.res; if (!(this.g.phase === "done" && r && r.ws.length > 1)) return B.sync.call(this);
+        const c = [Effects.celebrate, BW.sparkle, Notify.success]; Effects.celebrate = BW.sparkle = Notify.success = () => {};
+        try { B.sync.call(this); } finally { [Effects.celebrate, BW.sparkle, Notify.success] = c; }
+      },
+      /** The bot thinks for a moment, then plays inside a local transaction (same engine call a human move uses). */
+      think() {
+        clearTimeout(this.aiT); const g = this.g;
+        if (!this.local || g.phase !== "play" || g.order[g.turn] !== BOT) return;
+        const hid = g.hid, turn = g.turn;
+        this.aiT = window.setTimeout(() => {
+          const c = this.g; if (c.hid !== hid || c.phase !== "play" || c.turn !== turn) return;
+          this.ref.transaction((v) => {
+            if (!v || v.phase !== "play" || v.order[v.turn] !== BOT) return;
+            const id = Date.now() + "-bot", m = o.E.ai(v, BOT); let note = m && o.E.act(v, BOT, m.type, m.p, id);
+            if (!note) note = o.E.auto(v, BOT, id); if (!note) return;
+            v.last = note; return v;
+          });
+        }, o.delay || 900);
+      },
+      common(my) {
+        B.common.call(this, my); const g = this.g, me = State.username, live = el("live"), r = g.res;
+        if (this.local) el("kick").hidden = true;
+        const out = g.phase === "done" && r ? ((r.ws || []).length > 1 ? "draw" : r.ws.includes(me) ? "win" : "lose") : "";
+        live.dataset.res = out;
+        if (out && this.snd !== g.hid && (g.order || []).includes(me)) { this.snd = g.hid; if (out === "lose") { Sound.lose(); Notify.warning("You lost this match."); } else if (out === "draw") Notify.success("Draw \u2014 stakes are split."); }
+      },
+      render() {
+        B.render.call(this); const g = this.g, lob = el("lobby");
+        if (this.local || lob.hidden || Tables.seatOf(g.seats || {}, State.username)) return;
+        const row = mk("div", "tl-actions"), b = mk("button", "btn btn-action", "\u{1F916} Play vs AI (single player)"); b.type = "button"; b.addEventListener("click", () => this.solo()); row.appendChild(b); lob.appendChild(row);
+      }
+    });
+  };
+  const resText = (g, label) => {
+    const r = g.res, pot = r.pot ? ` \u2014 ${r.pot} chips${r.ws.length > 1 ? " split" : ""}` : "", w = r.ws.join(" & ");
+    return r.left ? `${w} wins by default${pot}.` : r.ws.length > 1 ? `Draw (${r.why})${pot}.` : `${w} wins \u2014 ${r.why || label}${pot}!`;
+  };
+  const strip = (g, who, extra) => {
+    const s = $(g.p + "-players"); s.textContent = "";
+    (g.o.order || []).forEach((u, i) => {
+      const d = mk("div", `bw-seat pq-pl pk${i}` + (u === who ? " turn" : "") + (g.o.res && g.o.res.ws.includes(u) ? " win" : ""));
+      d.appendChild(mk("div", "bw-name", (u === who ? "\u25B6 " : "") + u + (u === State.username ? " (you)" : ""))); d.appendChild(mk("div", "bw-info", extra(u, i))); s.appendChild(d);
+    });
+  };
+  const turnInfo = (g) => { const me = State.username, order = g.order || [], live = g.phase === "play", who = live ? order[g.turn] : null; return { me, order, live, who, my: live && who === me, inGame: order.includes(me) }; };
+
+  /* ---------------------------------- CHESS ---------------------------------- */
+  const GLYPH = { K: "\u265A", Q: "\u265B", R: "\u265C", B: "\u265D", N: "\u265E", P: "\u265F" };
+  const CH = Duel({ key: "chess", p: "ch", node: "chess", label: "Chess", max: 2, E: CHE, delay: 650 });
+  Object.assign(CH, {
+    sel: null, pend: null,
+    onNew() { this.sel = this.pend = null; if ($("ch-promo")) $("ch-promo").hidden = true; },
+    setup() {
+      $("ch-board").addEventListener("click", (e) => { const q = e.target.closest("[data-sq]"); if (q) this.click(+q.dataset.sq); });
+      $("ch-promo").querySelectorAll("[data-p]").forEach((b) => b.addEventListener("click", () => { const d = this.pend; this.pend = this.sel = null; $("ch-promo").hidden = true; if (d) this.act("move", { f: d.f, t: d.t, p: b.dataset.p }); }));
+      $("ch-promo-x").addEventListener("click", () => { this.pend = this.sel = null; $("ch-promo").hidden = true; this.view(); });
+    },
+    click(q) {
+      const g = this.g, me = State.username; if (g.phase !== "play" || g.order[g.turn] !== me) return;
+      const s = CHE.cs(g), p = s.b[q], ms = CHE.legal(s);
+      if (this.sel != null) {
+        const c = ms.filter((m) => m.f === this.sel && m.t === q);
+        if (c.length) { if (c[0].p) { this.pend = { f: this.sel, t: q }; $("ch-promo").hidden = false; return; } const f = this.sel; this.sel = null; return this.act("move", { f, t: q }); }
+      }
+      this.sel = p !== "." && CHE.isW(p) === (g.order[0] === me) && ms.some((m) => m.f === q) ? q : null; this.view();
+    },
+    view() {
+      const g = this.g, me = State.username, flip = g.order[1] === me, s = CHE.cs(g), { who, my } = turnInfo(g);
+      const tg = this.sel != null ? CHE.legal(s).filter((m) => m.f === this.sel).map((m) => m.t) : [], fx = g.fx, ks = g.chk ? s.b.indexOf(s.t === "w" ? "K" : "k") : -1;
+      strip({ p: "ch", o: g }, who, (u, i) => (i ? "\u265A Black" : "\u2654 White")); const b = $("ch-board"); b.textContent = "";
+      for (let k = 0; k < 64; k++) {
+        const q = flip ? 63 - k : k, r = q >> 3, c = q & 7, p = s.b[q], sq = mk("div", "ch-sq " + ((r + c) & 1 ? "dk" : "lt")); sq.dataset.sq = q;
+        if (q === this.sel) sq.classList.add("sel"); if (tg.includes(q)) sq.classList.add(p === "." ? "tgt" : "cap"); if (fx && (fx.f === q || fx.t === q)) sq.classList.add("last"); if (q === ks) sq.classList.add("chk");
+        if (p !== ".") { const pc = mk("span", "pc " + (CHE.isW(p) ? "w" : "b"), GLYPH[p.toUpperCase()] + "\uFE0E"); pc.setAttribute("aria-label", p); sq.appendChild(pc); }
+        if ((k & 7) === 0) sq.appendChild(mk("i", "rk", String(8 - r))); if (k >> 3 === 7) sq.appendChild(mk("i", "fl", "abcdefgh"[c]));
+        b.appendChild(sq);
+      }
+      $("ch-promo").hidden = !this.pend;
+    },
+    controls() {
+      const g = this.g, { who, my, live } = turnInfo(g); let m = "";
+      if (g.phase === "done" && g.res) m = resText(g, "checkmate"); else if (my) m = g.chk ? "Check! Your move \u2014 protect your king." : "Your move \u2014 tap a piece, then a highlighted square."; else if (live) m = `${who} is thinking\u2026`;
+      $("ch-status").textContent = m; $("ch-log").textContent = g.last || ""; this.common(my);
+    },
+    playFx() {
+      const g = this.g, fx = g.fx; if (!fx || fx.id === this.lastFx) return; const late = this.lastFx === null; this.lastFx = fx.id;
+      if ((late && Date.now() - fx.at > 4000) || CardFX.reduced() || Router.currentGameKey !== "chess") return;
+      const b = $("ch-board"), flip = g.order[1] === State.username, sz = b.clientWidth / 8, d = (q) => (flip ? 63 - q : q);
+      const glide = (from, to, z) => {
+        const e = b.querySelector(`[data-sq="${to}"] .pc`); if (!e) return; const a = d(from), c = d(to);
+        e.style.zIndex = z; e.animate([{ transform: `translate(${((a & 7) - (c & 7)) * sz}px,${((a >> 3) - (c >> 3)) * sz}px) scale(1.12)` }, { transform: "none" }], { duration: 420, easing: "cubic-bezier(.3,.7,.2,1)" }).onfinish = () => { e.style.zIndex = ""; };
+      };
+      glide(fx.f, fx.t, 6); if (fx.cs) glide(fx.cs > 0 ? fx.t + 1 : fx.t - 2, fx.t - fx.cs, 5);
+      Sound.tone(fx.cap ? 170 : 420, fx.cap ? 170 : 60, fx.cap ? "sawtooth" : "triangle", 0.05); CardFX.until = performance.now() + 500;
+    }
+  });
+
+  /* ------------------------------- CHINESE CHECKERS ------------------------------- */
+  const CC = Duel({ key: "checkers", p: "cc", node: "checkers", label: "Chinese Checkers", max: 4, E: CCE, delay: 800 });
+  const XY = CCE.CELLS.map(([x, , z]) => [x + z / 2, z * 0.8660254]), MX = [Math.min(...XY.map((a) => a[0])), Math.max(...XY.map((a) => a[0]))], MY = [Math.min(...XY.map((a) => a[1])), Math.max(...XY.map((a) => a[1]))];
+  const cpos = (i) => [4 + ((XY[i][0] - MX[0]) / (MX[1] - MX[0])) * 92, 4 + ((XY[i][1] - MY[0]) / (MY[1] - MY[0])) * 92], cplace = (e, i) => { const [x, y] = cpos(i); e.style.left = x.toFixed(3) + "%"; e.style.top = y.toFixed(3) + "%"; };
+  Object.assign(CC, {
+    sel: null,
+    onNew() { this.sel = null; },
+    setup() {
+      const b = $("cc-board"); b.style.aspectRatio = `${MX[1] - MX[0]} / ${MY[1] - MY[0]}`;
+      CCE.CELLS.forEach((_, i) => { const h = mk("div", "cc-hole"); h.dataset.i = i; cplace(h, i); b.appendChild(h); });
+      b.appendChild(mk("div", "cc-pcs")).id = "cc-pcs";
+      b.addEventListener("click", (e) => {
+        const g = this.g, me = State.username, t = e.target.closest("[data-i]"); if (!t || g.phase !== "play" || g.order[g.turn] !== me) return; const i = +t.dataset.i;
+        if ((g.pc[me] || []).includes(i)) { this.sel = this.sel === i ? null : i; return this.view(); }
+        if (this.sel != null && t.classList.contains("hint")) { const f = this.sel; this.sel = null; this.act("move", { f, t: i }); }
+      });
+    },
+    view() {
+      const g = this.g, { me, order, who, my } = turnInfo(g), r = my && this.sel != null ? CCE.reach(g, this.sel) : {}, zone = {};
+      strip({ p: "cc", o: g }, who, (u) => `${(g.pc[u] || []).filter((i) => CCE.CORNER[(g.cn[u] + 3) % 6].includes(i)).length}/10 home`);
+      order.forEach((u, pi) => CCE.CORNER[g.cn[u]].forEach((i) => { zone[i] = pi; }));
+      $("cc-board").querySelectorAll(".cc-hole").forEach((h, i) => { h.className = "cc-hole" + (zone[i] != null ? " z pk" + zone[i] : "") + (r[i] ? " hint" : ""); });
+      const L = $("cc-pcs"); L.textContent = "";
+      order.forEach((u, pi) => g.pc[u].forEach((i) => {
+        const e = mk("div", "cc-pc pk" + pi + (i === this.sel ? " sel" : "")); e.dataset.i = i; e.dataset.u = u; cplace(e, i);
+        if (u === me && my && g.phase === "play") { e.classList.add("ok"); e.setAttribute("role", "button"); e.tabIndex = 0; e.addEventListener("keydown", (ev) => { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); e.click(); } }); }
+        L.appendChild(e);
+      }));
+    },
+    controls() {
+      const g = this.g, { who, my, live } = turnInfo(g); let m = "";
+      if (g.phase === "done" && g.res) m = resText(g, "all marbles home"); else if (my) m = this.sel == null ? "Your move \u2014 pick a marble, then a glowing hole. Chain jumps over any marble." : "Choose a glowing hole (steps or chained jumps)."; else if (live) m = `${who} is thinking\u2026`;
+      $("cc-status").textContent = m; $("cc-log").textContent = g.last || ""; this.common(my);
+    },
+    playFx() {
+      const g = this.g, fx = g.fx; if (!fx || fx.id === this.lastFx) return; const late = this.lastFx === null; this.lastFx = fx.id;
+      if ((late && Date.now() - fx.at > 4000) || CardFX.reduced() || Router.currentGameKey !== "checkers") return;
+      const e = $("cc-pcs").querySelector(`[data-i="${fx.path[fx.path.length - 1]}"]`); if (!e) return;
+      const kf = fx.path.map((i, k) => { const [x, y] = cpos(i); return { left: x + "%", top: y + "%", transform: `translate(-50%,-50%) scale(${k && k < fx.path.length - 1 ? 1.25 : 1})` }; }), n = kf.length - 1;
+      kf[n].left = e.style.left; kf[n].top = e.style.top; e.style.zIndex = "9";
+      e.animate(kf, { duration: Math.max(300, 260 * n), easing: "ease-in-out" }).onfinish = () => { e.style.zIndex = ""; };
+      fx.path.forEach((_, k) => { if (k) window.setTimeout(() => Sound.tone(380 + k * 40, 40, "triangle", 0.03), (260 * n / n) * k); }); CardFX.until = performance.now() + 260 * n + 100;
+    }
+  });
+
+  /* --------------- CODE BREAKERS (shared UI): Color Code Breaker + Picas y Fijas --------------- */
+  const codeUI = (G, cfg) => Object.assign(G, {
+    cur: [],
+    onNew() { this.cur = []; },
+    setup() {
+      const pal = $(cfg.p + "-pal");
+      for (let v = 0; v < cfg.sym; v++) { const b = mk("button", cfg.kind === "col" ? `cd-peg c${v}` : "cd-key", cfg.kind === "col" ? "" : String(v)); b.type = "button"; b.dataset.v = v; b.setAttribute("aria-label", cfg.kind === "col" ? cfg.names[v] : "Digit " + v); b.addEventListener("click", () => this.push(v)); pal.appendChild(b); }
+      $(cfg.p + "-back").addEventListener("click", () => { this.cur.pop(); this.cursor(); }); $(cfg.p + "-submit").addEventListener("click", () => { const c = this.cur.slice(); this.cur = []; this.act("guess", { c }); });
+    },
+    push(v) { const { my } = turnInfo(this.g); if (!my || this.cur.length >= cfg.len || (!cfg.dup && this.cur.includes(v))) return; this.cur.push(v); this.cursor(); },
+    peg(v, cls) { return cfg.kind === "col" ? mk("span", `cd-peg sm c${v} ${cls || ""}`) : mk("span", "cd-dig " + (cls || ""), String(v)); },
+    cursor() {
+      const { my } = turnInfo(this.g), c = $(cfg.p + "-cur"); c.textContent = "";
+      for (let i = 0; i < cfg.len; i++) { const s = this.cur[i] != null ? this.peg(this.cur[i], "fill") : mk("span", "cd-empty"); c.appendChild(s); }
+      $(cfg.p + "-pal").querySelectorAll("button").forEach((b) => { b.disabled = !my || (!cfg.dup && this.cur.includes(+b.dataset.v)) || this.cur.length >= cfg.len; });
+      $(cfg.p + "-submit").disabled = !my || this.cur.length !== cfg.len; $(cfg.p + "-back").disabled = !my || !this.cur.length; $(cfg.p + "-entry").hidden = !my;
+    },
+    view() {
+      const g = this.g, { me, order, who } = turnInfo(g), fx = g.fx && g.fx.id !== this.lastFx && Date.now() - g.fx.at < 4000 ? g.fx : null, done = g.phase === "done", root = $(cfg.p + "-boards"); root.textContent = "";
+      strip({ p: cfg.p, o: g }, who, (u) => `${(g.gs && g.gs[u] ? g.gs[u].length : 0)}/${cfg.tries} guesses`);
+      (order.includes(me) ? [me].concat(order.filter((u) => u !== me)) : order).forEach((u) => {
+        const box = mk("div", "cd-board" + (u === me ? " mine" : "")), h = (g.gs && g.gs[u]) || [];
+        box.appendChild(mk("div", "bw-name", u === me ? "Your code attempts" : `${u}'s attempts`));
+        if (done && g.sec) { const r = mk("div", "cd-row secret"); r.appendChild(mk("span", "cd-n", "\u2605")); const s = mk("span", "cd-slots"); g.sec[u].forEach((v) => s.appendChild(this.peg(v, "fill"))); r.appendChild(s); r.appendChild(mk("span", "cd-fb", "secret")); box.appendChild(r); }
+        for (let i = 0; i < cfg.tries; i++) {
+          const x = h[i], row = mk("div", "cd-row" + (x ? " done" : "") + (fx && fx.u === u && fx.n === i ? " new" : "") + (x && x.e === cfg.len ? " cracked" : "")); row.appendChild(mk("span", "cd-n", String(i + 1)));
+          const s = mk("span", "cd-slots"); for (let k = 0; k < cfg.len; k++) s.appendChild(x ? this.peg(x.c[k], "fill") : mk("span", "cd-empty")); row.appendChild(s);
+          const pins = mk("span", "cd-pins"); for (let k = 0; k < cfg.len; k++) { const p = mk("i", x ? (k < x.e ? "k" : k < x.e + x.p ? "w" : "") : ""); p.style.animationDelay = k * 90 + "ms"; pins.appendChild(p); } row.appendChild(pins);
+          if (cfg.kind === "num") row.appendChild(mk("span", "cd-fb", x ? `${x.e}F \u00B7 ${x.p}P` : ""));
+          box.appendChild(row);
+        }
+        root.appendChild(box);
+      });
+      this.cursor();
+    },
+    controls() {
+      const g = this.g, { who, my, live } = turnInfo(g); let m = "";
+      if (g.phase === "done" && g.res) m = resText(g, "cracked the code"); else if (my) m = cfg.hint; else if (live) m = `${who} is thinking\u2026`;
+      $(cfg.p + "-status").textContent = m; $(cfg.p + "-log").textContent = g.last || ""; this.common(my); this.cursor();
+    },
+    playFx() {
+      const fx = this.g.fx; if (!fx || fx.id === this.lastFx) return; const late = this.lastFx === null; this.lastFx = fx.id;
+      if ((late && Date.now() - fx.at > 4000) || CardFX.reduced()) return;
+      Sound.tone(300 + fx.ex * 90, 90, "triangle", 0.04); if (fx.ex === cfg.len) window.setTimeout(() => Sound.win(), 150); CardFX.until = performance.now() + 400;
+    }
+  });
+  const MM = codeUI(Duel({ key: "mastermind", p: "mm", node: "mastermind", label: "Color Code Breaker", max: 2, E: MME, delay: 1100 }), { p: "mm", kind: "col", len: 4, sym: 6, dup: true, tries: 10, names: ["Ruby", "Gold", "Emerald", "Sapphire", "Amethyst", "Silver"], hint: "Your turn \u2014 build a 4-colour code. Gold pin = right colour & place, silver pin = right colour, wrong place." });
+  const BC = codeUI(Duel({ key: "bullscows", p: "bc", node: "bullscows", label: "Picas y Fijas", max: 2, E: BCE, delay: 1100 }), { p: "bc", kind: "num", len: 4, sym: 10, dup: false, tries: 10, hint: "Your turn \u2014 enter 4 different digits. Fija = right digit, right place. Pica = right digit, wrong place." });
+
+  [CH, CC, MM, BC].forEach((G) => G.init());
+  { const s0 = Social.start, s1 = Social.stop; Social.start = function () { s0.call(Social); [CH, CC, MM, BC].forEach((G) => G.start()); }; Social.stop = function () { s1.call(Social); [CH, CC, MM, BC].forEach((G) => G.stop()); }; }
+  document.addEventListener("game-changed", (e) => { [["chess", CH], ["checkers", CC], ["mastermind", MM], ["bullscows", BC]].forEach(([k, G]) => { if (e.detail.gameKey !== k && G.local) G.start(); }); });
+})();
+
+  /* =========================================================================
      MARBLE GRAVITY RACE — DETERMINISTIC PHYSICS CORE
      Every client (and the host's headless pre-run) executes this exact fixed-
      timestep simulation from the same {map, seed, racer count}. Only + - * /
@@ -9124,8 +9737,8 @@ details.mx-det > summary::-webkit-details-marker { display: none; }
       { id: "dice", cat: "casino", icon: "\u{1F3AF}", text: "Play 2 rounds of Craps, Crash or Poker Dice", goal: 2, reward: 150, metric: "rounds", games: ["craps", "crash", "pokerdice"] },
       { id: "hilo", cat: "casino", icon: "\u{1F500}", text: "Play Hi-Lo 3 times", goal: 3, reward: 150, metric: "rounds", games: ["hilo"] },
       { id: "poker", cat: "casino", icon: "\u{1F577}\uFE0F", text: "Play a Black Widow Poker hand", goal: 1, reward: 200, metric: "rounds", games: ["blackwidow"] },
-      { id: "casual", cat: "casual", icon: "\u{1F3B4}", text: "Play a round of UNO, Parqu\u00E9s or Dominoes", goal: 1, reward: 150, metric: "rounds", games: ["uno", "parques", "dominoes"] },
-      { id: "casualwin", cat: "casual", icon: "\u{1F3C5}", text: "Win a round of UNO, Parqu\u00E9s or Dominoes", goal: 1, reward: 300, metric: "wins", games: ["uno", "parques", "dominoes"] },
+      { id: "casual", cat: "casual", icon: "\u{1F3B4}", text: "Play a round of any Casual \u0026 Party game", goal: 1, reward: 150, metric: "rounds", games: ["uno", "parques", "dominoes", "chess", "checkers", "mastermind", "bullscows"] },
+      { id: "casualwin", cat: "casual", icon: "\u{1F3C5}", text: "Win a round of any Casual \u0026 Party game", goal: 1, reward: 300, metric: "wins", games: ["uno", "parques", "dominoes", "chess", "checkers", "mastermind", "bullscows"] },
       { id: "win", cat: "wins", icon: "\u{1F4B0}", text: "Win 500 chips in total", goal: 500, reward: 250, metric: "profit" },
       { id: "win2000", cat: "wins", icon: "\u{1F3C6}", text: "Win 2,000 chips in total", goal: 2000, reward: 600, metric: "profit" },
       { id: "bigwin", cat: "wins", icon: "\u{1F48E}", text: "Win 400+ chips profit in a single round", goal: 1, reward: 350, metric: "bigwin", min: 400 },
