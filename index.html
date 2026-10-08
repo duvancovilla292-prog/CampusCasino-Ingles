@@ -2362,6 +2362,28 @@ details.mx-det > summary::-webkit-details-marker { display: none; }
 .cx-pv-circle.bd-aurora { animation: cx-aurora 4s linear infinite; }
 #px-adm [hidden] { display: none !important; }
 
+
+/* ===== VIP UPGRADE: obsidian / brushed metal / gold ===== */
+.z-title{font-style:normal;font-size:.7em;padding:.1em .5em;margin-left:.3em;border:1px solid rgba(233,196,106,.55);border-radius:99px;color:var(--color-gold);background:linear-gradient(180deg,rgba(233,196,106,.14),rgba(0,0,0,.2));white-space:nowrap}
+#z-tabs{flex-wrap:wrap}#z-pane[hidden]{display:none}
+.z-wheel-wrap{position:relative;width:240px;height:240px;margin:.4rem auto 1rem}
+.z-wheel{position:relative;width:240px;height:240px;border-radius:50%;border:4px solid var(--color-gold-dark);box-shadow:0 0 0 2px #000,0 0 28px rgba(233,196,106,.35),inset 0 0 30px rgba(0,0,0,.7)}
+.z-wheel span{position:absolute;left:50%;top:50%;font-weight:800;color:var(--color-gold-strong);text-shadow:0 1px 2px #000;font-size:.95rem}
+.z-hub{position:absolute;left:50%;top:50%;width:46px;height:46px;margin:-23px;border-radius:50%;display:grid;place-items:center;background:radial-gradient(circle at 35% 30%,#fff3b0,#b8860b);color:#000;box-shadow:0 0 12px rgba(244,196,48,.6)}
+.z-ptr{position:absolute;left:50%;top:-10px;margin-left:-11px;z-index:2;border:11px solid transparent;border-top:22px solid var(--color-red);filter:drop-shadow(0 2px 2px #000)}
+.z-bank{display:flex;gap:.6rem;margin:.4rem 0}.z-bank div{flex:1;padding:.6rem;border:1px solid var(--color-gold-dark);border-radius:var(--radius-sm);background:linear-gradient(160deg,#1b212b,#0c0f13);text-align:center}
+.z-bank small{display:block;color:var(--color-text-muted)}.z-bank b{color:var(--color-gold-strong);font-size:1.15rem}
+.z-dice-stage{display:flex;gap:1rem;justify-content:center;margin:1rem 0}
+.z-die{width:92px;height:92px;display:grid;place-items:center;font-size:4.2rem;line-height:1;border-radius:18px;color:#111;background:linear-gradient(145deg,#f7f2e6,#c9c1ae);border:2px solid var(--color-gold-dark);box-shadow:0 8px 18px rgba(0,0,0,.55),0 0 18px rgba(233,196,106,.25)}
+.z-dice-info{text-align:center;margin-bottom:.8rem}.z-dice-info b{display:block;color:var(--color-gold-strong);font-size:1.1rem}.z-dice-info small{color:var(--color-text-muted)}
+.z-tmeta{display:flex;gap:.8rem;flex-wrap:wrap;align-items:center;margin:.6rem 0;color:var(--color-gold)}.z-champ{color:var(--color-gold-strong);font-weight:800}
+.z-bracket{display:flex;gap:1rem;overflow-x:auto;padding:.4rem 0 1rem}.z-col{display:flex;flex-direction:column;justify-content:space-around;gap:.6rem;min-width:150px}.z-col small{color:var(--color-text-muted)}
+.z-match{border:1px solid var(--color-border);border-radius:var(--radius-sm);overflow:hidden;background:#0d1015}
+.z-slot{display:block;width:100%;padding:.45rem .6rem;text-align:left;color:var(--color-text);background:transparent;border:0;border-bottom:1px solid var(--color-border);font:inherit;cursor:pointer}
+.z-slot:last-child{border-bottom:0}.z-slot:disabled{cursor:default}.z-slot:not(:disabled):hover{background:rgba(233,196,106,.12)}
+.z-slot.win{color:#111;background:linear-gradient(90deg,var(--color-gold-dark),var(--color-gold-strong));font-weight:700}.z-slot.out{opacity:.4;text-decoration:line-through}
+.z-log{max-height:46vh;overflow:auto;margin-top:.5rem}.z-lr{display:flex;gap:.6rem;padding:.35rem .5rem;border-bottom:1px solid var(--color-border);font-size:.85rem}
+.z-lr b{min-width:4.2rem;color:var(--color-gold)}.z-lr small{color:var(--color-text-muted);min-width:5rem}.z-lr.t-rig b{color:var(--color-red)}.z-lr.t-bigwin b{color:#2ecc8f}
   </style>
 </head>
 <body>
@@ -2592,6 +2614,8 @@ details.mx-det > summary::-webkit-details-marker { display: none; }
             <button type="button" class="nav-menu-item" role="menuitem" data-game="checkers"><span class="nav-menu-icon" aria-hidden="true">&#11088;</span><span>Chinese Checkers</span></button>
             <button type="button" class="nav-menu-item" role="menuitem" data-game="mastermind"><span class="nav-menu-icon" aria-hidden="true">&#127912;</span><span>Color Code Breaker</span></button>
             <button type="button" class="nav-menu-item" role="menuitem" data-game="bullscows"><span class="nav-menu-icon" aria-hidden="true">&#128290;</span><span>Picas y Fijas</span></button>
+            <button type="button" class="nav-menu-item" role="menuitem" data-game="dice"><span class="nav-menu-icon" aria-hidden="true">&#127922;</span><span>Quick Dice</span></button>
+            <button type="button" class="nav-menu-item" role="menuitem" data-game="tournament"><span class="nav-menu-icon" aria-hidden="true">&#127942;</span><span>Knockout Tournament</span></button>
           </div>
         </div>
       </nav>
@@ -2686,6 +2710,20 @@ details.mx-det > summary::-webkit-details-marker { display: none; }
     <!-- ============================= -->
     <!-- GAME SECTION: ROULETTE        -->
     <!-- ============================= -->
+    <!-- GAME SECTION: QUICK DICE (High/Low, shared rounds synced at rooms/<code>/dice) -->
+    <section id="game-dice" class="game-section" data-game-section="dice" hidden>
+      <h2>Quick Dice</h2>
+      <p class="bw-info">Two dice &middot; bet Low (2&ndash;6), High (8&ndash;12) or Lucky 7 &middot; 9-second shared rounds with the whole room</p>
+      <div id="z-dice"></div>
+    </section>
+
+    <!-- GAME SECTION: KNOCKOUT TOURNAMENT (host builds the bracket from active players) -->
+    <section id="game-tournament" class="game-section" data-game-section="tournament" hidden>
+      <h2>Knockout Tournament</h2>
+      <p class="bw-info">Single-elimination bracket for casual games &middot; byes are added automatically &middot; the champion wins the prize</p>
+      <div id="z-tour"></div>
+    </section>
+
     <section id="game-roulette" class="game-section" data-game-section="roulette" hidden aria-labelledby="roulette-heading">
       <h2 id="roulette-heading">Roulette</h2>
 
@@ -3920,6 +3958,7 @@ details.mx-det > summary::-webkit-details-marker { display: none; }
         Notify.error("The bet must be greater than zero.");
         return null;
       }
+      if (!BetLimits.ok(Router.currentGameKey, amount)) return null;
       if (!State.canAfford(amount)) {
         Notify.error("You don't have enough chips for that bet.");
         return null;
@@ -4049,7 +4088,7 @@ details.mx-det > summary::-webkit-details-marker { display: none; }
         { transform: `translate3d(${dx * 0.4}px,${dy * 0.4 - 18}px,0) rotate(${tilt}deg) scale(1.08)`, opacity: 1, offset: 0.5 },
         { transform: "translate3d(0,0,0) rotate(0deg) scale(1)", opacity: 1, offset: 1 }
       ], { duration: 640, delay: delay, easing: "cubic-bezier(.2,.75,.25,1)", fill: "backwards" });
-      window.setTimeout(() => Sound.tone(520 + Math.random() * 120, 35, "triangle", 0.03), delay + 90);
+      window.setTimeout(() => Sound.card(), delay + 90);
       slide.finished.then(flip, flip);
     }
   };
@@ -4527,6 +4566,7 @@ details.mx-det > summary::-webkit-details-marker { display: none; }
     /* --- turn actions: hit / stand / double (first two cards only) --- */
     act(type, who) {
       const me = who || State.username, g = this.g; if (!this.ref || !me) return;
+      if (type === "double" && !who && !BetLimits.ok("blackjack", ((g.bets || {})[me] || 0) * 2)) return;
       if (type === "double" && !who && !State.canAfford((g.bets || {})[me] || 0)) return Notify.error("You don't have enough chips to double down.");
       let extra = 0;
       this.ref.transaction((v) => {
@@ -4826,6 +4866,7 @@ details.mx-det > summary::-webkit-details-marker { display: none; }
     spin() {
       if (this.isSpinning) return;
       if (!this.selection) { Notify.error("Choose a number, color or parity before spinning."); return; }
+      if (!BetLimits.ok("roulette", this.selectedChip)) return;
       if (!State.canAfford(this.selectedChip)) { Notify.error("You don't have enough chips for that bet."); return; }
 
       State.debit(this.selectedChip);
@@ -5272,7 +5313,7 @@ details.mx-det > summary::-webkit-details-marker { display: none; }
             r.streak.style.opacity = sp.toFixed(2);
             r.strip.style.opacity = (1 - 0.35 * sp).toFixed(2);
             const row = Math.floor(pos / r.H);
-            if (r.i === 0 && row !== r.lastRow && v > 0.3) { Sound.tone(300 + (row % 6) * 35, 25, "square", 0.015); }
+            if (r.i === 0 && row !== r.lastRow && v > 0.3) { Sound.tick(row); }
             r.lastRow = row;
             if (t >= te) {
               r.done = true;
@@ -5683,7 +5724,7 @@ details.mx-det > summary::-webkit-details-marker { display: none; }
           r.streak.style.opacity = sp.toFixed(2);
           r.strip.style.opacity = (1 - 0.4 * sp).toFixed(2);
           const row = Math.floor(y / H);
-          if (r.k === 0 && row !== r.lastRow) { r.lastRow = row; Sound.tone(260 + (row % 5) * 40, 30, "square", 0.02); }
+          if (r.k === 0 && row !== r.lastRow) { r.lastRow = row; Sound.tick(row); }
           if (!r.done) all = false;
         });
         return all;
@@ -6152,7 +6193,7 @@ details.mx-det > summary::-webkit-details-marker { display: none; }
       info.className = "player-info";
       const nameEl = document.createElement("span");
       nameEl.className = "player-name";
-      nameEl.textContent = player.username;
+      nameEl.textContent = player.username; ZT(nameEl, player);
       const balanceEl = document.createElement("span");
       balanceEl.className = "player-balance";
       balanceEl.textContent = `${(player.balance || 0).toLocaleString("en-US")} chips`;
@@ -6283,7 +6324,7 @@ details.mx-det > summary::-webkit-details-marker { display: none; }
 
           const name = document.createElement("span");
           name.className = "leaderboard-name";
-          name.textContent = player.username + Vegas.tag(player);
+          name.textContent = player.username; ZT(name, player);
 
           const balance = document.createElement("span");
           balance.className = "leaderboard-balance";
@@ -6731,7 +6772,7 @@ details.mx-det > summary::-webkit-details-marker { display: none; }
       };
       draw();
       const idx = () => Math.floor((((-1.5707963 - th) / A) % SL.length + SL.length) % SL.length);
-      const chips = Object.keys(bets).map((k) => { const b = btn("", "btn btn-game-select xg-chipbtn"); b.append(k + "x", mk("small", "", "0")); b.addEventListener("click", () => { if (spinning) return; const s = Validate.parseBet(g.bet); if (s === null) return; State.debit(s); bets[k] += s; b.lastChild.textContent = bets[k]; }); return b; });
+      const chips = Object.keys(bets).map((k) => { const b = btn("", "btn btn-game-select xg-chipbtn"); b.append(k + "x", mk("small", "", "0")); b.addEventListener("click", () => { if (spinning) return; const s = Validate.parseBet(g.bet); if (s === null) return; if (!BetLimits.ok("moneywheel", Object.values(bets).reduce((a, b) => a + b, 0) + s)) return; State.debit(s); bets[k] += s; b.lastChild.textContent = bets[k]; }); return b; });
       const spin = btn("🎡 Spin", "btn btn-primary", () => {
         if (spinning) return; const total = Object.values(bets).reduce((a, b) => a + b, 0);
         if (!total) { Notify.error("Place a stake on at least one multiplier."); return; }
@@ -7994,7 +8035,7 @@ details.mx-det > summary::-webkit-details-marker { display: none; }
       openTable() { if (this.ref) Tables.open(this.ref, State.username, this.MAX); },
       take(k) { if (this.ref && this.canSit()) Tables.take(this.ref, State.username, k, ["lobby", "done"]); },
       closeTable() { if (this.ref) Tables.close(this.ref, State.username, State.isHost, ["lobby", "done"]).then((r) => { if (!r.committed) Notify.warning("Finish the match before closing the table."); }); },
-      setBet(n) { n = Math.min(n, Vegas.capFor("uno")); const me = State.username; if (this.ref) this.ref.transaction((v) => { if (!Tables.isOpen(v) || v.phase !== "lobby" || !Tables.canDrive(v, me)) return; v.bet = n; return v; }); },
+      setBet(n) { if (n && !BetLimits.ok(Router.currentGameKey, n)) return; const me = State.username; if (this.ref) this.ref.transaction((v) => { if (!Tables.isOpen(v) || v.phase !== "lobby" || !Tables.canDrive(v, me)) return; v.bet = n; return v; }); },
       leave() {
         const me = State.username, g = this.g; if (!this.ref || !me) return;
         if (g.phase !== "play" || !(g.order || []).includes(me)) return Tables.leave(this.ref, me);
@@ -8011,7 +8052,7 @@ details.mx-det > summary::-webkit-details-marker { display: none; }
         this.ref.transaction((v) => { if (!Tables.isOpen(v) || v.phase !== "done" || !Tables.canDrive(v, me)) return; return { phase: "lobby", owner: v.owner, seats: v.seats, max: v.max, rot: v.rot || 0, bet: v.bet || 0, hid: Date.now(), turnAt: Date.now() }; });
       },
       deal() {
-        const me = State.username, g = this.g, bet = g.bet || 0; if (!this.ref) return;
+        const me = State.username, g = this.g, bet = g.bet || 0; if (!this.ref) return; if (bet && !BetLimits.ok(Router.currentGameKey, bet)) return;
         const poor = Tables.names(g.seats).filter((u) => (u === me ? State.balance : ((Room.get(u) || {}).balance || 0)) < bet);
         if (poor.length) return Notify.error(`${poor.join(", ")} can't cover the ${bet}-chip stake.`);
         this.ref.transaction((v) => {
@@ -8080,7 +8121,7 @@ details.mx-det > summary::-webkit-details-marker { display: none; }
         const g = this.g; if (!Tables.isOpen(g)) return;
         const can = g.phase === "lobby" && Tables.canDrive(g, State.username), box = mk("div", "uno-bet"), row = mk("div", "tl-actions");
         box.appendChild(mk("p", "tl-msg", g.bet ? `Table stake: ${g.bet} chips each \u2014 the winner takes the pot. Charged when the game starts.` : "No stake set \u2014 friendly match. The host can pick an optional chip stake below."));
-        this.STAKES.forEach((n) => { const b = mk("button", "btn " + ((g.bet || 0) === n ? "btn-primary" : "btn-secondary"), n ? String(n) : "No bet"); b.type = "button"; b.disabled = !can; b.addEventListener("click", () => this.setBet(n)); row.appendChild(b); });
+        this.STAKES.forEach((n) => { const b = mk("button", "btn " + ((g.bet || 0) === n ? "btn-primary" : "btn-secondary"), n ? String(n) : "No bet"); b.type = "button"; b.disabled = !can || n > BetLimits.max(Router.currentGameKey); b.addEventListener("click", () => this.setBet(n)); row.appendChild(b); });
         box.appendChild(row); $("uno-lobby").appendChild(box);
       },
       table(fresh) {
@@ -8194,7 +8235,7 @@ details.mx-det > summary::-webkit-details-marker { display: none; }
       openTable() { if (this.ref) Tables.open(this.ref, State.username, this.MAX); },
       take(k) { if (this.ref && this.canSit()) Tables.take(this.ref, State.username, k, ["lobby", "done"]); },
       closeTable() { if (this.ref) Tables.close(this.ref, State.username, State.isHost, ["lobby", "done"]).then((r) => { if (!r.committed) Notify.warning("Finish the match before closing the table."); }); },
-      setBet(n) { n = Math.min(n, Vegas.capFor(o.key)); const me = State.username; if (this.ref) this.ref.transaction((v) => { if (!Tables.isOpen(v) || v.phase !== "lobby" || !Tables.canDrive(v, me)) return; v.bet = n; return v; }); },
+      setBet(n) { if (n && !BetLimits.ok(Router.currentGameKey, n)) return; const me = State.username; if (this.ref) this.ref.transaction((v) => { if (!Tables.isOpen(v) || v.phase !== "lobby" || !Tables.canDrive(v, me)) return; v.bet = n; return v; }); },
       leave() {
         const me = State.username, g = this.g; if (!this.ref || !me) return;
         if (g.phase !== "play" || !(g.order || []).includes(me)) return Tables.leave(this.ref, me);
@@ -8212,7 +8253,7 @@ details.mx-det > summary::-webkit-details-marker { display: none; }
         this.ref.transaction((v) => { if (!Tables.isOpen(v) || v.phase !== "done" || !Tables.canDrive(v, me)) return; return { phase: "lobby", owner: v.owner, seats: v.seats, max: v.max, rot: v.rot || 0, bet: v.bet || 0, hid: Date.now(), turnAt: Date.now() }; });
       },
       deal() {
-        const me = State.username, g = this.g, bet = g.bet || 0; if (!this.ref) return;
+        const me = State.username, g = this.g, bet = g.bet || 0; if (!this.ref) return; if (bet && !BetLimits.ok(Router.currentGameKey, bet)) return;
         const poor = Tables.names(g.seats).filter((u) => (u === me ? State.balance : ((Room.get(u) || {}).balance || 0)) < bet);
         if (poor.length) return Notify.error(`${poor.join(", ")} can't cover the ${bet}-chip stake.`);
         this.ref.transaction((v) => {
@@ -8272,7 +8313,7 @@ details.mx-det > summary::-webkit-details-marker { display: none; }
         const g = this.g; if (!Tables.isOpen(g)) return;
         const can = g.phase === "lobby" && Tables.canDrive(g, State.username), box = ptMk("div", "uno-bet"), row = ptMk("div", "tl-actions");
         box.appendChild(ptMk("p", "tl-msg", g.bet ? `Table stake: ${g.bet} chips each \u2014 the winner takes the pot. Charged when the game starts.` : "No stake set \u2014 friendly match. The host can pick an optional chip stake below."));
-        this.STAKES.forEach((n) => { const b = ptMk("button", "btn " + ((g.bet || 0) === n ? "btn-primary" : "btn-secondary"), n ? String(n) : "No bet"); b.type = "button"; b.disabled = !can; b.addEventListener("click", () => this.setBet(n)); row.appendChild(b); });
+        this.STAKES.forEach((n) => { const b = ptMk("button", "btn " + ((g.bet || 0) === n ? "btn-primary" : "btn-secondary"), n ? String(n) : "No bet"); b.type = "button"; b.disabled = !can || n > BetLimits.max(Router.currentGameKey); b.addEventListener("click", () => this.setBet(n)); row.appendChild(b); });
         box.appendChild(row); el("lobby").appendChild(box);
       },
       /** Shared bottom controls: pot label, idle-skip countdown, forfeit/leave and "back to lobby". */
@@ -8883,7 +8924,7 @@ details.mx-det > summary::-webkit-details-marker { display: none; }
       },
       deal() {
         if (!this.local) return B.deal.call(this);
-        const bet = this.g.bet || 0; if (State.balance < bet) return Notify.error(`You need ${bet} chips to cover the stake.`);
+        const bet = this.g.bet || 0; if (bet && !BetLimits.ok(Router.currentGameKey, bet)) return; if (State.balance < bet) return Notify.error(`You need ${bet} chips to cover the stake.`);
         this.ref.transaction((v) => (v && v.phase === "lobby" ? o.E.deal(v) : undefined));
       },
       leave() {
@@ -9873,7 +9914,7 @@ details.mx-det > summary::-webkit-details-marker { display: none; }
     /** Atomic check-and-claim: progress, disabled state and "already claimed" are all verified inside the transaction. */
     const claim = (ids, src) => {
       if (claiming || !State.username || !Room.playersRef || !ids.length) return;
-      claiming = true; let got = []; try { Vegas.audit("mission", "Mission reward claim: " + [].concat(ids).join(", ")); } catch (e) {}
+      claiming = true; let got = [];
       qRef().transaction((q) => {
         got = []; q = q || {}; q.p = q.p || {}; q.c = q.c || {};
         ids.forEach((id) => { const m = Q(id); if (!m || !enabled(id) || q.c[id] || (Number(q.p[id]) || 0) < m.goal) return; q.c[id] = true; got.push(id); });
@@ -9883,7 +9924,7 @@ details.mx-det > summary::-webkit-details-marker { display: none; }
         if (err || !ok || !got.length) { Notify.warning("Nothing to claim right now."); return; }
         const total = got.reduce((a, id) => a + rw(Q(id)), 0), one = got.length === 1 ? Q(got[0]) : null;
         got.forEach((id) => flashIds.add(id));
-        Room.applyRound(State.username, { balance: total });      // atomic delta, never overwrites concurrent balance changes
+        Audit.log("mission", `Claimed ${got.length} mission reward(s)`, total); Room.applyRound(State.username, { balance: total });      // atomic delta, never overwrites concurrent balance changes
         Sound.jackpot(); Fx.coinsFrom(src);
         if (got.length > 1) Fx.celebrate();
         window.setTimeout(() => Fx.popup({ ribbon: got.length > 1 ? "MISSIONS COMPLETE" : "MISSION COMPLETE", icon: one ? one.icon : "\u{1F3C6}", name: one ? one.text : `${got.length} rewards claimed`, sub: "Reward added to your balance", amount: total, okLabel: "Collect" }), 260);
@@ -9972,12 +10013,15 @@ details.mx-det > summary::-webkit-details-marker { display: none; }
 
     const buildAdmin = () => {
       $("px-adm").innerHTML = `
-        <div class="mx-tabs" role="tablist">${[["room", "Room"], ["shop", "Shop"], ["missions", "Missions"]].map(([k, l]) => `<button type="button" class="mx-tab" role="tab" data-tab="${k}" aria-selected="${admTab === k}">${l}</button>`).join("")}</div>
+        <div class="mx-tabs" role="tablist">${[["room", "Room"], ["shop", "Shop"], ["missions", "Missions"], ["limits", "Limits"], ["bank", "Bank"], ["audit", "Audit"]].map(([k, l]) => `<button type="button" class="mx-tab" role="tab" data-tab="${k}" aria-selected="${admTab === k}">${l}</button>`).join("")}</div>
         <div class="mx-pane" data-pane="room" ${admTab === "room" ? "" : "hidden"}><div id="pxa-room"></div></div>
         <div class="mx-pane" data-pane="shop" ${admTab === "shop" ? "" : "hidden"}>${shopFormHtml()}</div>
-        <div class="mx-pane" data-pane="missions" ${admTab === "missions" ? "" : "hidden"}>${missionsHtml()}</div>`;
+        <div class="mx-pane" data-pane="missions" ${admTab === "missions" ? "" : "hidden"}>${missionsHtml()}</div>
+        <div class="mx-pane" data-pane="limits" ${admTab === "limits" ? "" : "hidden"}><div id="z-a-limits"></div></div>
+        <div class="mx-pane" data-pane="bank" ${admTab === "bank" ? "" : "hidden"}><div id="z-a-bank"></div></div>
+        <div class="mx-pane" data-pane="audit" ${admTab === "audit" ? "" : "hidden"}><div id="z-a-audit"></div></div>`;
       $("mx-mission").value = resetMission; $("mx-hist").checked = wipeHist;
-      fillRoom(); syncForm(); fillShopList(); fillMissions();
+      fillRoom(); syncForm(); fillShopList(); fillMissions(); window.__zAdmin && window.__zAdmin();
     };
 
     const fillRoom = () => {
@@ -10248,220 +10292,419 @@ details.mx-det > summary::-webkit-details-marker { display: none; }
   })();
 
   /* =========================================================================
-     Z. VEGAS UPGRADE: bet limits, synth audio, audit log, central bank,
-     daily spin, quick dice, tournament brackets, badges. All state lives in
-     Firebase under rooms/<code>/{limits,audit,dice,tourney} and players/<u>/.
+     Z. VIP UPGRADE MODULE — bet limits, synth audio, audit log, daily spin,
+     achievements, central bank, quick dice, knockout tournaments.
+     Firebase nodes (rooms/<code>/): lim, audit, bank, dice, tour, players/<u>/{ach,spin,loan}
      ========================================================================= */
-  const Vegas = (() => {
-    const $ = (id) => document.getElementById(id);
-    const el = (html) => { const d = document.createElement("div"); d.innerHTML = html.trim(); return d.firstElementChild; };
-    const ref = (p) => Room.db.ref(`rooms/${Room.code}/${p}`);
-    const pref = (u, p) => Room.playersRef.child(u + (p ? "/" + p : ""));
-    const say = (m, k) => { const f = Notify[k || "success"] || Notify.warning; f.call(Notify, m); };
-    const fmt = (n) => Math.round(n || 0).toLocaleString("en-US");
-    const today = () => new Date().toISOString().slice(0, 10);
-    const GAMES = { blackjack: "Blackjack", roulette: "Roulette", slots: "Slots", hilo: "Hi-Lo", craps: "Craps", crash: "Crash", moneywheel: "Money Wheel", pokerdice: "Poker Dice", blackwidow: "Black Widow Poker", uno: "UNO", parques: "Parqu\u00E9s", dominoes: "Dominoes", chess: "Chess", checkers: "Chinese Checkers", mastermind: "Color Code Breaker", bullscows: "Picas y Fijas", dice: "Quick Dice" };
-    const D = { global: 50000, games: {}, bank: { on: true, max: 500, rate: 10 } };
-    const T = { cur: null }, DI = { cur: null };
-    let audit = [], tab = "spin", refs = [], timer = null, auditOn = false;
+  const fmt = (n) => Number(n || 0).toLocaleString("en-US");
+  const zref = (p) => (Room.db && Room.code ? Room.db.ref(`rooms/${Room.code}/${p}`) : null);
+  const zday = () => { const d = new Date(); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); };
+  const $z = (id) => document.getElementById(id);
+  const TS = () => window.firebase.database.ServerValue.TIMESTAMP;
 
-    /* ---------- 1. Betting limits (default 50,000; global or per game) ---------- */
-    const cap = (k) => { const g = Number(D.games[k]); return g > 0 ? g : D.global; };
-    const curKey = () => Router.currentGameKey || "";
-    const over = (a, k) => { const c = cap(k || curKey()); if (a > c) { Notify.error(`Max bet for ${GAMES[k || curKey()] || "this game"} is ${fmt(c)} chips.`); return true; } return false; };
-    const origParse = Validate.parseBet.bind(Validate);
-    Validate.parseBet = function (inp) { const a = Number.parseInt(String(inp.value).trim(), 10); if (a > 0 && over(a)) return null; return origParse(inp); };
-    const origAfford = State.canAfford.bind(State);
-    State.canAfford = function (a) { if (Number.isFinite(a) && a > 0 && over(a)) return false; return origAfford(a); };
-
-    /* ---------- 2. Synthesized audio (Web Audio only; mute = existing toggle) ---------- */
-    const S = Sound;
-    S.noise = function (ms, hp, vol) {
-      if (!this.enabled) return; const c = this.ensureContext(); if (!c) return;
-      const n = Math.floor(c.sampleRate * ms / 1000), b = c.createBuffer(1, n, c.sampleRate), d = b.getChannelData(0);
-      for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / n);
-      const s = c.createBufferSource(), f = c.createBiquadFilter(), g = c.createGain();
-      s.buffer = b; f.type = "highpass"; f.frequency.value = hp; g.gain.value = vol; s.connect(f); f.connect(g); g.connect(c.destination); s.start();
-    };
-    S.chip = function () { this.tone(1800, 40, "triangle", 0.06); setTimeout(() => this.tone(1200, 60, "triangle", 0.05), 35); };
-    S.card = function () { this.noise(120, 2500, 0.09); };
-    S.tick = function () { this.tone(900, 25, "square", 0.035); };
-    S.fanfare = function () { [523, 659, 784, 1046, 784, 1046, 1318].forEach((f, i) => setTimeout(() => { this.tone(f, 220, "triangle", 0.09); this.tone(f / 2, 220, "sine", 0.05); }, i * 120)); };
-    S.reelTicks = function () { let t = 0, gap = 45; for (let i = 0; i < 26; i++) { setTimeout(() => this.tick(), t); t += gap; gap *= 1.08; } };
-    S.click = function () { this.tone(440, 60, "square", 0.04); };
-    S.jackpot = S.fanfare;
-    const rw = S.win.bind(S); S.win = function () { rw(); setTimeout(() => this.chip(), 250); };
-    document.addEventListener("click", (e) => {
-      const b = e.target.closest("button,.chip,[data-chip]"); if (!b) return;
-      const id = (b.id || "") + " " + (b.className || "") + " " + (b.dataset.chip || "");
-      if (/chip/i.test(id)) S.chip();
-      else if (/deal|hit|stand|draw|uno/i.test(id)) S.card();
-      else if (b.closest('[data-game-section="slots"]') && /spin|play|start/i.test(id + b.textContent)) S.reelTicks();
-    }, true);
-
-    /* ---------- 3. Audit log ---------- */
-    const log = (type, text, who) => { if (!Room.db || !Room.code) return; ref("audit").push({ t: Date.now(), type, who: who || State.username || "?", text }).catch(() => {}); };
-    const rSet = Room.setBalance.bind(Room);
-    Room.setBalance = function (u, b) { if (State.isHost) log("chips", `Chip adjustment: ${u} set to ${fmt(b)}`); return rSet(u, b); };
-    let lastRig = 0;
-    const rIdx = Rig.idx.bind(Rig), rFront = Rig.front.bind(Rig);
-    const rigLog = () => { if (Rig.on && Rig.target && Date.now() - lastRig > 3000) { lastRig = Date.now(); log("rig", `Chosen Winner tool used (target: ${Rig.target})`); } };
-    Rig.idx = (l, f) => { rigLog(); return rIdx(l, f); }; Rig.front = (l) => { rigLog(); return rFront(l); };
-
-    /* ---------- 4. Badges / titles ---------- */
-    const BADGES = [
-      { id: "roller", icon: "\uD83D\uDC8E", name: "High Roller", test: (p) => ((p.stats || {}).totalWagered || 0) >= 10000 },
-      { id: "whale", icon: "\uD83D\uDC33", name: "Whale", test: (p) => ((p.stats || {}).totalWagered || 0) >= 100000 },
-      { id: "regular", icon: "\uD83C\uDFB0", name: "Regular", test: (p) => ((p.stats || {}).gamesPlayed || 0) >= 50 },
-      { id: "winner", icon: "\uD83D\uDCC8", name: "In the Green", test: (p) => ((p.stats || {}).netProfit || 0) >= 5000 },
-      { id: "bj5", icon: "\uD83C\uDCA1", name: "Blackjack Streak", test: (p) => (p.bestStreak || 0) >= 5 },
-      { id: "domino", icon: "\uD83C\uDC73", name: "Domino Master", test: (p) => ((p.wins || {}).dominoes || 0) >= 5 },
-      { id: "champ", icon: "\uD83C\uDFC6", name: "Tournament Champion", test: (p) => !!(p.badges || {}).champ }
-    ];
-    const tag = (p) => { const b = BADGES.filter((x) => (p.badges || {})[x.id]); return b.length ? " " + b.slice(-2).map((x) => x.icon).join("") + " " + b[b.length - 1].name : ""; };
-    const track = (u, d) => {
-      if (!d || !d.gamesPlayed || !Room.playersRef) return; const k = curKey(), net = d.netProfit || 0;
-      if (net >= 5000) log("win", `Large win: ${u} +${fmt(net)} in ${GAMES[k] || k || "a game"}`, u);
-      if (net > 0 && k) pref(u, "wins/" + k).transaction((v) => (v || 0) + 1);
-      if (k === "blackjack") pref(u).transaction((p) => { if (!p) return p; p.streak = net > 0 ? (p.streak || 0) + 1 : 0; p.bestStreak = Math.max(p.bestStreak || 0, p.streak); return p; });
-    };
-    const rAp = Room.applyRound.bind(Room), rPp = Room.persistPlayer.bind(Room);
-    Room.applyRound = (u, d) => { track(u, d); return rAp(u, d); };
-    Room.persistPlayer = (u, b, s) => { track(u, s); return rPp(u, b, s); };
-    const awardCheck = () => {
-      const me = State.username && Room.get(State.username); if (!me) return;
-      BADGES.forEach((b) => { if (!(me.badges || {})[b.id] && b.test(me)) { pref(State.username, "badges/" + b.id).set(Date.now()); say(`Badge unlocked: ${b.icon} ${b.name}`); S.fanfare(); log("badge", `${State.username} unlocked ${b.name}`); } });
-    };
-    const lbR = Leaderboard.renderList.bind(Leaderboard);
-
-    /* ---------- 5. Central bank ---------- */
-    const owed = (l) => Math.ceil(l.principal * (1 + (l.rate || 0) / 100));
-    const loan = () => {
-      const me = Room.get(State.username) || {}, b = D.bank;
-      if (!b.on) return say("The bank is closed.", "warning");
-      if (State.balance > 0) return say("Loans are only for players at 0 chips.", "warning");
-      if (me.loan) return say("Repay your current loan first.", "warning");
-      pref(State.username).transaction((p) => { if (!p || p.loan || (p.balance || 0) > 0) return; p.loan = { principal: b.max, rate: b.rate, at: Date.now() }; p.balance = b.max; return p; }).then((r) => { if (r.committed) { log("loan", `Emergency loan: ${State.username} borrowed ${fmt(b.max)} (${b.rate}% interest)`); say(`Loan of ${fmt(b.max)} chips granted.`); } });
-    };
-    const repay = () => {
-      let paid = 0;
-      pref(State.username).transaction((p) => { if (!p || !p.loan) return; const o = owed(p.loan), pay = Math.min(o, p.balance || 0); if (pay <= 0) return; paid = pay; p.balance -= pay; if (pay >= o) p.loan = null; else p.loan = { principal: Math.ceil((o - pay) / (1 + (p.loan.rate || 0) / 100)), rate: p.loan.rate, at: p.loan.at }; return p; })
-        .then((r) => { if (r.committed) { log("loan", `${State.username} repaid ${fmt(paid)} to the bank`); say(`Repaid ${fmt(paid)} chips.`); } else say("Nothing to repay.", "warning"); });
-    };
-
-    /* ---------- 6. Daily lucky spin ---------- */
-    const SEG = [50, 100, 150, 250, 500, 1000, 2500, 5000], WT = [26, 22, 18, 14, 10, 6, 3, 1];
-    const pick = () => { let r = Math.random() * 100, i = 0; while (i < WT.length - 1 && (r -= WT[i]) >= 0) i++; return i; };
-    let spinning = false, rot = 0;
-    const spin = () => {
-      if (spinning) return; const i = pick(), prize = SEG[i]; spinning = true;
-      pref(State.username).transaction((p) => { if (!p || p.spinDay === today()) return; p.spinDay = today(); p.balance = (p.balance || 0) + prize; return p; }).then((r) => {
-        if (!r.committed) { spinning = false; return say("You already spun today. Come back tomorrow!", "warning"); }
-        const w = $("vg-wheel"), seg = 360 / SEG.length; rot += 1800 + (360 - (i * seg + seg / 2)) - (rot % 360); w.style.transform = `rotate(${rot}deg)`;
-        for (let k = 0; k < 30; k++) setTimeout(() => S.tick(), k * 120 + k * k * 4);
-        setTimeout(() => { spinning = false; S.fanfare(); say(`Lucky Spin: +${fmt(prize)} chips!`); log("spin", `${State.username} won ${fmt(prize)} on the daily spin`); render(); }, 4200);
-      });
-    };
-
-    /* ---------- 7. Quick dice (High 8-12 / Low 2-6, 7 = house) ---------- */
-    const diceBet = (side) => {
-      const amt = Number.parseInt($("vg-dbet").value, 10), me = State.username;
-      if (!(amt > 0)) return say("Enter a valid bet.", "warning"); if (over(amt, "dice")) return;
-      if (!origAfford(amt)) return say("Not enough chips.", "warning");
-      ref("dice/cur").transaction((v) => {
-        const now = Date.now();
-        if (!v || v.result) return { id: now, endsAt: now + 30000, bets: { [me]: { side, amt } } };
-        if (now >= v.endsAt || (v.bets || {})[me]) return;
-        v.bets = v.bets || {}; v.bets[me] = { side, amt }; return v;
-      }).then((r) => { if (r.committed) { State.debit(amt); S.chip(); } else say("Round closed or bet already placed.", "warning"); });
-    };
-    const diceSettle = (v) => {
-      const me = State.username, b = v && v.result && (v.bets || {})[me]; if (!b || b.paid) return;
-      ref(`dice/cur/bets/${me}`).transaction((x) => { if (!x || x.paid) return; x.paid = true; return x; }).then((r) => {
-        if (!r.committed) return; const t = v.result.roll, win = (b.side === "high" && t >= 8) || (b.side === "low" && t <= 6);
-        Room.applyRound(me, { balance: win ? b.amt * 2 : 0, gamesPlayed: 1, totalWagered: b.amt, netProfit: win ? b.amt : -b.amt });
-        win ? (S.win(), say(`Dice ${t}: you won ${fmt(b.amt)}!`)) : (S.lose(), say(`Dice ${t}: you lost ${fmt(b.amt)}.`, "warning"));
-        if (win && b.amt >= 5000) log("win", `Large win: ${me} +${fmt(b.amt)} in Quick Dice`);
-      });
-    };
-    const diceResolve = () => ref("dice/cur").transaction((v) => { if (!v || v.result || Date.now() < v.endsAt) return; const a = 1 + Math.floor(Math.random() * 6), c = 1 + Math.floor(Math.random() * 6); v.result = { d: [a, c], roll: a + c }; return v; });
-
-    /* ---------- 8. Tournament brackets ---------- */
-    const mkRound = (ps) => { const m = []; for (let i = 0; i < ps.length; i += 2) m.push({ a: ps[i], b: ps[i + 1] || null, w: ps[i + 1] ? null : ps[i] }); return m; };
-    const tStart = () => {
-      const game = $("vg-tgame").value, prize = Math.max(0, Number($("vg-tprize").value) || 0), ps = Room.list().map((p) => p.username).sort(() => Math.random() - 0.5);
-      if (ps.length < 2) return say("Need at least 2 players.", "warning");
-      ref("tourney").set({ game, prize, round: 0, rounds: [mkRound(ps)], champ: null, startedAt: Date.now() }); log("tourney", `Tournament started: ${GAMES[game]} with ${ps.length} players (prize ${fmt(prize)})`);
-    };
-    const tWin = (r, m, w) => {
-      ref("tourney").transaction((t) => {
-        if (!t || t.champ || r !== t.round) return; const R = t.rounds[r], mm = R[m]; if (mm.w) return; mm.w = w;
-        if (R.every((x) => x.w)) { const ws = R.map((x) => x.w); if (ws.length === 1) t.champ = ws[0]; else { t.rounds.push(mkRound(ws)); t.round++; } }
-        return t;
-      }).then((x) => { const t = x.snapshot.val(); if (x.committed && t && t.champ && State.isHost) { log("tourney", `${t.champ} crowned champion of the ${GAMES[t.game]} tournament`, State.username); pref(t.champ, "badges/champ").set(Date.now()); if (t.prize) Room.applyRound(t.champ, { balance: t.prize }); } });
-    };
-    let champShown = null;
-
-    /* ---------- UI ---------- */
-    const css = document.createElement("style");
-    css.textContent = `#vg-modal{position:fixed;inset:0;z-index:9500;background:rgba(0,0,0,.78);display:flex;align-items:center;justify-content:center;padding:.6rem}#vg-modal[hidden]{display:none}
-.vg-box{background:linear-gradient(160deg,#0b0b10,#15120a);border:1px solid #b8860b;border-radius:14px;color:#f3e7c0;width:min(640px,100%);max-height:92vh;overflow:auto;padding:1rem;box-shadow:0 0 40px rgba(244,196,48,.18)}
-.vg-tabs{display:flex;gap:.35rem;flex-wrap:wrap;margin-bottom:.8rem}.vg-tabs button,.vg-b{background:#1b170c;color:#f4c430;border:1px solid #6b4f08;border-radius:8px;padding:.4rem .7rem;cursor:pointer;font:inherit}
-.vg-tabs button.on,.vg-b:hover{background:#f4c430;color:#111}.vg-b:disabled{opacity:.4;cursor:default}.vg-box h3{color:#f4c430;margin:.2rem 0 .6rem}
-.vg-box input,.vg-box select{background:#0a0a0a;color:#f4c430;border:1px solid #6b4f08;border-radius:6px;padding:.35rem;font:inherit;width:7rem}.vg-row{display:flex;justify-content:space-between;align-items:center;gap:.5rem;padding:.25rem 0;border-bottom:1px solid #2a2310}
-#vg-wheelwrap{position:relative;width:200px;height:200px;margin:.5rem auto}#vg-wheel{width:100%;height:100%;border-radius:50%;border:4px solid #f4c430;transition:transform 4s cubic-bezier(.12,.7,.1,1);background:conic-gradient(#1e7a4c 0 45deg,#a8302a 45deg 90deg,#b8860b 90deg 135deg,#2b5c9e 135deg 180deg,#7b3fa0 180deg 225deg,#1e7a4c 225deg 270deg,#a8302a 270deg 315deg,#f4c430 315deg 360deg)}
-#vg-pointer{position:absolute;top:-10px;left:50%;margin-left:-8px;border:8px solid transparent;border-top:16px solid #fff}.vg-m{border:1px solid #6b4f08;border-radius:8px;margin:.3rem 0;padding:.3rem .5rem}.vg-small{font-size:.8rem;opacity:.75}.vg-win{color:#2ecc8f;font-weight:700}`;
-    document.head.appendChild(css);
-    const modal = el(`<div id="vg-modal" hidden><div class="vg-box"><div class="vg-tabs" id="vg-tabs"></div><div id="vg-body"></div><button class="vg-b" id="vg-close" style="margin-top:.8rem">Close</button></div></div>`);
-    document.body.appendChild(modal);
-    const open = (t) => { if (t) tab = t; modal.hidden = false; render(); };
-    $("vg-close").onclick = () => { modal.hidden = true; };
-    modal.addEventListener("click", (e) => { if (e.target === modal) modal.hidden = true; });
-    const TABS = [["spin", "\uD83C\uDFA1 Daily Spin"], ["dice", "\uD83C\uDFB2 Quick Dice"], ["bank", "\uD83C\uDFE6 Bank"], ["bracket", "\uD83C\uDFC6 Tournament"], ["badges", "\uD83C\uDFC5 Badges"], ["limits", "\uD83D\uDEE1 Limits", 1], ["audit", "\uD83D\uDCDC Audit", 1]];
-    const body = () => $("vg-body");
-    function render() {
-      if (modal.hidden) return;
-      $("vg-tabs").innerHTML = TABS.filter((t) => !t[2] || State.isHost).map((t) => `<button data-t="${t[0]}" class="${t[0] === tab ? "on" : ""}">${t[1]}</button>`).join("");
-      $("vg-tabs").querySelectorAll("button").forEach((b) => (b.onclick = () => { tab = b.dataset.t; render(); }));
-      const me = Room.get(State.username) || {}, B = body(); let h = "";
-      if (tab === "spin") { const done = me.spinDay === today(); h = `<h3>Daily Lucky Spin</h3><div id="vg-wheelwrap"><div id="vg-pointer"></div><div id="vg-wheel" style="transform:rotate(${rot}deg)"></div></div><p class="vg-small" style="text-align:center">Prizes: ${SEG.map(fmt).join(" \u00B7 ")} chips</p><div style="text-align:center"><button class="vg-b" id="vg-spin" ${done ? "disabled" : ""}>${done ? "Come back tomorrow" : "SPIN!"}</button></div>`; }
-      if (tab === "dice") { const c = DI.cur, left = c && !c.result ? Math.max(0, Math.ceil((c.endsAt - Date.now()) / 1000)) : 0, mine = c && (c.bets || {})[State.username];
-        h = `<h3>Quick Dice \u2014 High / Low</h3><p class="vg-small">High = 8\u201312, Low = 2\u20136, pays 2x. A 7 means the house wins. Max bet ${fmt(cap("dice"))}.</p>`
-          + (c ? `<div class="vg-m">${c.result ? `Rolled <b>${c.result.d.join(" + ")} = ${c.result.roll}</b>` : `Round closes in <b>${left}s</b>`} \u2014 ${Object.keys(c.bets || {}).length} bet(s)${mine ? ` \u2014 yours: ${mine.side} ${fmt(mine.amt)}` : ""}</div>` : `<div class="vg-m">No active round. Place a bet to start a 30s round.</div>`)
-          + `<div class="vg-row"><input id="vg-dbet" type="number" min="1" value="100"><span><button class="vg-b" data-d="low">\u2B07 Low</button> <button class="vg-b" data-d="high">\u2B06 High</button></span></div>`; }
-      if (tab === "bank") { const l = me.loan, b = D.bank; h = `<h3>Central Bank</h3><div class="vg-m">${b.on ? `Emergency loan: <b>${fmt(b.max)}</b> chips at <b>${b.rate}%</b> interest, only at 0 chips.` : "The bank is closed."}</div>`
-        + (l ? `<div class="vg-m">Outstanding: <b>${fmt(owed(l))}</b> chips</div>` : "") + `<button class="vg-b" id="vg-loan">Request loan</button> <button class="vg-b" id="vg-repay" ${l ? "" : "disabled"}>Repay</button>`;
-        if (State.isHost) h += `<h3 style="margin-top:1rem">Bank settings (host)</h3><div class="vg-row">Open<input type="checkbox" id="vg-bon" ${b.on ? "checked" : ""} style="width:auto"></div><div class="vg-row">Loan size<input id="vg-bmax" type="number" value="${b.max}"></div><div class="vg-row">Interest %<input id="vg-brate" type="number" value="${b.rate}"></div><button class="vg-b" id="vg-bsave">Save</button>`; }
-      if (tab === "bracket") { const t = T.cur; h = `<h3>Knockout Tournament</h3>`;
-        if (State.isHost) h += `<div class="vg-row"><select id="vg-tgame" style="width:auto">${["dominoes", "chess", "bullscows", "checkers", "mastermind", "uno"].map((g) => `<option value="${g}">${GAMES[g]}</option>`).join("")}</select><input id="vg-tprize" type="number" min="0" value="0" title="Prize"><button class="vg-b" id="vg-tstart">Start with room players</button></div>`;
-        if (!t) h += `<p class="vg-small">No tournament running.</p>`; else { h += `<p>${GAMES[t.game]} \u2014 prize ${fmt(t.prize)}${t.champ ? ` \u2014 <span class="vg-win">\uD83C\uDFC6 Champion: ${esc(t.champ)}</span>` : ""}</p>`;
-          t.rounds.forEach((R, ri) => { h += `<div class="vg-small">Round ${ri + 1}${ri === t.rounds.length - 1 && !t.champ ? " (current)" : ""}</div>` + R.map((m, mi) => `<div class="vg-m vg-row"><span>${esc(m.a)} vs ${esc(m.b || "BYE")}</span><span>${m.w ? `<b class="vg-win">${esc(m.w)}</b>` : State.isHost ? `<button class="vg-b" data-w="${ri}|${mi}|a">${esc(m.a)}</button> <button class="vg-b" data-w="${ri}|${mi}|b">${esc(m.b)}</button>` : "playing\u2026"}</span></div>`).join(""); }); } }
-      if (tab === "badges") h = `<h3>Badges & Titles</h3>` + BADGES.map((b) => `<div class="vg-row"><span>${b.icon} ${b.name}</span><span>${(me.badges || {})[b.id] ? "\u2705" : "\uD83D\uDD12"}</span></div>`).join("") + `<h3 style="margin-top:1rem">Players</h3>` + Room.list().map((p) => `<div class="vg-row"><span>${esc(p.username)}</span><span>${esc(tag(p).trim()) || "\u2014"}</span></div>`).join("");
-      if (tab === "limits") { h = `<h3>Betting Limits</h3><div class="vg-row"><b>All games (global)</b><input id="vg-lg" type="number" min="1" value="${D.global}"></div><p class="vg-small">Per-game overrides (blank = follow global):</p>` + Object.keys(GAMES).map((k) => `<div class="vg-row"><span>${GAMES[k]}</span><input data-lim="${k}" type="number" min="1" placeholder="${fmt(D.global)}" value="${D.games[k] || ""}"></div>`).join("") + `<p><button class="vg-b" id="vg-lsave">Save</button> <button class="vg-b" id="vg-lall">Apply global to all games</button></p>`; }
-      if (tab === "audit") { if (!auditOn) watchAudit(); h = `<h3>Room Audit Log</h3>` + (audit.length ? audit.slice().reverse().map((a) => `<div class="vg-m"><span class="vg-small">${new Date(a.t).toLocaleString()} \u00B7 ${esc(a.type)}</span><br>${esc(a.text)}</div>`).join("") : `<p class="vg-small">No events yet.</p>`); }
-      B.innerHTML = h; const on = (id, f) => { const x = $(id); if (x) x.onclick = f; };
-      on("vg-spin", spin); on("vg-loan", loan); on("vg-repay", repay); on("vg-tstart", tStart);
-      B.querySelectorAll("[data-d]").forEach((b) => (b.onclick = () => diceBet(b.dataset.d)));
-      B.querySelectorAll("[data-w]").forEach((b) => { const [r, m, s] = b.dataset.w.split("|"); b.onclick = () => tWin(+r, +m, T.cur.rounds[+r][+m][s]); });
-      on("vg-bsave", () => ref("limits/bank").set({ on: $("vg-bon").checked, max: Math.max(1, Number($("vg-bmax").value) || 500), rate: Math.max(0, Number($("vg-brate").value) || 0) }).then(() => say("Bank updated.")));
-      on("vg-lsave", () => { const g = {}; B.querySelectorAll("[data-lim]").forEach((i) => { const v = Math.floor(Number(i.value)); if (v > 0) g[i.dataset.lim] = v; }); ref("limits").update({ global: Math.max(1, Math.floor(Number($("vg-lg").value)) || 50000), games: g }); log("limits", `Bet limits changed: global ${fmt($("vg-lg").value)}, ${Object.keys(g).length} override(s)`); say("Limits saved."); });
-      on("vg-lall", () => { ref("limits").update({ global: Math.max(1, Math.floor(Number($("vg-lg").value)) || 50000), games: null }); log("limits", `Global limit applied to all games: ${fmt($("vg-lg").value)}`); say("Applied to all games."); });
+  /* ---------- Bet limits: global default 50,000, optional per-game overrides ---------- */
+  const BetLimits = {
+    DEF: 50000, g: 50000, games: {},
+    max(id) { const v = Number(this.games[id]); return v > 0 ? v : this.g; },
+    ok(id, amt) {
+      const m = this.max(id);
+      if (amt > m) { Notify.error(`Maximum bet for ${GameResolver.label(id)} is ${fmt(m)} chips.`); return false; }
+      return true;
     }
-    function watchAudit() { auditOn = true; const q = ref("audit").limitToLast(100); q.on("value", (s) => { audit = []; s.forEach((c) => { audit.push(c.val()); }); if (tab === "audit") render(); }); refs.push(q); }
-    function attach() {
-      detach(); const add = (r, f) => { r.on("value", f); refs.push(r); };
-      add(ref("limits"), (s) => { const v = s.val() || {}; D.global = Number(v.global) > 0 ? Number(v.global) : 50000; D.games = v.games || {}; D.bank = Object.assign({ on: true, max: 500, rate: 10 }, v.bank || {}); render(); });
-      add(ref("dice/cur"), (s) => { DI.cur = s.val(); diceSettle(DI.cur); render(); });
-      add(ref("tourney"), (s) => { T.cur = s.val(); if (T.cur && T.cur.champ && champShown !== T.cur.startedAt) { champShown = T.cur.startedAt; say(`\uD83C\uDFC6 ${T.cur.champ} is the tournament champion!`); S.fanfare(); } render(); });
-      timer = setInterval(() => { const c = DI.cur; if (c && !c.result && Date.now() >= c.endsAt) diceResolve(); if (!modal.hidden && tab === "dice") render(); }, 1000);
+  };
+  GameResolver.LABELS.dice = "Quick Dice"; GameResolver.LABELS.tournament = "Tournament";
+
+  /* ---------- Synthesized audio (Web Audio oscillators + filtered noise; no files) ---------- */
+  Sound.tone = function (f, ms, type = "sine", v = 0.08) {
+    if (!this.enabled) return; const c = this.ensureContext(); if (!c) return;
+    if (c.state === "suspended") c.resume();
+    const o = c.createOscillator(), g = c.createGain(), t = c.currentTime;
+    o.type = type; o.frequency.setValueAtTime(f, t); g.gain.setValueAtTime(v, t); g.gain.exponentialRampToValueAtTime(0.0001, t + ms / 1000);
+    o.connect(g); g.connect(c.destination); o.start(t); o.stop(t + ms / 1000 + 0.02);
+  };
+  Sound.noise = function (ms, f, v = 0.05) {
+    if (!this.enabled) return; const c = this.ensureContext(); if (!c) return;
+    const n = (c.sampleRate * ms / 1000) | 0, b = c.createBuffer(1, n, c.sampleRate), d = b.getChannelData(0);
+    for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / n);
+    const s = c.createBufferSource(), fl = c.createBiquadFilter(), g = c.createGain();
+    fl.type = "bandpass"; fl.frequency.value = f; g.gain.value = v; s.buffer = b; s.connect(fl); fl.connect(g); g.connect(c.destination); s.start();
+  };
+  Sound.chip = function () { this.tone(1900, 35, "square", 0.03); window.setTimeout(() => this.tone(1250, 70, "triangle", 0.05), 28); };
+  Sound.card = function () { this.noise(90, 2400, 0.07); };
+  Sound.tick = function (i) { this.tone(880 + ((i || 0) % 6) * 45, 22, "square", 0.02); };
+  Sound.fanfare = function () { [523, 659, 784, 1047, 784, 1047, 1319].forEach((f, i) => window.setTimeout(() => { this.tone(f, 220, "triangle", 0.07); this.tone(f / 2, 220, "sine", 0.05); }, i * 120)); };
+  Sound.click = Sound.chip; Sound.jackpot = Sound.fanfare;
+  document.addEventListener("pointerdown", () => { const c = Sound.enabled && Sound.ensureContext(); if (c && c.state === "suspended") c.resume(); });
+
+  /* ---------- Audit log (admin-only view, written by every client) ---------- */
+  const Audit = {
+    BIG: 1000,
+    log(type, msg, amt) { const r = zref("audit"); if (r && State.username) r.push({ ts: TS(), type, u: State.username, msg: String(msg).slice(0, 160), amt: Math.round(amt || 0) }).catch(() => {}); }
+  };
+  const resolve0 = GameResolver.resolve.bind(GameResolver);
+  GameResolver.resolve = function (id, r) {
+    if (Rig.on && Rig.target && r && Array.isArray(r.winners) && r.winners.includes(Rig.target)) Audit.log("rig", `Chosen winner "${Rig.target}" used in ${GameResolver.label(id)}`);
+    return resolve0(id, r);
+  };
+
+  /* ---------- Achievements ---------- */
+  const ACH = [
+    { id: "first", n: "Rookie", i: "\u{1F39F}\uFE0F", t: "Play your first round", c: "rounds", g: 1 },
+    { id: "reg", n: "Regular", i: "\u{1F3B2}", t: "Play 50 rounds", c: "rounds", g: 50 },
+    { id: "vet", n: "Veteran", i: "\u{1F396}\uFE0F", t: "Play 250 rounds", c: "rounds", g: 250 },
+    { id: "w10", n: "Winner", i: "\u{1F3C6}", t: "Win 10 rounds", c: "wins", g: 10 },
+    { id: "w50", n: "Hot Hand", i: "\u{1F525}", t: "Win 50 rounds", c: "wins", g: 50 },
+    { id: "big", n: "Whale", i: "\u{1F40B}", t: "Win 1,000+ chips profit in one round", c: "big", g: 1 },
+    { id: "str5", n: "Streak King", i: "\u26A1", t: "Win 5 rounds in a row", c: "streak", g: 5 },
+    { id: "spin3", n: "Lucky Charm", i: "\u{1F340}", t: "Use the Daily Spin 3 times", c: "spins", g: 3 },
+    { id: "dice", n: "Dice Master", i: "\u{1F3AF}", t: "Win 10 Quick Dice rounds", c: "dicew", g: 10 },
+    { id: "champ", n: "Champion", i: "\u{1F451}", t: "Win a knockout tournament", c: "champ", g: 1 },
+    { id: "debt", n: "Debt Free", i: "\u{1F3E6}", t: "Fully repay an emergency loan", c: "repaid", g: 1 }
+  ];
+  const achTitle = (p) => { const a = p && p.ach; if (!a || !a.t || !(a.u && a.u[a.t])) return ""; const d = ACH.find((x) => x.id === a.t); return d ? d.i + " " + d.n : ""; };
+  function ZT(el, p) { const t = achTitle(p); if (!t) return; const s = document.createElement("i"); s.className = "z-title"; s.textContent = t; el.append(" ", s); }
+  const Ach = {
+    bump(add, max) {
+      if (!Room.playersRef || !State.username) return; let fresh = [];
+      Room.playersRef.child(State.username + "/ach").transaction((a) => {
+        a = a || {}; a.c = a.c || {}; a.u = a.u || {}; fresh = [];
+        Object.keys(add || {}).forEach((k) => { a.c[k] = (a.c[k] || 0) + add[k]; });
+        Object.keys(max || {}).forEach((k) => { a.c[k] = Math.max(a.c[k] || 0, max[k]); });
+        ACH.forEach((d) => { if (!a.u[d.id] && (a.c[d.c] || 0) >= d.g) { a.u[d.id] = Date.now(); fresh.push(d); } });
+        if (fresh.length && !a.t) a.t = fresh[0].id;
+        return a;
+      }, (err, ok) => { if (!err && ok) fresh.forEach((d) => { Notify.success(`Achievement unlocked: ${d.i} ${d.n}`); Sound.fanfare(); Audit.log("achv", `Unlocked "${d.n}"`); }); }, false);
     }
-    function detach() { refs.forEach((r) => r.off()); refs = []; auditOn = false; audit = []; clearInterval(timer); }
-    const oA = Room.attachListeners.bind(Room), oD = Room.detachListeners.bind(Room);
-    Room.attachListeners = function () { oA(); attach(); }; Room.detachListeners = function () { oD(); detach(); };
-    PubSub.on("players-updated", () => { awardCheck(); render(); });
-    document.addEventListener("DOMContentLoaded", () => { const a = DOM.btnOpenAdminLobby; a.before(el(`<button type="button" id="btn-vegas" class="btn btn-secondary" title="Casino Hub">\u2728</button>`)); $("btn-vegas").onclick = () => open("spin"); });
-    return { tag, cap, capFor: cap, audit: log, open };
-  })();
+  };
+  PubSub.on("round-resolved", ({ entries }) => {
+    const e = (entries || []).find((x) => x.username === State.username && x.wager > 0); if (!e) return;
+    const profit = e.payout - e.wager, won = profit > 0, me = Room.get(State.username) || {}, cs = ((me.ach || {}).c || {}).cs || 0;
+    Ach.bump({ rounds: 1, wins: won ? 1 : 0, big: profit >= Audit.BIG ? 1 : 0 }, { streak: won ? cs + 1 : 0 });
+    Room.playersRef.child(State.username + "/ach/c/cs").set(won ? cs + 1 : e.payout < e.wager ? 0 : cs);
+    if (profit >= Audit.BIG) Audit.log("bigwin", `Won ${fmt(profit)} chips profit`, profit);
+    if (won && Bank.loan() > 0) Bank.repay(Math.floor(profit * 0.3), true);
+  });
+
+  /* ---------- Central Bank (reserve + emergency loans, admin approves) ---------- */
+  const Bank = {
+    d: {}, RES0: 5000,
+    cfg() { const c = this.d.cfg || {}; return { on: c.on !== false, max: c.max || 500, rate: c.rate == null ? 10 : c.rate, auto: !!c.auto }; },
+    res() { return this.d.res == null ? this.RES0 : this.d.res; },
+    loan() { const l = (Room.get(State.username) || {}).loan; return l && l.owed > 0 ? l.owed : 0; },
+    mine() { return (this.d.req || {})[State.username] || null; },
+    request(amt) {
+      const c = this.cfg(); amt = Math.min(c.max, Math.max(1, Math.round(amt)));
+      if (!c.on) return Notify.error("The Central Bank is closed.");
+      if (State.balance > 0) return Notify.error("Emergency loans are only for players with 0 chips.");
+      if (this.loan() > 0) return Notify.error("Repay your current loan first.");
+      zref("bank/req/" + State.username).transaction((v) => (v && v.st === "pending" ? undefined : { amt, ts: Date.now(), st: "pending" }), (e, ok) => {
+        if (!ok) return Notify.warning("You already have a pending request.");
+        Audit.log("loan", `Requested emergency loan of ${fmt(amt)}`, amt); Notify.success("Request sent to the host.");
+        if (c.auto) this.approve(State.username);
+      }, false);
+    },
+    async approve(u) {
+      const q = (this.d.req || {})[u], c = this.cfg(); if (!q || q.st !== "pending") return;
+      const amt = Math.min(q.amt, c.max), owed = Math.ceil(amt * (1 + c.rate / 100));
+      const r = await zref("bank/res").transaction((v) => { v = v == null ? this.RES0 : v; return v >= amt ? v - amt : undefined; });
+      if (!r.committed) return Notify.error("The bank reserve is too low. Top it up in Admin \u2192 Bank.");
+      const p = await Room.playersRef.child(u).transaction((p) => { if (!p || (p.loan && p.loan.owed > 0)) return; p.balance = (p.balance || 0) + amt; p.loan = { p: amt, owed, rate: c.rate, ts: Date.now() }; return p; });
+      if (!p.committed) { zref("bank/res").transaction((v) => (v || 0) + amt); zref("bank/req/" + u).update({ st: "denied" }); return Notify.error(`${u} already has a loan.`); }
+      zref("bank/req/" + u).update({ st: "approved" }); Audit.log("loan", `Loan to ${u}: ${fmt(amt)} chips, ${fmt(owed)} owed (${c.rate}%)`, amt);
+    },
+    deny(u) { zref("bank/req/" + u).update({ st: "denied" }); Audit.log("loan", `Denied loan request from ${u}`); },
+    repay(amount, auto) {
+      let paid = 0, cleared = false;
+      Room.playersRef.child(State.username).transaction((p) => {
+        paid = 0; cleared = false; if (!p || !p.loan || p.loan.owed <= 0) return;
+        paid = Math.min(p.loan.owed, Math.round(amount), p.balance || 0); if (paid <= 0) return;
+        p.balance -= paid; p.loan.owed -= paid; if (p.loan.owed <= 0) { delete p.loan; cleared = true; } return p;
+      }, (e, ok) => {
+        if (e || !ok || !paid) return;
+        zref("bank/res").transaction((v) => (v == null ? Bank.RES0 : v) + paid);
+        Notify.success(`${auto ? "Auto-repaid" : "Repaid"} ${fmt(paid)} chips${cleared ? " \u2014 loan cleared!" : ""}`);
+        if (cleared) { Ach.bump({ repaid: 1 }); Audit.log("loan", "Loan fully repaid", paid); }
+      }, false);
+    }
+  };
+
+  /* ---------- Rewards panel: Missions | Lucky Spin | Achievements | Bank ---------- */
+  const SEG = [25, 50, 75, 100, 150, 250, 500, 1000], WT = [24, 22, 18, 14, 10, 7, 4, 1];
+  const Rewards = {
+    tab: "missions", spinning: false,
+    init() {
+      const card = document.querySelector("#px-missions .px-card"), h = card.querySelector("h2"), head = $z("px-qhead");
+      h.textContent = "\u{1F3AF} Daily Missions & Rewards";
+      const tabs = document.createElement("div"); tabs.className = "mx-tabs"; tabs.id = "z-tabs";
+      tabs.innerHTML = [["missions", "Missions"], ["spin", "Lucky Spin"], ["ach", "Titles"], ["bank", "Bank"]].map(([k, l]) => `<button type="button" class="mx-tab" data-z="${k}">${l}</button>`).join("");
+      h.after(tabs);
+      const pane = document.createElement("div"); pane.id = "z-pane"; pane.hidden = true; $z("px-qlist").after(pane);
+      tabs.addEventListener("click", (e) => { const b = e.target.closest("[data-z]"); if (b) { this.tab = b.dataset.z; this.render(true); } });
+      pane.addEventListener("click", (e) => this.click(e));
+      $z("btn-missions").addEventListener("click", () => this.render(true));
+      PubSub.on("players-updated", () => this.render(false));
+      this.render(true);
+    },
+    render(full) {
+      const m = this.tab === "missions", pane = $z("z-pane"); if (!pane) return;
+      $z("px-qhead").hidden = !m; $z("px-qlist").hidden = !m; pane.hidden = m;
+      $z("z-tabs").querySelectorAll("[data-z]").forEach((b) => b.setAttribute("aria-selected", String(b.dataset.z === this.tab)));
+      if (m || $z("px-missions").hidden) return;
+      if (this.tab === "spin") this.spinUi(full); else if (this.tab === "ach") this.achUi(); else this.bankUi();
+    },
+    me() { return Room.get(State.username) || {}; },
+    spun() { return (this.me().spin || {})[zday()]; },
+    spinUi(full) {
+      const pane = $z("z-pane");
+      if (!$z("z-wheel") || full && !this.spinning) {
+        const cols = SEG.map((_, i) => `${i % 2 ? "#6b4b0a" : "#161a22"} ${i * 45}deg ${(i + 1) * 45}deg`).join(",");
+        pane.innerHTML = `<div class="z-wheel-wrap"><i class="z-ptr"></i><div id="z-wheel" class="z-wheel" style="background:conic-gradient(${cols})">${SEG.map((v, i) => `<span style="transform:translate(-50%,-50%) rotate(${i * 45 + 22.5}deg) translateY(-86px)">${v}</span>`).join("")}<b class="z-hub">\u{1F451}</b></div></div>
+          <button type="button" class="btn btn-primary btn-block" id="z-spin-go"></button><p class="mx-hint" id="z-spin-msg" style="text-align:center"></p>`;
+      }
+      const done = this.spun(), b = $z("z-spin-go");
+      b.disabled = !!done || this.spinning; b.textContent = done ? "Come back tomorrow" : "Spin the wheel (free daily)";
+      $z("z-spin-msg").textContent = done ? `Today's prize: ${fmt(done.p)} chips` : "One free spin per day. Prizes from 25 to 1,000 chips.";
+    },
+    spin() {
+      if (this.spinning || this.spun() || !State.username) return;
+      let r = Math.random() * 100, idx = 0; for (; idx < SEG.length - 1; idx++) { if ((r -= WT[idx]) < 0) break; }
+      const prize = SEG[idx]; this.spinning = true; $z("z-spin-go").disabled = true;
+      Room.playersRef.child(State.username + "/spin/" + zday()).transaction((v) => (v ? undefined : { p: prize, ts: Date.now() }), (e, ok) => {
+        if (e || !ok) { this.spinning = false; return Notify.warning("You already spun today."); }
+        Room.applyRound(State.username, { balance: prize });
+        const w = $z("z-wheel"), turn = 360 * 6 - (idx * 45 + 22.5);
+        w.style.transition = "transform 4.6s cubic-bezier(.12,.62,.1,1)"; w.style.transform = `rotate(${turn}deg)`;
+        for (let k = 0; k < 18; k++) window.setTimeout(() => Sound.tick(k), 150 + 4400 * (1 - Math.pow(1 - k / 18, 2)));
+        window.setTimeout(() => {
+          this.spinning = false; Sound.fanfare(); Fx.celebrate(); Notify.success(`Daily Spin: +${fmt(prize)} chips!`);
+          Ach.bump({ spins: 1 }); if (prize >= 500) Audit.log("spin", `Won ${fmt(prize)} on the Daily Spin`, prize); this.render(false);
+        }, 4800);
+      }, false);
+    },
+    achUi() {
+      const a = this.me().ach || {}, c = a.c || {}, u = a.u || {};
+      $z("z-pane").innerHTML = `<p class="mx-hint">Unlock achievements, then tap one to wear it as your title in room lists.</p>` + ACH.map((d) => {
+        const got = !!u[d.id], p = Math.min(d.g, c[d.c] || 0);
+        return `<div class="px-row ${got ? "done" : ""}"><span>${d.i}</span><span><b>${d.n}</b><br><small>${d.t} \u00B7 ${fmt(p)}/${fmt(d.g)}</small><div class="px-bar"><i style="width:${p / d.g * 100}%"></i></div></span>${got ? `<button type="button" class="btn btn-small ${a.t === d.id ? "btn-primary" : "btn-secondary"}" data-title="${d.id}">${a.t === d.id ? "Worn" : "Wear"}</button>` : "<small>\u{1F512}</small>"}</div>`;
+      }).join("");
+    },
+    bankUi() {
+      const c = Bank.cfg(), q = Bank.mine(), owed = Bank.loan(), pend = q && q.st === "pending";
+      const opts = [100, 250, c.max].filter((v, i, s) => v <= c.max && s.indexOf(v) === i);
+      $z("z-pane").innerHTML = `<div class="z-bank"><div><small>Bank reserve</small><b>${fmt(Bank.res())}</b></div><div><small>Interest</small><b>${c.rate}%</b></div><div><small>You owe</small><b>${fmt(owed)}</b></div></div>
+        <p class="mx-hint">${c.on ? `Out of chips? Request a small emergency loan (max ${fmt(c.max)}). The host approves it; 30% of your winnings repay it automatically.` : "The Central Bank is currently closed."}</p>
+        ${q ? `<div class="px-row"><span>\u{1F4DD}</span><span>Last request: ${fmt(q.amt)} chips \u2014 <b>${q.st}</b></span></div>` : ""}
+        ${owed ? `<button type="button" class="btn btn-secondary btn-block" data-repay="1">Repay now (${fmt(Math.min(owed, State.balance))})</button>` : ""}
+        ${c.on && !owed && !pend ? `<div class="mx-tools"><select id="z-loan-amt">${opts.map((v) => `<option>${v}</option>`).join("")}</select><button type="button" class="btn btn-primary" data-loan="1" ${State.balance > 0 ? "disabled" : ""}>${State.balance > 0 ? "Only at 0 chips" : "Request loan"}</button></div>` : ""}`;
+    },
+    click(e) {
+      const t = e.target.closest("button"); if (!t || t.disabled) return;
+      if (t.id === "z-spin-go") this.spin();
+      else if (t.dataset.title) Room.playersRef.child(State.username + "/ach/t").set(t.dataset.title);
+      else if (t.dataset.loan) Bank.request(Number($z("z-loan-amt").value));
+      else if (t.dataset.repay) Bank.repay(Bank.loan());
+    }
+  };
+
+  /* ---------- Quick Dice: shared High/Low round (2d6) synced at rooms/<code>/dice ---------- */
+  const Dice = {
+    d: { st: "idle" }, off: 0, shown: null, timer: 0, anim: 0,
+    SIDES: { l: ["Low 2\u20136", 2.2], s: ["Lucky 7", 5.5], h: ["High 8\u201312", 2.2] },
+    now() { return Date.now() + this.off; },
+    init() {
+      $z("z-dice").innerHTML = `<div class="z-dice-stage"><div class="z-die" id="z-d1">\u2680</div><div class="z-die" id="z-d2">\u2681</div></div>
+        <div class="z-dice-info"><b id="z-dice-st">Place a bet to start a round</b><small id="z-dice-bets"></small></div>
+        <div class="blackjack-controls"><div class="form-group bet-group"><label for="z-dice-amt">Bet</label><input type="number" id="z-dice-amt" class="input-field input-bet" min="1" step="1" value="50"></div>
+        <div class="action-buttons">${Object.keys(this.SIDES).map((k) => `<button type="button" class="btn btn-action" data-side="${k}">${this.SIDES[k][0]}<small> pays ${this.SIDES[k][1]}x</small></button>`).join("")}</div></div>
+        <p id="z-dice-res" class="game-result" role="status"></p>`;
+      $z("z-dice").addEventListener("click", (e) => { const b = e.target.closest("[data-side]"); if (b) this.bet(b.dataset.side); });
+    },
+    bet(side) {
+      const me = State.username, amt = Validate.parseBet($z("z-dice-amt")); if (amt === null || !me) return;
+      const r = zref("dice"); if (!r) return; let why = "";
+      r.transaction((v) => {
+        v = v || { st: "idle" }; const t = this.now(); why = "";
+        if (v.st === "bet" && t > v.end) { why = "Betting is closed \u2014 rolling!"; return; }
+        if (v.st === "done" && t < (v.doneAt || 0) + 4500) { why = "Next round opens in a moment."; return; }
+        if (v.st !== "bet") v = { st: "bet", id: t + "-" + Math.random().toString(36).slice(2, 6), end: t + 9000, bets: {} };
+        v.bets = v.bets || {}; if (v.bets[me]) { why = "You already bet this round."; return; }
+        v.bets[me] = { s: side, a: amt }; return v;
+      }, (e, ok) => { if (ok) { State.debit(amt); Sound.chip(); } else if (why) Notify.warning(why); }, false);
+    },
+    roll() {
+      zref("dice").transaction((v) => {
+        if (!v || v.st !== "bet" || this.now() < v.end) return;
+        const a = 1 + Math.floor(Math.random() * 6), b = 1 + Math.floor(Math.random() * 6);
+        v.st = "done"; v.d = [a, b]; v.doneAt = this.now(); return v;
+      }, () => {}, false);
+    },
+    on(v) {
+      this.d = v || { st: "idle" }; const g = this.d, me = State.username;
+      if (g.st === "done" && this.shown !== g.id) { this.shown = g.id; this.reveal(g); }
+      this.paint();
+    },
+    paint() {
+      const g = this.d, st = $z("z-dice-st"), bt = $z("z-dice-bets"); if (!st) return;
+      const list = Object.keys(g.bets || {}).map((u) => `${u}: ${this.SIDES[g.bets[u].s][0]} ${fmt(g.bets[u].a)}`);
+      bt.textContent = list.join("  \u00B7  ");
+      if (g.st === "bet") st.textContent = `Betting open \u2014 ${Math.max(0, Math.ceil((g.end - this.now()) / 1000))}s`;
+      else if (g.st === "idle") st.textContent = "Place a bet to start a round";
+    },
+    reveal(g) {
+      const f = "\u2680\u2681\u2682\u2683\u2684\u2685", [a, b] = g.d, t0 = Date.now();
+      $z("z-dice-st").textContent = "Rolling\u2026"; clearInterval(this.anim);
+      this.anim = window.setInterval(() => {
+        const fin = Date.now() - t0 > 1100; $z("z-d1").textContent = f[(fin ? a : 1 + Math.floor(Math.random() * 6)) - 1]; $z("z-d2").textContent = f[(fin ? b : 1 + Math.floor(Math.random() * 6)) - 1]; Sound.tick(a + b);
+        if (fin) { clearInterval(this.anim); this.settle(g); }
+      }, 90);
+    },
+    settle(g) {
+      const tot = g.d[0] + g.d[1], win = tot < 7 ? "l" : tot > 7 ? "h" : "s", me = State.username, my = (g.bets || {})[me];
+      $z("z-dice-st").textContent = `Total ${tot} \u2192 ${this.SIDES[win][0]}`;
+      if (!my) return;
+      zref("dice/paid/" + me).transaction((v) => (v === g.id ? undefined : g.id), (e, ok) => {
+        if (!ok) return; const won = my.s === win, pay = won ? Math.floor(my.a * this.SIDES[win][1]) : 0;
+        resolveGameOutcome("dice", { roundId: g.id + "-" + me, entries: [{ wager: my.a, payout: pay }] });
+        $z("z-dice-res").textContent = won ? `You won ${fmt(pay)} chips!` : `You lost ${fmt(my.a)} chips.`;
+        if (won) { Sound.win(); Ach.bump({ dicew: 1 }); if (pay >= CONFIG.BIG_WIN_THRESHOLD) Effects.celebrate(`Quick Dice: +${fmt(pay)}`); } else Sound.lose();
+      }, false);
+    },
+    tick() { if (this.d.st === "bet") { this.paint(); if (this.now() >= this.d.end) this.roll(); } }
+  };
+
+  /* ---------- Knockout tournaments (host builds + reports; everyone watches live) ---------- */
+  const Tour = {
+    d: null, pick: new Set(), game: "uno", prize: 0,
+    GAMES: [["uno", "UNO"], ["parques", "Parqu\u00E9s"], ["dominoes", "Dominoes"], ["chess", "Chess"], ["checkers", "Chinese Checkers"], ["mastermind", "Color Code Breaker"], ["bullscows", "Picas y Fijas"], ["dice", "Quick Dice"]],
+    rounds() { try { return JSON.parse(this.d.b); } catch (e) { return []; } },
+    create() {
+      const ents = [...this.pick].filter((u) => Room.exists(u)); if (ents.length < 2) return Notify.error("Pick at least 2 players.");
+      const s = ents.slice().sort(() => Math.random() - 0.5); let n = 2; while (n < s.length) n *= 2;
+      const r0 = []; for (let i = 0; i < n / 2; i++) r0.push({ a: s[i] || null, b: s[n - 1 - i] || null, w: null });
+      const rs = [r0]; for (let m = n / 4; m >= 1; m /= 2) rs.push(Array.from({ length: m }, () => ({ a: null, b: null, w: null })));
+      r0.forEach((m, i) => { if (!m.b) this.advance(rs, 0, i, m.a); });
+      const prize = Math.min(50000, Math.max(0, Math.round(Number(this.prize) || 0)));
+      zref("tour").set({ id: Date.now().toString(36), game: this.game, prize, ents: s, b: JSON.stringify(rs), champ: "" });
+      Audit.log("tour", `Tournament created: ${GameResolver.label(this.game)}, ${s.length} players, prize ${fmt(prize)}`, prize); Sound.fanfare();
+    },
+    advance(rs, r, i, w) { rs[r][i].w = w; if (r + 1 < rs.length) rs[r + 1][i >> 1][i % 2 ? "b" : "a"] = w; },
+    report(r, i, w) {
+      if (!State.isHost || !this.d || this.d.champ) return;
+      zref("tour").transaction((v) => {
+        if (!v || v.champ) return; const rs = JSON.parse(v.b), m = rs[r][i]; if (m.w || (w !== m.a && w !== m.b)) return;
+        this.advance(rs, r, i, w); v.b = JSON.stringify(rs); if (r === rs.length - 1) v.champ = w; return v;
+      }, (e, ok, snap) => {
+        if (!ok) return; const v = snap.val(); Sound.chip();
+        if (v.champ) { Audit.log("tour", `${v.champ} won the tournament (prize ${fmt(v.prize)})`, v.prize); Sound.fanfare(); Fx.celebrate(); resolveGameOutcome("tournament", { roundId: v.id, winners: [v.champ], prizePool: v.prize }); }
+      }, false);
+    },
+    on(v) {
+      this.d = v; const me = State.username;
+      if (v && v.champ === me) zref("tour/ack/" + me).transaction((x) => (x ? undefined : true), (e, ok) => { if (ok) Ach.bump({ champ: 1 }); }, false);
+      this.paint();
+    },
+    paint() {
+      const box = $z("z-tour"); if (!box || box.contains(document.activeElement) && document.activeElement.tagName === "INPUT") return;
+      const names = Room.list().map((p) => p.username).filter(Boolean).sort(), d = this.d, host = State.isHost, now = Date.now();
+      if (!this.pick.size && !this._seeded && names.length) { names.forEach((u) => { if (now - ((Room.get(u) || {}).updatedAt || 0) < 30 * 60000) this.pick.add(u); }); this._seeded = true; }
+      let h = "";
+      if (host) h += `<div class="px-row" style="flex-wrap:wrap"><b>Set up bracket</b><select id="z-t-game">${this.GAMES.map(([k, l]) => `<option value="${k}" ${k === this.game ? "selected" : ""}>${l}</option>`).join("")}</select><label>Prize <input type="number" id="z-t-prize" min="0" max="50000" value="${this.prize}" style="width:6rem"></label></div>
+        <div class="mx-players">${names.map((n) => `<label><input type="checkbox" data-t="${esc(n)}" ${this.pick.has(n) ? "checked" : ""}> ${esc(n)}</label>`).join("")}</div>
+        <button type="button" class="btn btn-primary btn-block" id="z-t-go" style="margin:.6rem 0">${d ? "Replace with new bracket" : "Create knockout bracket"} (${this.pick.size})</button>`;
+      else if (!d) h += `<p class="mx-hint">No tournament yet. The host can build one from the active players.</p>`;
+      if (d) {
+        const rs = this.rounds(), lbl = (i) => (i === rs.length - 1 ? "Final" : i === rs.length - 2 ? "Semifinal" : "Round " + (i + 1));
+        h += `<div class="z-tmeta"><b>${esc(GameResolver.label(d.game))} knockout</b><span>Prize ${fmt(d.prize)}</span>${d.champ ? `<span class="z-champ">\u{1F451} ${esc(d.champ)}</span>` : "<span>In progress</span>"}</div>
+          <div class="z-bracket">${rs.map((r, ri) => `<div class="z-col"><small>${lbl(ri)}</small>${r.map((m, mi) => `<div class="z-match">${["a", "b"].map((s) => `<button type="button" class="z-slot ${m.w && m.w === m[s] ? "win" : m.w ? "out" : ""}" ${host && !m.w && m.a && m.b && !d.champ ? `data-r="${ri}" data-i="${mi}" data-w="${esc(m[s] || "")}"` : "disabled"}>${esc(m[s] || (ri === 0 ? "BYE" : "\u2014"))}</button>`).join("")}</div>`).join("")}</div>`).join("")}</div>
+          ${host ? `<p class="mx-hint">Play each match in ${esc(GameResolver.label(d.game))}, then tap the winner to advance them. The champion receives the prize automatically.</p><button type="button" class="btn btn-ghost btn-small" id="z-t-clear">Cancel tournament</button>` : ""}`;
+      }
+      box.innerHTML = h;
+    },
+    init() {
+      const box = $z("z-tour");
+      box.addEventListener("click", (e) => {
+        const t = e.target.closest("button"); if (!t) return;
+        if (t.id === "z-t-go") this.create(); else if (t.id === "z-t-clear") { zref("tour").remove(); Audit.log("tour", "Tournament cancelled"); }
+        else if (t.dataset.w) this.report(+t.dataset.r, +t.dataset.i, t.dataset.w);
+      });
+      box.addEventListener("change", (e) => {
+        const t = e.target; if (t.dataset.t) { t.checked ? this.pick.add(t.dataset.t) : this.pick.delete(t.dataset.t); this.paint(); }
+        else if (t.id === "z-t-game") this.game = t.value; else if (t.id === "z-t-prize") this.prize = t.value;
+      });
+      PubSub.on("players-updated", () => this.paint());
+    }
+  };
+
+  /* ---------- Host Settings tabs: Limits | Bank | Audit ---------- */
+  const ZAdmin = {
+    log: [], q: null, filter: "all",
+    games() { return [...document.querySelectorAll(".nav-menu-item[data-game]")].map((b) => b.dataset.game).filter((g, i, a) => a.indexOf(g) === i && !["draw", "wheel", "tournament"].includes(g)); },
+    render() { if (!State.isHost) return; this.limits(); this.bank(); this.audit(); },
+    limits() {
+      const box = $z("z-a-limits"); if (!box) return;
+      box.innerHTML = `<h3>Maximum bet</h3><p class="mx-hint">Applied before any wager is accepted. Per-game values override the global limit.</p>
+        <div class="px-row"><span>Global limit (all games)</span><span></span><input type="number" id="zl-g" min="1" value="${BetLimits.g}"></div>
+        ${this.games().map((g) => `<div class="px-row"><span>${esc(GameResolver.label(g))}</span><span></span><input type="number" data-zl="${esc(g)}" min="1" placeholder="${BetLimits.g}" value="${BetLimits.games[g] || ""}"></div>`).join("")}
+        <button type="button" class="btn btn-primary btn-block" id="zl-save" style="margin-top:.8rem">Save &amp; sync limits</button>
+        <button type="button" class="btn btn-ghost btn-block" id="zl-reset">Reset to default (${fmt(BetLimits.DEF)})</button>`;
+    },
+    saveLimits(reset) {
+      const g = reset ? BetLimits.DEF : Math.max(1, Math.round(Number($z("zl-g").value) || BetLimits.DEF)), games = {};
+      if (!reset) document.querySelectorAll("[data-zl]").forEach((i) => { const v = Math.round(Number(i.value)); if (v > 0) games[i.dataset.zl] = v; });
+      zref("lim").set({ g, games }).then(() => { Notify.success("Bet limits synced."); Audit.log("limit", reset ? "Bet limits reset to default" : `Bet limits updated (global ${fmt(g)}, ${Object.keys(games).length} overrides)`); });
+    },
+    bank() {
+      const box = $z("z-a-bank"); if (!box || box.contains(document.activeElement) && document.activeElement.tagName === "INPUT") return;
+      const c = Bank.cfg(), reqs = Object.keys(Bank.d.req || {}).filter((u) => Bank.d.req[u].st === "pending"), loans = Room.list().filter((p) => p.loan && p.loan.owed > 0);
+      box.innerHTML = `<h3>Central Bank</h3><div class="z-bank"><div><small>Reserve</small><b>${fmt(Bank.res())}</b></div><div><small>Open loans</small><b>${fmt(loans.reduce((a, p) => a + p.loan.owed, 0))}</b></div></div>
+        <div class="px-row"><span>Bank open</span><span></span><input type="checkbox" id="zb-on" ${c.on ? "checked" : ""}></div>
+        <div class="px-row"><span>Max loan</span><span></span><input type="number" id="zb-max" min="1" value="${c.max}"></div>
+        <div class="px-row"><span>Interest %</span><span></span><input type="number" id="zb-rate" min="0" max="100" value="${c.rate}"></div>
+        <div class="px-row"><span>Auto-approve requests</span><span></span><input type="checkbox" id="zb-auto" ${c.auto ? "checked" : ""}></div>
+        <div class="px-row"><span>Add to reserve</span><span></span><input type="number" id="zb-add" min="0" value="0"></div>
+        <button type="button" class="btn btn-primary btn-block" id="zb-save">Save bank settings</button>
+        <h3>Pending requests (${reqs.length})</h3>${reqs.map((u) => `<div class="px-row"><span>${esc(u)}</span><span>${fmt(Bank.d.req[u].amt)} chips</span><button type="button" class="btn btn-small btn-primary" data-ap="${esc(u)}">Approve</button><button type="button" class="btn btn-small btn-secondary" data-dn="${esc(u)}">Deny</button></div>`).join("") || '<p class="mx-hint">None.</p>'}
+        <h3>Active loans</h3>${loans.map((p) => `<div class="px-row"><span>${esc(p.username)}</span><span>owes ${fmt(p.loan.owed)}</span></div>`).join("") || '<p class="mx-hint">None.</p>'}`;
+    },
+    saveBank() {
+      const cfg = { on: $z("zb-on").checked, max: Math.max(1, Math.round(+$z("zb-max").value || 500)), rate: Math.min(100, Math.max(0, +$z("zb-rate").value || 0)), auto: $z("zb-auto").checked }, add = Math.max(0, Math.round(+$z("zb-add").value || 0));
+      zref("bank/cfg").set(cfg); if (add) zref("bank/res").transaction((v) => (v == null ? Bank.RES0 : v) + add);
+      Notify.success("Bank settings saved."); Audit.log("bank", `Bank settings saved (max ${fmt(cfg.max)}, ${cfg.rate}%${add ? ", reserve +" + fmt(add) : ""})`);
+    },
+    audit() {
+      const box = $z("z-a-audit"); if (!box) return;
+      const T = ["all", "bigwin", "rig", "mission", "loan", "spin", "limit", "tour", "bank", "achv"], rows = this.log.filter((r) => this.filter === "all" || r.type === this.filter).slice().reverse();
+      box.innerHTML = `<h3>Room audit log</h3><div class="mx-tools"><select id="za-f">${T.map((t) => `<option ${t === this.filter ? "selected" : ""}>${t}</option>`).join("")}</select><button type="button" class="btn btn-ghost btn-small" id="za-clear">Clear log</button></div>
+        <div class="z-log">${rows.map((r) => `<div class="z-lr t-${esc(r.type)}"><small>${new Date(r.ts || 0).toLocaleTimeString()}</small><b>${esc(r.type)}</b><span>${esc(r.u)}: ${esc(r.msg)}</span></div>`).join("") || '<p class="mx-hint">No events yet.</p>'}</div>`;
+    },
+    click(e) {
+      const t = e.target;
+      if (t.id === "zl-save") this.saveLimits(false); else if (t.id === "zl-reset") this.saveLimits(true); else if (t.id === "zb-save") this.saveBank();
+      else if (t.dataset.ap) Bank.approve(t.dataset.ap); else if (t.dataset.dn) Bank.deny(t.dataset.dn);
+      else if (t.id === "za-clear" && window.confirm("Clear the whole audit log?")) zref("audit").remove();
+    }
+  };
+  window.__zAdmin = () => { const a = $z("px-adm"); if (!a.dataset.z) { a.dataset.z = 1; a.addEventListener("click", (e) => ZAdmin.click(e)); a.addEventListener("change", (e) => { if (e.target.id === "za-f") { ZAdmin.filter = e.target.value; ZAdmin.audit(); } }); } ZAdmin.render(); };
+
+  /* ---------- Wiring: Firebase listeners per room ---------- */
+  const Z = { offs: [], iv: 0,
+    start() {
+      this.stop(); if (!Room.db || !Room.code) return;
+      const on = (r, fn) => { if (!r) return; r.on("value", (s) => fn(s.val())); this.offs.push(() => r.off()); };
+      on(Room.db.ref(".info/serverTimeOffset"), (v) => { Dice.off = v || 0; });
+      on(zref("lim"), (v) => { v = v || {}; BetLimits.g = v.g > 0 ? v.g : BetLimits.DEF; BetLimits.games = v.games || {}; ZAdmin.limits(); });
+      on(zref("bank"), (v) => { Bank.d = v || {}; Rewards.render(false); ZAdmin.bank(); });
+      on(zref("dice"), (v) => Dice.on(v));
+      on(zref("tour"), (v) => Tour.on(v));
+      if (State.isHost) { const q = zref("audit").limitToLast(200); q.on("value", (s) => { const o = s.val() || {}; ZAdmin.log = Object.keys(o).map((k) => o[k]); ZAdmin.audit(); }); this.offs.push(() => q.off()); }
+      this.iv = window.setInterval(() => Dice.tick(), 400);
+    },
+    stop() { this.offs.forEach((f) => f()); this.offs = []; clearInterval(this.iv); Dice.shown = null; ZAdmin.log = []; }
+  };
+  const soc0 = { start: Social.start.bind(Social), stop: Social.stop.bind(Social) };
+  Social.start = function () { soc0.start(); Z.start(); };
+  Social.stop = function () { soc0.stop(); Z.stop(); };
+  document.addEventListener("DOMContentLoaded", () => { Rewards.init(); Dice.init(); Tour.init(); });
 
   document.addEventListener("DOMContentLoaded", init);
 })();
