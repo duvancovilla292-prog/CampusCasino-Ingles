@@ -8204,3 +8204,497 @@ details.mx-det>summary::-webkit-details-marker {
         transition: none;
     }
 }
+
+/* =========================================================================
+   VIP LUXURY EXTENSIONS: BACCARAT, POKER DICE, KENO
+   ========================================================================= */
+
+/* Baccarat Layout & Spots */
+.bac-table {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    padding: 1.5rem;
+  }
+  
+  .bac-hands {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+  
+  .bac-hand {
+    text-align: center;
+    flex: 1;
+    min-width: 180px;
+    padding: 0.8rem;
+    border-radius: var(--radius-md);
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(245, 210, 122, 0.2);
+    transition: box-shadow 0.3s ease, border-color 0.3s ease;
+  }
+  
+  .bac-hand h3 {
+    margin: 0 0 0.5rem;
+    color: var(--color-gold);
+    font-family: var(--font-display);
+  }
+  
+  .bac-hand.win {
+    border-color: var(--color-gold-strong);
+    box-shadow: 0 0 25px rgba(244, 196, 48, 0.65), inset 0 0 15px rgba(244, 196, 48, 0.2);
+  }
+  
+  .bac-hand.lose {
+    opacity: 0.55;
+  }
+  
+  .bac-vs {
+    font-family: var(--font-display);
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: var(--color-gold-dark);
+    text-shadow: 0 0 10px rgba(0,0,0,0.8);
+  }
+  
+  .bac-spots {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+  }
+  
+  .bac-spot {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.2rem;
+    padding: 0.85rem 0.5rem;
+    border-radius: var(--radius-md);
+    border: 2px solid var(--color-gold-dark);
+    background: linear-gradient(160deg, #181d24, #0b0e12);
+    color: var(--color-text);
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  }
+  
+  .bac-spot:hover:not(:disabled) {
+    transform: translateY(-2px);
+    border-color: var(--color-gold-strong);
+    box-shadow: 0 0 18px rgba(244, 196, 48, 0.3);
+  }
+  
+  .bac-spot.win {
+    border-color: var(--color-gold-strong);
+    background: linear-gradient(160deg, #2a220a, #181406);
+    box-shadow: 0 0 22px rgba(244, 196, 48, 0.7);
+    animation: spot-win-pulse 1s ease-in-out infinite alternate;
+  }
+  
+  @keyframes spot-win-pulse {
+    from { box-shadow: 0 0 15px rgba(244, 196, 48, 0.5); }
+    to { box-shadow: 0 0 30px rgba(244, 196, 48, 0.9); }
+  }
+  
+  .bac-spot-name {
+    font-weight: 800;
+    font-size: 1rem;
+    color: var(--color-gold-strong);
+  }
+  
+  .bac-spot-pay {
+    font-size: 0.72rem;
+    color: var(--color-text-muted);
+  }
+  
+  .bac-mine, .bac-all {
+    font-size: 0.72rem;
+    font-weight: 700;
+  }
+  
+  .bac-mine { color: #35d39a; }
+  .bac-all { color: var(--color-gold); }
+  
+  .bac-plate {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    justify-content: center;
+    padding: 0.5rem;
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: var(--radius-sm);
+    min-height: 36px;
+  }
+  
+  .bac-dot {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    font-size: 0.7rem;
+    font-weight: 800;
+    color: #fff;
+    border: 1px solid rgba(255,255,255,0.3);
+  }
+  
+  .bac-dot.p { background: #2468c8; }
+  .bac-dot.b { background: #d6372f; }
+  .bac-dot.t { background: #1f9d57; }
+  
+  /* 3D Poker Dice Styling */
+  .pd-stage-box {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    background: radial-gradient(ellipse at center, var(--color-felt-light), var(--color-felt-dark));
+    border: 6px solid #1a1206;
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    box-shadow: inset 0 0 60px rgba(0, 0, 0, 0.65), var(--shadow-strong);
+  }
+  
+  .pd-dealer-panel, .pd-player-panel {
+    text-align: center;
+  }
+  
+  .pd-panel-title {
+    font-family: var(--font-display);
+    font-size: 1.05rem;
+    color: var(--color-gold);
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+  }
+  
+  .pd-hand-badge {
+    font-size: 0.75rem;
+    padding: 0.15rem 0.6rem;
+    border-radius: 99px;
+    background: rgba(0,0,0,0.5);
+    border: 1px solid var(--color-gold-dark);
+    color: var(--color-gold-strong);
+  }
+  
+  .pd-dice-row {
+    display: flex;
+    justify-content: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    min-height: 80px;
+  }
+  
+  .pd-cube {
+    position: relative;
+    width: 62px;
+    height: 62px;
+    background: linear-gradient(145deg, #ffffff, #e6ded0);
+    border-radius: 12px;
+    border: 2px solid var(--color-gold);
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.5), inset 0 0 8px rgba(255, 255, 255, 0.8);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    user-select: none;
+    transition: transform 0.2s cubic-bezier(0.3, 1.5, 0.5, 1), box-shadow 0.2s ease, border-color 0.2s ease;
+  }
+  
+  .pd-cube.is-held {
+    transform: translateY(-10px);
+    border-color: var(--color-gold-strong);
+    box-shadow: 0 12px 20px rgba(0,0,0,0.6), 0 0 20px rgba(244, 196, 48, 0.8);
+  }
+  
+  .pd-cube.is-held::after {
+    content: "HELD";
+    position: absolute;
+    bottom: -8px;
+    font-size: 0.55rem;
+    font-weight: 900;
+    background: var(--color-gold-strong);
+    color: #10151a;
+    padding: 1px 5px;
+    border-radius: 4px;
+    letter-spacing: 0.05em;
+  }
+  
+  .pd-cube-val {
+    font-size: 1.6rem;
+    font-weight: 900;
+    line-height: 1;
+    color: #14171c;
+  }
+  
+  .pd-cube.rank-A .pd-cube-val { color: #d6372f; }
+  .pd-cube.rank-K .pd-cube-val { color: #b8860b; }
+  .pd-cube.rank-Q .pd-cube-val { color: #1f9d57; }
+  .pd-cube.rank-J .pd-cube-val { color: #2468c8; }
+  
+  .pd-cube.rolling {
+    animation: pd-tumble 0.4s ease-in-out infinite;
+  }
+  
+  @keyframes pd-tumble {
+    0% { transform: rotate(0deg) scale(0.9); }
+    50% { transform: rotate(180deg) scale(1.1); }
+    100% { transform: rotate(360deg) scale(0.9); }
+  }
+  
+  .pd-divider {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    color: var(--color-gold-dark);
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+  }
+  
+  .pd-divider::before, .pd-divider::after {
+    content: "";
+    flex: 1;
+    border-bottom: 1px solid rgba(245, 210, 122, 0.25);
+  }
+  
+  .pd-divider span { padding: 0 0.75rem; }
+  
+  .pd-paytable-strip {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    background: rgba(0,0,0,0.35);
+    padding: 0.5rem;
+    border-radius: var(--radius-sm);
+  }
+  
+  .pd-paytable-strip span {
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    border: 1px solid transparent;
+  }
+  
+  .pd-paytable-strip span.active {
+    border-color: var(--color-gold-strong);
+    color: var(--color-gold-strong);
+    background: rgba(244, 196, 48, 0.15);
+  }
+  
+  .pd-hint {
+    display: block;
+    margin-top: 0.5rem;
+    color: var(--color-text-muted);
+    font-size: 0.78rem;
+  }
+  
+  /* VIP Keno Styles */
+  .keno-layout {
+    display: grid;
+    grid-template-columns: 1fr 280px;
+    gap: 1.25rem;
+  }
+  
+  @media (max-width: 768px) {
+    .keno-layout { grid-template-columns: 1fr; }
+  }
+  
+  .keno-main {
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+  }
+  
+  .keno-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(0,0,0,0.4);
+    padding: 0.6rem 0.9rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border);
+  }
+  
+  .keno-spots-badge {
+    font-size: 0.85rem;
+    color: var(--color-text-muted);
+  }
+  
+  .keno-spots-badge strong { color: var(--color-gold-strong); }
+  
+  .keno-grid {
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    gap: 5px;
+    background: rgba(0,0,0,0.4);
+    padding: 0.75rem;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-border);
+  }
+  
+  .keno-num {
+    aspect-ratio: 1;
+    display: grid;
+    place-items: center;
+    font-size: 0.85rem;
+    font-weight: 700;
+    border-radius: 6px;
+    background: var(--color-surface-alt);
+    border: 1px solid var(--color-border);
+    color: var(--color-text);
+    cursor: pointer;
+    user-select: none;
+    transition: transform 0.12s ease, background 0.15s ease, border-color 0.15s ease;
+  }
+  
+  .keno-num:hover {
+    border-color: var(--color-gold-dark);
+    transform: scale(1.06);
+  }
+  
+  .keno-num.selected {
+    background: linear-gradient(135deg, var(--color-gold-strong), var(--color-gold-dark));
+    color: var(--color-text-inverse);
+    border-color: var(--color-gold);
+    box-shadow: 0 0 10px rgba(244, 196, 48, 0.4);
+  }
+  
+  .keno-num.drawn {
+    background: #2468c8;
+    color: #fff;
+    border-color: #64b5f6;
+  }
+  
+  .keno-num.hit {
+    background: linear-gradient(135deg, #2e8b57, #1f633d) !important;
+    color: #fff !important;
+    border-color: #a3e635 !important;
+    box-shadow: 0 0 14px #2e8b57;
+    animation: keno-hit-glow 0.6s ease-in-out infinite alternate;
+  }
+  
+  @keyframes keno-hit-glow {
+    from { transform: scale(1); }
+    to { transform: scale(1.12); }
+  }
+  
+  .keno-side {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .keno-blower-box, .keno-rack-box, .keno-paytable-card {
+    background: rgba(0,0,0,0.4);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: 0.85rem;
+    text-align: center;
+  }
+  
+  .keno-blower-title, .keno-rack-title, .keno-paytable-title {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-gold);
+    margin-bottom: 0.6rem;
+  }
+  
+  .keno-blower-dome {
+    position: relative;
+    height: 90px;
+    border-radius: 45px;
+    background: radial-gradient(circle at 50% 30%, rgba(255,255,255,0.15), rgba(0,0,0,0.6));
+    border: 2px solid var(--color-gold-dark);
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .keno-blower-ball {
+    position: absolute;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, #ffffff, #e9c46a);
+    border: 1px solid var(--color-gold-dark);
+    color: #10151a;
+    font-weight: 800;
+    font-size: 0.85rem;
+    display: grid;
+    place-items: center;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+    animation: blower-bounce 0.6s ease-in-out infinite alternate;
+  }
+  
+  @keyframes blower-bounce {
+    0% { transform: translate(-20px, 15px) rotate(-10deg); }
+    100% { transform: translate(20px, -15px) rotate(10deg); }
+  }
+  
+  .keno-hits-counter {
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--color-gold-strong);
+  }
+  
+  .keno-rack {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 5px;
+    min-height: 80px;
+  }
+  
+  .keno-rack-ball {
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, #ffffff, #d1d5db);
+    color: #111827;
+    font-weight: 800;
+    font-size: 0.72rem;
+    display: grid;
+    place-items: center;
+    border: 1px solid #9ca3af;
+    animation: rack-ball-in 0.25s ease-out;
+  }
+  
+  .keno-rack-ball.is-hit {
+    background: radial-gradient(circle at 35% 35%, #86efac, #16a34a);
+    color: #052e16;
+    border-color: #22c55e;
+  }
+  
+  @keyframes rack-ball-in {
+    from { transform: scale(0); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+  
+  .keno-paytable-list {
+    font-size: 0.82rem;
+    color: var(--color-text-muted);
+  }
+  
+  .keno-pay-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.25rem 0.4rem;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+  }
+  
+  .keno-pay-row.active-hit {
+    color: var(--color-gold-strong);
+    font-weight: 800;
+    background: rgba(244, 196, 48, 0.15);
+    border-radius: 4px;
+  }

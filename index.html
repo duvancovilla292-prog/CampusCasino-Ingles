@@ -215,26 +215,17 @@
         <div id="nav-menu-panel" class="nav-menu-panel" role="menu" aria-label="Games and tools">
           <div class="nav-menu-group" role="group" aria-labelledby="nav-cat-games">
             <h3 id="nav-cat-games" class="nav-menu-heading">Casino Games<small>Play with your chips</small></h3>
-            <button type="button" class="nav-menu-item" role="menuitem" data-game="blackjack"><span
-                class="nav-menu-icon" aria-hidden="true">&#127137;</span><span>Blackjack</span></button>
-            <button type="button" class="nav-menu-item" role="menuitem" data-game="roulette"><span class="nav-menu-icon"
-                aria-hidden="true">&#127923;</span><span>Roulette</span></button>
-            <button type="button" class="nav-menu-item" role="menuitem" data-game="slots"><span class="nav-menu-icon"
-                aria-hidden="true">&#127920;</span><span>Slots</span></button>
-            <button type="button" class="nav-menu-item" role="menuitem" data-game="hilo"><span class="nav-menu-icon"
-                aria-hidden="true">&#128256;</span><span>Hi-Lo</span></button>
-            <button type="button" class="nav-menu-item" role="menuitem" data-game="craps"><span class="nav-menu-icon"
-                aria-hidden="true">&#127922;</span><span>Craps</span></button>
-            <button type="button" class="nav-menu-item" role="menuitem" data-game="crash"><span class="nav-menu-icon"
-                aria-hidden="true">&#128640;</span><span>Crash</span></button>
-            <button type="button" class="nav-menu-item" role="menuitem" data-game="moneywheel"><span
-                class="nav-menu-icon" aria-hidden="true">&#128176;</span><span>Money Wheel</span></button>
-            <button type="button" class="nav-menu-item" role="menuitem" data-game="pokerdice"><span
-                class="nav-menu-icon" aria-hidden="true">&#127183;</span><span>Poker Dice</span></button>
-            <button type="button" class="nav-menu-item" role="menuitem" data-game="blackwidow"><span
-                class="nav-menu-icon" aria-hidden="true">&#128375;</span><span>Black Widow Poker</span></button>
-            <button type="button" class="nav-menu-item" role="menuitem" data-game="baccarat"><span
-                class="nav-menu-icon" aria-hidden="true">&#127153;</span><span>Baccarat</span></button>
+            <button type="button" class="nav-menu-item" role="menuitem" data-game="blackjack"><span class="nav-menu-icon" aria-hidden="true">&#127137;</span><span>Blackjack</span></button>
+            <button type="button" class="nav-menu-item" role="menuitem" data-game="baccarat"><span class="nav-menu-icon" aria-hidden="true">&#127153;</span><span>Baccarat</span></button>
+            <button type="button" class="nav-menu-item" role="menuitem" data-game="pokerdice"><span class="nav-menu-icon" aria-hidden="true">&#127183;</span><span>Poker Dice</span></button>
+            <button type="button" class="nav-menu-item" role="menuitem" data-game="keno"><span class="nav-menu-icon" aria-hidden="true">&#127921;</span><span>VIP Keno</span></button>
+            <button type="button" class="nav-menu-item" role="menuitem" data-game="roulette"><span class="nav-menu-icon" aria-hidden="true">&#127923;</span><span>Roulette</span></button>
+            <button type="button" class="nav-menu-item" role="menuitem" data-game="slots"><span class="nav-menu-icon" aria-hidden="true">&#127920;</span><span>Slots</span></button>
+            <button type="button" class="nav-menu-item" role="menuitem" data-game="hilo"><span class="nav-menu-icon" aria-hidden="true">&#128256;</span><span>Hi-Lo</span></button>
+            <button type="button" class="nav-menu-item" role="menuitem" data-game="craps"><span class="nav-menu-icon" aria-hidden="true">&#127922;</span><span>Craps</span></button>
+            <button type="button" class="nav-menu-item" role="menuitem" data-game="crash"><span class="nav-menu-icon" aria-hidden="true">&#128640;</span><span>Crash</span></button>
+            <button type="button" class="nav-menu-item" role="menuitem" data-game="moneywheel"><span class="nav-menu-icon" aria-hidden="true">&#128176;</span><span>Money Wheel</span></button>
+            <button type="button" class="nav-menu-item" role="menuitem" data-game="blackwidow"><span class="nav-menu-icon" aria-hidden="true">&#128375;</span><span>Black Widow Poker</span></button>
           </div>
           <div class="nav-menu-group" role="group" aria-labelledby="nav-cat-tools">
             <h3 id="nav-cat-tools" class="nav-menu-heading">Random Selection Tools<small>Student draw, teams and
@@ -388,71 +379,73 @@
 
     <!-- ============================= -->
     <!-- GAME SECTION: BACCARAT        -->
-    <!-- (shared rounds, synced at rooms/<code>/baccarat) -->
     <!-- ============================= -->
-    <section id="game-baccarat" class="game-section" data-game-section="baccarat" hidden
-      aria-labelledby="baccarat-heading">
-      <h2 id="baccarat-heading">Baccarat<span class="bw-title-sub">Punto Banco</span></h2>
-      <p class="bw-info">Bet on Player, Banker or Tie &middot; closest hand to 9 wins (totals count modulo 10) &middot;
-        Player pays 1:1 &middot; Banker pays 0.95:1 (5% commission) &middot; Tie pays 8:1 &middot; everyone in the room
-        plays the same hand</p>
-
+    <section id="game-baccarat" class="game-section" data-game-section="baccarat" hidden aria-labelledby="baccarat-heading">
+      <h2 id="baccarat-heading">Baccarat <span class="bw-title-sub">Punto Banco</span></h2>
+      <p class="bw-info">Bet on Player, Banker, or Tie &middot; Closest hand to 9 wins (Mod-10 scoring) &middot; Player pays 1:1 &middot; Banker pays 0.95:1 (5% commission) &middot; Tie pays 8:1 (Stakes push) &middot; Synced across room</p>
+    
       <div class="bj-bar">
         <div class="bw-phase" id="bac-phase">Place your bets</div>
         <div class="bw-info" id="bac-status" aria-live="polite"></div>
       </div>
-
+    
       <div class="blackjack-table bac-table" id="bac-table">
         <div class="card-shoe" id="bac-shoe" aria-hidden="true"><i></i><i></i><i></i></div>
-
+      
         <div class="bac-hands">
           <div class="bac-hand" id="bac-hand-p">
             <h3>Player <small>Punto</small></h3>
-            <div id="bac-cards-p" class="card-row" aria-label="Player's cards"></div>
+            <div id="bac-cards-p" class="card-row" aria-label="Player cards"></div>
             <span id="bac-score-p" class="score-display bac-score"></span>
           </div>
+        
           <div class="bac-vs" aria-hidden="true">VS</div>
+        
           <div class="bac-hand" id="bac-hand-b">
             <h3>Banker <small>Banca</small></h3>
-            <div id="bac-cards-b" class="card-row" aria-label="Banker's cards"></div>
+            <div id="bac-cards-b" class="card-row" aria-label="Banker cards"></div>
             <span id="bac-score-b" class="score-display bac-score"></span>
           </div>
         </div>
-
-        <div class="bac-spots" id="bac-spots" role="group" aria-label="Betting spots">
+      
+        <div class="bac-spots" id="bac-spots" role="group" aria-label="Baccarat betting spots">
           <button type="button" class="bac-spot is-player" data-spot="p">
-            <span class="bac-spot-name">Player</span><span class="bac-spot-pay">Pays 1:1</span>
-            <span class="bac-mine"></span><span class="bac-all"></span>
+            <span class="bac-spot-name">Player</span>
+            <span class="bac-spot-pay">Pays 1:1</span>
+            <span class="bac-mine"></span>
+            <span class="bac-all"></span>
           </button>
           <button type="button" class="bac-spot is-tie" data-spot="t">
-            <span class="bac-spot-name">Tie</span><span class="bac-spot-pay">Pays 8:1</span>
-            <span class="bac-mine"></span><span class="bac-all"></span>
+            <span class="bac-spot-name">Tie</span>
+            <span class="bac-spot-pay">Pays 8:1</span>
+            <span class="bac-mine"></span>
+            <span class="bac-all"></span>
           </button>
           <button type="button" class="bac-spot is-banker" data-spot="b">
-            <span class="bac-spot-name">Banker</span><span class="bac-spot-pay">Pays 0.95:1</span>
-            <span class="bac-mine"></span><span class="bac-all"></span>
+            <span class="bac-spot-name">Banker</span>
+            <span class="bac-spot-pay">Pays 0.95:1</span>
+            <span class="bac-mine"></span>
+            <span class="bac-all"></span>
           </button>
         </div>
-
+      
         <div class="bac-tablebets" id="bac-tablebets" aria-live="polite"></div>
-        <div class="bac-plate" id="bac-plate" aria-label="Recent results"></div>
+        <div class="bac-plate" id="bac-plate" aria-label="Roadmap results history"></div>
       </div>
-
+    
       <div class="blackjack-controls">
-        <div class="chip-panel" id="bac-chips" role="group" aria-label="Quick chip amounts">
+        <div class="chip-panel" id="bac-chips" role="group" aria-label="Quick bet amounts">
           <button type="button" class="btn chip-btn" data-bac-chip="10">10</button>
           <button type="button" class="btn chip-btn" data-bac-chip="25">25</button>
           <button type="button" class="btn chip-btn" data-bac-chip="50">50</button>
           <button type="button" class="btn chip-btn" data-bac-chip="100">100</button>
         </div>
         <div class="form-group bet-group">
-          <label for="baccarat-bet">Bet per tap</label>
-          <input type="number" id="baccarat-bet" name="baccaratBet" class="input-field input-bet" min="1" step="1"
-            value="10" placeholder="Amount">
+          <label for="baccarat-bet">Bet amount</label>
+          <input type="number" id="baccarat-bet" name="baccaratBet" class="input-field input-bet" min="1" step="1" value="10" placeholder="Amount">
         </div>
       </div>
-      <small class="form-help bac-help">Tap a spot to place the amount on it. You can back more than one spot. The
-        maximum bet per round follows the global and per-game limits set by the room admin.</small>
+      <small class="form-help bac-help">Tap a betting spot to wager. Multiple spots are allowed up to room limits.</small>
       <p id="baccarat-result" class="game-result" role="status" aria-live="polite"></p>
     </section>
 
@@ -740,7 +733,53 @@
 
     <section id="game-craps" class="game-section" data-game-section="craps" hidden></section>
     <section id="game-crash" class="game-section" data-game-section="crash" hidden></section>
-    <section id="game-pokerdice" class="game-section" data-game-section="pokerdice" hidden></section>
+    <!-- ============================= -->
+    <!-- GAME SECTION: POKER DICE      -->
+    <!-- ============================= -->
+    <section id="game-pokerdice" class="game-section" data-game-section="pokerdice" hidden aria-labelledby="pokerdice-heading">
+      <h2 id="pokerdice-heading">Poker Dice</h2>
+      <p class="bw-info">Roll 5 poker dice (A, K, Q, J, 10, 9) &middot; Select dice to HOLD &middot; Reroll unheld dice once to beat the House hand &middot; Special hands earn bonus multipliers up to 12x</p>
+    
+      <div class="pd-stage-box">
+        <div class="pd-dealer-panel">
+          <div class="pd-panel-title">House Hand <span id="pd-dealer-hand-name" class="pd-hand-badge">--</span></div>
+          <div id="pd-dealer-dice" class="pd-dice-row" aria-label="Dealer dice"></div>
+        </div>
+      
+        <div class="pd-divider"><span>VS YOUR HAND</span></div>
+      
+        <div class="pd-player-panel">
+          <div class="pd-panel-title">Your Hand <span id="pd-hand-name" class="pd-hand-badge">--</span></div>
+          <div id="pd-dice-row" class="pd-dice-row" aria-label="Your dice (tap to hold)"></div>
+          <small class="pd-hint">Tap any die to toggle <strong>HOLD</strong> before re-rolling.</small>
+        </div>
+      
+        <div id="pd-paytable" class="pd-paytable-strip">
+          <span data-cat="7">5 of a Kind <b>12x</b></span>
+          <span data-cat="6">4 of a Kind <b>6x</b></span>
+          <span data-cat="5">Full House <b>4x</b></span>
+          <span data-cat="4">Straight <b>3x</b></span>
+          <span data-cat="3">3 of a Kind <b>2x</b></span>
+          <span data-cat="2">Two Pair <b>1.5x</b></span>
+          <span data-cat="1">One Pair <b>1x</b></span>
+        </div>
+      </div>
+    
+      <div class="blackjack-controls">
+        <div class="form-group bet-group">
+          <label for="input-pd-bet">Bet</label>
+          <input type="number" id="input-pd-bet" class="input-field input-bet" min="1" step="1" value="10" placeholder="Amount">
+        </div>
+      
+        <div class="action-buttons">
+          <button type="button" id="btn-pd-roll" class="btn btn-primary">&#127922; Roll Dice</button>
+          <button type="button" id="btn-pd-reroll" class="btn btn-secondary" disabled>&#8635; Reroll Unheld</button>
+          <button type="button" id="btn-pd-stand" class="btn btn-action" disabled>&#9995; Stand</button>
+        </div>
+      </div>
+    
+      <p id="pokerdice-result" class="game-result" role="status" aria-live="polite"></p>
+    </section>
     <section id="game-moneywheel" class="game-section" data-game-section="moneywheel" hidden></section>
     <section id="game-blackwidow" class="game-section" data-game-section="blackwidow" hidden
       aria-labelledby="bw-heading">
@@ -1150,6 +1189,65 @@
           <button type="button" class="btn btn-ghost" id="hm-leave" hidden>Leave table</button>
         </div>
       </div>
+    </section>
+    <!-- ============================= -->
+    <!-- GAME SECTION: VIP KENO        -->
+    <!-- ============================= -->
+    <section id="game-keno" class="game-section" data-game-section="keno" hidden aria-labelledby="keno-heading">
+      <h2 id="keno-heading">VIP Keno <span class="bw-title-sub">80-Ball Draw</span></h2>
+      <p class="bw-info">Select 1 to 10 spots on the 80-number grid &middot; 20 balls are drawn from the blower &middot; Match hits to win up to 1,000x your wager</p>
+    
+      <div class="keno-layout">
+        <div class="keno-main">
+          <div class="keno-toolbar">
+            <div class="keno-spots-badge">Spots Chosen: <strong id="keno-spots-count">0</strong> / 10</div>
+            <div class="keno-actions-row">
+              <button type="button" id="btn-keno-quick" class="btn btn-secondary btn-small">&#9889; Quick Pick</button>
+              <button type="button" id="btn-keno-clear" class="btn btn-ghost btn-small">&#128465; Clear</button>
+            </div>
+          </div>
+        
+          <div id="keno-grid" class="keno-grid" role="group" aria-label="Keno 80 number grid"></div>
+        </div>
+      
+        <div class="keno-side">
+          <div class="keno-blower-box">
+            <div class="keno-blower-title">Blower Chamber</div>
+            <div id="keno-blower" class="keno-blower-dome">
+              <div class="keno-blower-tube"></div>
+            </div>
+            <div class="keno-hits-counter">HITS: <strong id="keno-hits-count">0</strong></div>
+          </div>
+        
+          <div class="keno-rack-box">
+            <div class="keno-rack-title">Drawn Balls (20)</div>
+            <div id="keno-rack" class="keno-rack"></div>
+          </div>
+        
+          <div id="keno-paytable" class="keno-paytable-card">
+            <div class="keno-paytable-title">Paytable Preview</div>
+            <div id="keno-paytable-list" class="keno-paytable-list">Select 1-10 numbers to preview payouts</div>
+          </div>
+        </div>
+      </div>
+    
+      <div class="blackjack-controls">
+        <div id="keno-chips" class="chip-panel" role="group" aria-label="Quick chip amounts">
+          <button type="button" class="btn chip-btn" data-keno-chip="10">10</button>
+          <button type="button" class="btn chip-btn" data-keno-chip="25">25</button>
+          <button type="button" class="btn chip-btn" data-keno-chip="50">50</button>
+          <button type="button" class="btn chip-btn" data-keno-chip="100">100</button>
+        </div>
+      
+        <div class="form-group bet-group">
+          <label for="input-keno-bet">Wager Amount</label>
+          <input type="number" id="input-keno-bet" class="input-field input-bet" min="1" step="1" value="10" placeholder="Amount">
+        </div>
+      
+        <button type="button" id="btn-keno-play" class="btn btn-primary">&#127921; Start Draw</button>
+      </div>
+    
+      <p id="keno-result" class="game-result" role="status" aria-live="polite"></p>
     </section>
 
   </section>
