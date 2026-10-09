@@ -233,6 +233,8 @@
                 class="nav-menu-icon" aria-hidden="true">&#127183;</span><span>Poker Dice</span></button>
             <button type="button" class="nav-menu-item" role="menuitem" data-game="blackwidow"><span
                 class="nav-menu-icon" aria-hidden="true">&#128375;</span><span>Black Widow Poker</span></button>
+            <button type="button" class="nav-menu-item" role="menuitem" data-game="baccarat"><span
+                class="nav-menu-icon" aria-hidden="true">&#127153;</span><span>Baccarat</span></button>
           </div>
           <div class="nav-menu-group" role="group" aria-labelledby="nav-cat-tools">
             <h3 id="nav-cat-tools" class="nav-menu-heading">Random Selection Tools<small>Student draw, teams and
@@ -271,10 +273,16 @@
                 aria-hidden="true">&#9823;</span><span>Chess</span></button>
             <button type="button" class="nav-menu-item" role="menuitem" data-game="checkers"><span class="nav-menu-icon"
                 aria-hidden="true">&#11088;</span><span>Chinese Checkers</span></button>
+            <button type="button" class="nav-menu-item" role="menuitem" data-game="connect4"><span class="nav-menu-icon"
+                aria-hidden="true">&#128308;</span><span>Connect Four</span></button>
+            <button type="button" class="nav-menu-item" role="menuitem" data-game="battleship"><span
+                class="nav-menu-icon" aria-hidden="true">&#9875;</span><span>Battleship</span></button>
             <button type="button" class="nav-menu-item" role="menuitem" data-game="mastermind"><span
                 class="nav-menu-icon" aria-hidden="true">&#127912;</span><span>Color Code Breaker</span></button>
             <button type="button" class="nav-menu-item" role="menuitem" data-game="bullscows"><span
                 class="nav-menu-icon" aria-hidden="true">&#128290;</span><span>Picas y Fijas</span></button>
+            <button type="button" class="nav-menu-item" role="menuitem" data-game="hangman"><span
+                class="nav-menu-icon" aria-hidden="true">&#128292;</span><span>Hangman</span></button>
             <button type="button" class="nav-menu-item" role="menuitem" data-game="dice"><span class="nav-menu-icon"
                 aria-hidden="true">&#127922;</span><span>Quick Dice</span></button>
             <button type="button" class="nav-menu-item" role="menuitem" data-game="tournament"><span
@@ -376,6 +384,76 @@
         </div>
         <p id="blackjack-result" class="game-result" role="status" aria-live="polite"></p>
       </div>
+    </section>
+
+    <!-- ============================= -->
+    <!-- GAME SECTION: BACCARAT        -->
+    <!-- (shared rounds, synced at rooms/<code>/baccarat) -->
+    <!-- ============================= -->
+    <section id="game-baccarat" class="game-section" data-game-section="baccarat" hidden
+      aria-labelledby="baccarat-heading">
+      <h2 id="baccarat-heading">Baccarat<span class="bw-title-sub">Punto Banco</span></h2>
+      <p class="bw-info">Bet on Player, Banker or Tie &middot; closest hand to 9 wins (totals count modulo 10) &middot;
+        Player pays 1:1 &middot; Banker pays 0.95:1 (5% commission) &middot; Tie pays 8:1 &middot; everyone in the room
+        plays the same hand</p>
+
+      <div class="bj-bar">
+        <div class="bw-phase" id="bac-phase">Place your bets</div>
+        <div class="bw-info" id="bac-status" aria-live="polite"></div>
+      </div>
+
+      <div class="blackjack-table bac-table" id="bac-table">
+        <div class="card-shoe" id="bac-shoe" aria-hidden="true"><i></i><i></i><i></i></div>
+
+        <div class="bac-hands">
+          <div class="bac-hand" id="bac-hand-p">
+            <h3>Player <small>Punto</small></h3>
+            <div id="bac-cards-p" class="card-row" aria-label="Player's cards"></div>
+            <span id="bac-score-p" class="score-display bac-score"></span>
+          </div>
+          <div class="bac-vs" aria-hidden="true">VS</div>
+          <div class="bac-hand" id="bac-hand-b">
+            <h3>Banker <small>Banca</small></h3>
+            <div id="bac-cards-b" class="card-row" aria-label="Banker's cards"></div>
+            <span id="bac-score-b" class="score-display bac-score"></span>
+          </div>
+        </div>
+
+        <div class="bac-spots" id="bac-spots" role="group" aria-label="Betting spots">
+          <button type="button" class="bac-spot is-player" data-spot="p">
+            <span class="bac-spot-name">Player</span><span class="bac-spot-pay">Pays 1:1</span>
+            <span class="bac-mine"></span><span class="bac-all"></span>
+          </button>
+          <button type="button" class="bac-spot is-tie" data-spot="t">
+            <span class="bac-spot-name">Tie</span><span class="bac-spot-pay">Pays 8:1</span>
+            <span class="bac-mine"></span><span class="bac-all"></span>
+          </button>
+          <button type="button" class="bac-spot is-banker" data-spot="b">
+            <span class="bac-spot-name">Banker</span><span class="bac-spot-pay">Pays 0.95:1</span>
+            <span class="bac-mine"></span><span class="bac-all"></span>
+          </button>
+        </div>
+
+        <div class="bac-tablebets" id="bac-tablebets" aria-live="polite"></div>
+        <div class="bac-plate" id="bac-plate" aria-label="Recent results"></div>
+      </div>
+
+      <div class="blackjack-controls">
+        <div class="chip-panel" id="bac-chips" role="group" aria-label="Quick chip amounts">
+          <button type="button" class="btn chip-btn" data-bac-chip="10">10</button>
+          <button type="button" class="btn chip-btn" data-bac-chip="25">25</button>
+          <button type="button" class="btn chip-btn" data-bac-chip="50">50</button>
+          <button type="button" class="btn chip-btn" data-bac-chip="100">100</button>
+        </div>
+        <div class="form-group bet-group">
+          <label for="baccarat-bet">Bet per tap</label>
+          <input type="number" id="baccarat-bet" name="baccaratBet" class="input-field input-bet" min="1" step="1"
+            value="10" placeholder="Amount">
+        </div>
+      </div>
+      <small class="form-help bac-help">Tap a spot to place the amount on it. You can back more than one spot. The
+        maximum bet per round follows the global and per-game limits set by the room admin.</small>
+      <p id="baccarat-result" class="game-result" role="status" aria-live="polite"></p>
     </section>
 
     <!-- ============================= -->
@@ -865,6 +943,65 @@
       </div>
     </section>
 
+    <section id="game-connect4" class="game-section" data-game-section="connect4" hidden aria-labelledby="c4-heading">
+      <h2 id="c4-heading">Connect Four<span class="bw-title-sub">Casual &amp; Party Games</span></h2>
+      <p class="bw-info">2 players &middot; drop chips into a 7&times;6 grid &middot; first to line up four
+        (horizontal, vertical or diagonal) wins &middot; optional stake, winner takes the pot &middot; solo vs AI
+        available</p>
+      <div class="tl" id="c4-lobby" hidden></div>
+      <div id="c4-live" class="duel-live" hidden>
+        <div class="bw-table duel-table">
+          <div class="pq-players" id="c4-players"></div>
+          <div class="c4-drops" id="c4-drops" role="group" aria-label="Choose a column"></div>
+          <div class="c4-board" id="c4-board" role="group" aria-label="Connect Four board"></div>
+          <div class="pq-bar">
+            <div id="c4-pot"></div>
+          </div>
+          <div class="bw-info" id="c4-status" aria-live="polite"></div>
+          <div class="bw-log" id="c4-log"></div>
+        </div>
+        <div class="bw-actions">
+          <button type="button" class="btn btn-primary" id="c4-again" hidden>Back to table lobby</button>
+          <button type="button" class="btn btn-ghost" id="c4-kick" hidden>Skip idle player</button>
+          <button type="button" class="btn btn-ghost" id="c4-leave" hidden>Leave table</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="game-battleship" class="game-section" data-game-section="battleship" hidden
+      aria-labelledby="bs-heading">
+      <h2 id="bs-heading">Battleship<span class="bw-title-sub">Casual &amp; Party Games</span></h2>
+      <p class="bw-info">2 players &middot; deploy a 5-ship fleet on a 10&times;10 grid &middot; take turns firing
+        &middot; sink every enemy ship to win &middot; optional stake &middot; solo vs AI available</p>
+      <div class="tl" id="bs-lobby" hidden></div>
+      <div id="bs-live" class="duel-live" hidden>
+        <div class="bw-table duel-table">
+          <div class="pq-players" id="bs-players"></div>
+          <div class="bs-dock" id="bs-dock" hidden>
+            <div class="bs-ships" id="bs-ships"></div>
+            <div class="bw-actions">
+              <button type="button" class="btn btn-secondary" id="bs-rotate">Rotate: Horizontal</button>
+              <button type="button" class="btn btn-secondary" id="bs-random">Randomize</button>
+              <button type="button" class="btn btn-ghost" id="bs-reset">Reset</button>
+              <button type="button" class="btn btn-action" id="bs-ready" disabled>Confirm fleet</button>
+            </div>
+          </div>
+          <div class="bs-boards" id="bs-boards"></div>
+          <div class="bs-callout" id="bs-callout" hidden aria-live="assertive"></div>
+          <div class="pq-bar">
+            <div id="bs-pot"></div>
+          </div>
+          <div class="bw-info" id="bs-status" aria-live="polite"></div>
+          <div class="bw-log" id="bs-log"></div>
+        </div>
+        <div class="bw-actions">
+          <button type="button" class="btn btn-primary" id="bs-again" hidden>Back to table lobby</button>
+          <button type="button" class="btn btn-ghost" id="bs-kick" hidden>Skip idle player</button>
+          <button type="button" class="btn btn-ghost" id="bs-leave" hidden>Leave table</button>
+        </div>
+      </div>
+    </section>
+
     <section id="game-mastermind" class="game-section" data-game-section="mastermind" hidden
       aria-labelledby="mm-heading">
       <h2 id="mm-heading">Color Code Breaker<span class="bw-title-sub">Casual &amp; Party Games</span></h2>
@@ -920,6 +1057,97 @@
           <button type="button" class="btn btn-primary" id="bc-again" hidden>Back to table lobby</button>
           <button type="button" class="btn btn-ghost" id="bc-kick" hidden>Skip idle player</button>
           <button type="button" class="btn btn-ghost" id="bc-leave" hidden>Leave table</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="game-hangman" class="game-section" data-game-section="hangman" hidden aria-labelledby="hm-heading">
+      <h2 id="hm-heading">Hangman<span class="bw-title-sub">Casual &amp; Party Games</span></h2>
+      <p class="bw-info">2&ndash;6 players &middot; the system or a Word Master picks a secret word &middot; take turns
+        guessing a letter (or solve the whole word) before the gallows is complete &middot; optional stake with
+        chip bounties for correct letters</p>
+      <div class="tl" id="hm-lobby" hidden></div>
+
+      <!-- Host / Word Master set-up (static controls: typing is never wiped by live re-renders) -->
+      <div class="hm-setup" id="hm-setup" hidden>
+        <h3 class="hm-setup-title">Hangman set-up</h3>
+        <div class="hm-fields">
+          <label class="hm-field"><span>Word source</span>
+            <select id="hm-src">
+              <option value="system">System word (themed)</option>
+              <option value="master">I set a secret word (Word Master)</option>
+            </select></label>
+          <label class="hm-field"><span>Theme</span>
+            <select id="hm-theme-sel">
+              <option value="">Mixed (random theme)</option>
+              <option>Animals</option>
+              <option>Food &amp; Drink</option>
+              <option>Geography</option>
+              <option>Casino</option>
+              <option>Campus Life</option>
+              <option>Technology</option>
+              <option>Sports</option>
+            </select></label>
+          <label class="hm-field"><span>Mistakes allowed</span>
+            <select id="hm-lives">
+              <option value="6">6 &mdash; Hard</option>
+              <option value="8">8 &mdash; Normal</option>
+              <option value="10">10 &mdash; Easy</option>
+            </select></label>
+          <label class="hm-field"><span>Bounty per correct letter</span>
+            <select id="hm-bounty">
+              <option value="0">No bounty</option>
+              <option value="5">5 chips</option>
+              <option value="10">10 chips</option>
+              <option value="25">25 chips</option>
+            </select></label>
+        </div>
+        <div class="hm-fields" id="hm-row-master" hidden>
+          <label class="hm-field"><span>Hint shown to guessers (optional)</span>
+            <input type="text" id="hm-hint" maxlength="24" placeholder="e.g. Famous landmark" autocomplete="off"></label>
+          <div class="hm-field hm-secret-box"><span>Secret word (3&ndash;24 letters, A&ndash;Z)</span>
+            <div class="hm-secret-row">
+              <input type="password" id="hm-secret" maxlength="30" placeholder="Type the secret word"
+                autocomplete="off" spellcheck="false" aria-label="Secret word">
+              <button type="button" class="btn btn-ghost" id="hm-reveal">Show</button>
+              <button type="button" class="btn btn-action" id="hm-lock">Lock in word</button>
+              <button type="button" class="btn btn-ghost" id="hm-clear" hidden>Clear word</button>
+            </div>
+          </div>
+        </div>
+        <p class="bw-info hm-setup-msg" id="hm-setup-msg" aria-live="polite"></p>
+        <small class="form-help">Bounties are paid out of the pot (up to 60%); whoever completes the word takes the
+          rest. If the gallows wins, the Word Master (or, with a system word, the remaining guessers) keeps it.</small>
+      </div>
+
+      <div id="hm-live" class="duel-live" hidden>
+        <div class="bw-table duel-table hm-table">
+          <div class="pq-players" id="hm-players"></div>
+          <div class="hm-stage">
+            <div class="hm-gallows" id="hm-gallows" role="img" aria-label="Hangman gallows drawing"></div>
+            <div class="hm-side">
+              <div class="hm-theme" id="hm-theme"></div>
+              <div class="hm-meter" id="hm-meter"></div>
+              <div class="hm-wrong" id="hm-wrong" aria-live="polite"></div>
+            </div>
+          </div>
+          <div class="hm-word" id="hm-word" role="group" aria-label="Secret word"></div>
+          <div class="hm-keys" id="hm-keys" role="group" aria-label="Letter keyboard"></div>
+          <div class="hm-solve" id="hm-solve" hidden>
+            <input type="text" id="hm-solve-in" maxlength="24" placeholder="Think you know it? Type the full word"
+              autocomplete="off" spellcheck="false" aria-label="Solve the word">
+            <button type="button" class="btn btn-action" id="hm-solve-btn">Solve (wrong = 2 mistakes)</button>
+          </div>
+          <div class="pq-bar">
+            <div id="hm-pot"></div>
+          </div>
+          <div class="bw-info" id="hm-status" aria-live="polite"></div>
+          <div class="bw-log" id="hm-log"></div>
+        </div>
+        <div class="bw-actions">
+          <button type="button" class="btn btn-primary" id="hm-again" hidden>Back to table lobby</button>
+          <button type="button" class="btn btn-ghost" id="hm-kick" hidden>Skip idle player</button>
+          <button type="button" class="btn btn-ghost" id="hm-leave" hidden>Leave table</button>
         </div>
       </div>
     </section>
