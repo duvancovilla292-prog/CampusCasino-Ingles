@@ -1059,7 +1059,12 @@
     </div>
   </div>
 
-  <script type="module" src="JS/app.js"></script>
+  <script defer src="firebase-sync.js"></script>   <!-- 1. Firebase, Room, State, Tables, Bank, room listeners -->
+  <script defer src="ui-audio.js"></script>        <!-- 2. DOM, sound, HUD, router, screens, shop, chat, missions -->
+  <script defer src="casino-games.js"></script>    <!-- 3. GameResolver + Blackjack, Roulette, Slots, Hi-Lo, Viuda Negra... -->
+  <script defer src="casual-games.js"></script>    <!-- 4. UNO, Parqués, Dominoes, duels, Marble Race, Lucky Draw... -->
+  <script defer src="admin-panel.js"></script>     <!-- 5. Admin panel, Host Settings, rig, bet limits, audit, bootstrap -->
+  
 </body>
 
 </html>
