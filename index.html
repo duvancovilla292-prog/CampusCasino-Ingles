@@ -1,10 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Casino Campus &mdash; Multiplayer</title>
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3CradialGradient id='chessGrad' cx='40%25' cy='35%25' r='65%25'%3E%3Cstop offset='0%25' stop-color='%23f4c430'/%3E%3Cstop offset='50%25' stop-color='%23e9c46a'/%3E%3Cstop offset='100%25' stop-color='%23b8860b'/%3E%3C/radialGradient%3E%3C/defs%3E%3Cpath d='M50 15 C54 15 57 18 57 22 C57 25 55 28 52 30 C59 34 64 42 63 52 C68 53 72 56 73 60 C75 64 72 68 67 68 L33 68 C28 68 25 64 27 60 C28 56 32 53 37 52 C36 42 41 34 48 30 C45 28 43 25 43 22 C43 18 46 15 50 15 Z' fill='url(%23chessGrad)' stroke='%23fff' stroke-width='2'/%3E%3Cpath d='M25 76 L75 76 C78 76 80 78 80 81 L80 85 C80 88 78 90 75 90 L25 90 C22 90 20 88 20 85 L20 81 C20 78 22 76 25 76 Z' fill='url(%23chessGrad)' stroke='%23fff' stroke-width='2'/%3E%3C/svg%3E">
+  <link rel="icon" type="image/svg+xml"
+    href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3CradialGradient id='chessGrad' cx='40%25' cy='35%25' r='65%25'%3E%3Cstop offset='0%25' stop-color='%23f4c430'/%3E%3Cstop offset='50%25' stop-color='%23e9c46a'/%3E%3Cstop offset='100%25' stop-color='%23b8860b'/%3E%3C/radialGradient%3E%3C/defs%3E%3Cpath d='M50 15 C54 15 57 18 57 22 C57 25 55 28 52 30 C59 34 64 42 63 52 C68 53 72 56 73 60 C75 64 72 68 67 68 L33 68 C28 68 25 64 27 60 C28 56 32 53 37 52 C36 42 41 34 48 30 C45 28 43 25 43 22 C43 18 46 15 50 15 Z' fill='url(%23chessGrad)' stroke='%23fff' stroke-width='2'/%3E%3Cpath d='M25 76 L75 76 C78 76 80 78 80 81 L80 85 C80 88 78 90 75 90 L25 90 C22 90 20 88 20 85 L20 81 C20 78 22 76 25 76 Z' fill='url(%23chessGrad)' stroke='%23fff' stroke-width='2'/%3E%3C/svg%3E">
   <link rel="stylesheet" href="CSS/style.css">
   <!-- Firebase Realtime Database (serverless sync layer). The project config is
        hardcoded in the script below, so every visitor connects automatically. -->
@@ -12,6 +14,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-database-compat.js"></script>
 
 </head>
+
 <body>
 
   <!-- Floating notifications / system log container -->
@@ -33,7 +36,8 @@
           <span class="brand-icon" aria-hidden="true">&spades;</span>
           <h1 id="setup-heading">Casino Campus</h1>
         </div>
-        <p class="auth-subtitle">Educational simulator with virtual chips &mdash; real-time multiplayer, zero real risk.</p>
+        <p class="auth-subtitle">Educational simulator with virtual chips &mdash; real-time multiplayer, zero real risk.
+        </p>
       </header>
 
       <div class="auth-body" style="grid-template-columns: 1fr;">
@@ -58,7 +62,8 @@
               <input type="text" id="host-share-link" class="input-field" readonly aria-label="Share link">
               <button type="button" id="btn-copy-link" class="btn btn-secondary">Copy Link</button>
             </div>
-            <button type="button" id="btn-host-continue" class="btn btn-primary btn-block" style="margin-top:0.75rem;" hidden>Continue to Lobby &rarr;</button>
+            <button type="button" id="btn-host-continue" class="btn btn-primary btn-block" style="margin-top:0.75rem;"
+              hidden>Continue to Lobby &rarr;</button>
           </div>
 
           <div class="setup-divider" role="separator"><span>or join a room</span></div>
@@ -66,7 +71,8 @@
           <div id="panel-join">
             <div class="form-group">
               <label for="input-room-code">Room code</label>
-              <input type="text" id="input-room-code" class="input-field room-code-input" placeholder="e.g. AB12CD" maxlength="8" autocomplete="off" autocapitalize="characters" spellcheck="false">
+              <input type="text" id="input-room-code" class="input-field room-code-input" placeholder="e.g. AB12CD"
+                maxlength="8" autocomplete="off" autocapitalize="characters" spellcheck="false">
             </div>
             <span id="join-error" class="form-error" role="alert"></span>
             <button type="button" id="btn-join-room" class="btn btn-secondary btn-block">Join Room</button>
@@ -80,7 +86,8 @@
       </div>
 
       <footer class="auth-footer">
-        <span>Devices sync in real time through Firebase &middot; no backend install &middot; works on any static host (e.g. GitHub Pages)</span>
+        <span>Devices sync in real time through Firebase &middot; no backend install &middot; works on any static host
+          (e.g. GitHub Pages)</span>
       </footer>
     </div>
   </section>
@@ -110,14 +117,12 @@
             <span id="players-count" class="players-count-badge">0</span>
           </div>
 
-          <input
-            type="text"
-            id="input-player-search"
-            class="input-field input-search"
+          <input type="text" id="input-player-search" class="input-field input-search"
             placeholder="Search player by name...">
 
           <div id="players-grid" class="players-grid" role="list"></div>
-          <p id="players-empty" class="players-empty">No players have joined this room yet. Create the first profile on the right &rarr;</p>
+          <p id="players-empty" class="players-empty">No players have joined this room yet. Create the first profile on
+            the right &rarr;</p>
         </div>
 
         <div class="auth-panel new-player-panel">
@@ -128,18 +133,10 @@
           <form id="login-form" class="login-form" novalidate>
             <div class="form-group">
               <label for="input-username">Username</label>
-              <input
-                type="text"
-                id="input-username"
-                name="username"
-                class="input-field"
-                placeholder="e.g. student01"
-                pattern="[A-Za-z0-9_-]{3,16}"
-                minlength="3"
-                maxlength="16"
-                required
-                aria-describedby="username-help">
-              <small id="username-help" class="form-help">3-16 characters: letters, numbers, hyphens or underscores</small>
+              <input type="text" id="input-username" name="username" class="input-field" placeholder="e.g. student01"
+                pattern="[A-Za-z0-9_-]{3,16}" minlength="3" maxlength="16" required aria-describedby="username-help">
+              <small id="username-help" class="form-help">3-16 characters: letters, numbers, hyphens or
+                underscores</small>
             </div>
 
             <div class="form-group">
@@ -154,20 +151,24 @@
 
             <span id="login-error" class="form-error" role="alert" aria-live="assertive"></span>
 
-            <button type="submit" id="btn-login-submit" class="btn btn-primary btn-block">Create Player &amp; Join</button>
+            <button type="submit" id="btn-login-submit" class="btn btn-primary btn-block">Create Player &amp;
+              Join</button>
           </form>
 
           <div class="auth-divider"><span>or</span></div>
 
-          <button type="button" id="btn-open-leaderboard-auth" class="btn btn-secondary btn-block">&#127942; View Leaderboard</button>
-          <button type="button" id="btn-open-admin" class="btn btn-ghost btn-block" hidden>&#9881; Administrator Panel</button>
+          <button type="button" id="btn-open-leaderboard-auth" class="btn btn-secondary btn-block">&#127942; View
+            Leaderboard</button>
+          <button type="button" id="btn-open-admin" class="btn btn-ghost btn-block" hidden>&#9881; Administrator
+            Panel</button>
           <button type="button" id="btn-leave-room" class="btn btn-ghost btn-block">&larr; Leave Room</button>
         </div>
 
       </div>
 
       <footer class="auth-footer">
-        <span>Synced live across every device connected to room <strong id="auth-room-code-footer">------</strong></span>
+        <span>Synced live across every device connected to room <strong
+            id="auth-room-code-footer">------</strong></span>
       </footer>
     </div>
   </section>
@@ -202,52 +203,89 @@
       </div>
 
       <nav id="game-selector" class="nav-menu" aria-label="Game selection">
-        <button type="button" id="nav-menu-trigger" class="nav-menu-trigger" aria-haspopup="true" aria-expanded="false" aria-controls="nav-menu-panel">
+        <button type="button" id="nav-menu-trigger" class="nav-menu-trigger" aria-haspopup="true" aria-expanded="false"
+          aria-controls="nav-menu-panel">
           <span id="nav-menu-current-icon" class="nav-menu-current-icon" aria-hidden="true">&#127137;</span>
           <span class="nav-menu-current-text"><small>Playing</small><b id="nav-menu-current">Blackjack</b></span>
-          <svg class="nav-menu-chevron" viewBox="0 0 20 20" width="18" height="18" aria-hidden="true" focusable="false"><path d="M5 7.5l5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <svg class="nav-menu-chevron" viewBox="0 0 20 20" width="18" height="18" aria-hidden="true" focusable="false">
+            <path d="M5 7.5l5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round" />
+          </svg>
         </button>
         <div id="nav-menu-panel" class="nav-menu-panel" role="menu" aria-label="Games and tools">
           <div class="nav-menu-group" role="group" aria-labelledby="nav-cat-games">
             <h3 id="nav-cat-games" class="nav-menu-heading">Casino Games<small>Play with your chips</small></h3>
-          <button type="button" class="nav-menu-item" role="menuitem" data-game="blackjack"><span class="nav-menu-icon" aria-hidden="true">&#127137;</span><span>Blackjack</span></button>
-          <button type="button" class="nav-menu-item" role="menuitem" data-game="roulette"><span class="nav-menu-icon" aria-hidden="true">&#127923;</span><span>Roulette</span></button>
-          <button type="button" class="nav-menu-item" role="menuitem" data-game="slots"><span class="nav-menu-icon" aria-hidden="true">&#127920;</span><span>Slots</span></button>
-          <button type="button" class="nav-menu-item" role="menuitem" data-game="hilo"><span class="nav-menu-icon" aria-hidden="true">&#128256;</span><span>Hi-Lo</span></button>
-          <button type="button" class="nav-menu-item" role="menuitem" data-game="craps"><span class="nav-menu-icon" aria-hidden="true">&#127922;</span><span>Craps</span></button>
-          <button type="button" class="nav-menu-item" role="menuitem" data-game="crash"><span class="nav-menu-icon" aria-hidden="true">&#128640;</span><span>Crash</span></button>
-          <button type="button" class="nav-menu-item" role="menuitem" data-game="moneywheel"><span class="nav-menu-icon" aria-hidden="true">&#128176;</span><span>Money Wheel</span></button>
-          <button type="button" class="nav-menu-item" role="menuitem" data-game="pokerdice"><span class="nav-menu-icon" aria-hidden="true">&#127183;</span><span>Poker Dice</span></button>
-          <button type="button" class="nav-menu-item" role="menuitem" data-game="blackwidow"><span class="nav-menu-icon" aria-hidden="true">&#128375;</span><span>Black Widow Poker</span></button>
+            <button type="button" class="nav-menu-item" role="menuitem" data-game="blackjack"><span
+                class="nav-menu-icon" aria-hidden="true">&#127137;</span><span>Blackjack</span></button>
+            <button type="button" class="nav-menu-item" role="menuitem" data-game="roulette"><span class="nav-menu-icon"
+                aria-hidden="true">&#127923;</span><span>Roulette</span></button>
+            <button type="button" class="nav-menu-item" role="menuitem" data-game="slots"><span class="nav-menu-icon"
+                aria-hidden="true">&#127920;</span><span>Slots</span></button>
+            <button type="button" class="nav-menu-item" role="menuitem" data-game="hilo"><span class="nav-menu-icon"
+                aria-hidden="true">&#128256;</span><span>Hi-Lo</span></button>
+            <button type="button" class="nav-menu-item" role="menuitem" data-game="craps"><span class="nav-menu-icon"
+                aria-hidden="true">&#127922;</span><span>Craps</span></button>
+            <button type="button" class="nav-menu-item" role="menuitem" data-game="crash"><span class="nav-menu-icon"
+                aria-hidden="true">&#128640;</span><span>Crash</span></button>
+            <button type="button" class="nav-menu-item" role="menuitem" data-game="moneywheel"><span
+                class="nav-menu-icon" aria-hidden="true">&#128176;</span><span>Money Wheel</span></button>
+            <button type="button" class="nav-menu-item" role="menuitem" data-game="pokerdice"><span
+                class="nav-menu-icon" aria-hidden="true">&#127183;</span><span>Poker Dice</span></button>
+            <button type="button" class="nav-menu-item" role="menuitem" data-game="blackwidow"><span
+                class="nav-menu-icon" aria-hidden="true">&#128375;</span><span>Black Widow Poker</span></button>
           </div>
           <div class="nav-menu-group" role="group" aria-labelledby="nav-cat-tools">
-            <h3 id="nav-cat-tools" class="nav-menu-heading">Random Selection Tools<small>Student draw, teams and turns</small></h3>
-            <button type="button" class="nav-menu-item" role="menuitem" data-game="draw"><span class="nav-menu-icon" aria-hidden="true">&#127873;</span><span>Lucky Draw</span></button>
-            <div class="nav-menu-chips" role="group" aria-label="Lucky Draw visual modes"><button type="button" class="nav-menu-chip" role="menuitem" data-game="draw" data-draw-mode="slots">Slot Reels</button><button type="button" class="nav-menu-chip" role="menuitem" data-game="draw" data-draw-mode="bingo">Bingo Blower</button><button type="button" class="nav-menu-chip" role="menuitem" data-game="draw" data-draw-mode="cards">Card Dealer</button><button type="button" class="nav-menu-chip" role="menuitem" data-game="draw" data-draw-mode="laser">Chip Laser</button></div>
-            <button type="button" class="nav-menu-item" role="menuitem" data-game="wheel"><span class="nav-menu-icon" aria-hidden="true">&#127905;</span><span>Player Wheel</span></button>
-            <button type="button" class="nav-menu-item" role="menuitem" data-game="draw" data-draw-mode="bracket"><span class="nav-menu-icon" aria-hidden="true">&#127942;</span><span>1v1 Elimination Bracket</span></button>
-            <button type="button" class="nav-menu-item" role="menuitem" data-game="draw" data-draw-mode="plinko"><span class="nav-menu-icon" aria-hidden="true">&#128309;</span><span>Plinko / Gravity Drop</span></button>
-            <button type="button" class="nav-menu-item" role="menuitem" data-game="draw" data-draw-mode="marble"><span class="nav-menu-icon" aria-hidden="true">&#128302;</span><span>Marble Gravity Race</span></button>
-            <button type="button" class="nav-menu-item" role="menuitem" data-game="draw" data-draw-mode="chests"><span class="nav-menu-icon" aria-hidden="true">&#127873;</span><span>Mystery Chests</span></button>
-            <button type="button" class="nav-menu-item" role="menuitem" data-game="draw" data-draw-mode="roles"><span class="nav-menu-icon" aria-hidden="true">&#129513;</span><span>Roles &amp; Task Matrix</span></button>
+            <h3 id="nav-cat-tools" class="nav-menu-heading">Random Selection Tools<small>Student draw, teams and
+                turns</small></h3>
+            <button type="button" class="nav-menu-item" role="menuitem" data-game="draw"><span class="nav-menu-icon"
+                aria-hidden="true">&#127873;</span><span>Lucky Draw</span></button>
+            <div class="nav-menu-chips" role="group" aria-label="Lucky Draw visual modes"><button type="button"
+                class="nav-menu-chip" role="menuitem" data-game="draw" data-draw-mode="slots">Slot Reels</button><button
+                type="button" class="nav-menu-chip" role="menuitem" data-game="draw" data-draw-mode="bingo">Bingo
+                Blower</button><button type="button" class="nav-menu-chip" role="menuitem" data-game="draw"
+                data-draw-mode="cards">Card Dealer</button><button type="button" class="nav-menu-chip" role="menuitem"
+                data-game="draw" data-draw-mode="laser">Chip Laser</button></div>
+            <button type="button" class="nav-menu-item" role="menuitem" data-game="wheel"><span class="nav-menu-icon"
+                aria-hidden="true">&#127905;</span><span>Player Wheel</span></button>
+            <button type="button" class="nav-menu-item" role="menuitem" data-game="draw" data-draw-mode="bracket"><span
+                class="nav-menu-icon" aria-hidden="true">&#127942;</span><span>1v1 Elimination Bracket</span></button>
+            <button type="button" class="nav-menu-item" role="menuitem" data-game="draw" data-draw-mode="plinko"><span
+                class="nav-menu-icon" aria-hidden="true">&#128309;</span><span>Plinko / Gravity Drop</span></button>
+            <button type="button" class="nav-menu-item" role="menuitem" data-game="draw" data-draw-mode="marble"><span
+                class="nav-menu-icon" aria-hidden="true">&#128302;</span><span>Marble Gravity Race</span></button>
+            <button type="button" class="nav-menu-item" role="menuitem" data-game="draw" data-draw-mode="chests"><span
+                class="nav-menu-icon" aria-hidden="true">&#127873;</span><span>Mystery Chests</span></button>
+            <button type="button" class="nav-menu-item" role="menuitem" data-game="draw" data-draw-mode="roles"><span
+                class="nav-menu-icon" aria-hidden="true">&#129513;</span><span>Roles &amp; Task Matrix</span></button>
           </div>
           <div class="nav-menu-group" role="group" aria-labelledby="nav-cat-party">
-            <h3 id="nav-cat-party" class="nav-menu-heading">Casual &amp; Party Games<small>Social games with optional chip bets</small></h3>
-            <button type="button" class="nav-menu-item" role="menuitem" data-game="uno"><span class="nav-menu-icon" aria-hidden="true">&#127924;</span><span>UNO</span></button>
-            <button type="button" class="nav-menu-item" role="menuitem" data-game="parques"><span class="nav-menu-icon" aria-hidden="true">&#127922;</span><span>Parqu&eacute;s</span></button>
-            <button type="button" class="nav-menu-item" role="menuitem" data-game="dominoes"><span class="nav-menu-icon" aria-hidden="true">&#127074;</span><span>Dominoes</span></button>
-            <button type="button" class="nav-menu-item" role="menuitem" data-game="chess"><span class="nav-menu-icon" aria-hidden="true">&#9823;</span><span>Chess</span></button>
-            <button type="button" class="nav-menu-item" role="menuitem" data-game="checkers"><span class="nav-menu-icon" aria-hidden="true">&#11088;</span><span>Chinese Checkers</span></button>
-            <button type="button" class="nav-menu-item" role="menuitem" data-game="mastermind"><span class="nav-menu-icon" aria-hidden="true">&#127912;</span><span>Color Code Breaker</span></button>
-            <button type="button" class="nav-menu-item" role="menuitem" data-game="bullscows"><span class="nav-menu-icon" aria-hidden="true">&#128290;</span><span>Picas y Fijas</span></button>
-            <button type="button" class="nav-menu-item" role="menuitem" data-game="dice"><span class="nav-menu-icon" aria-hidden="true">&#127922;</span><span>Quick Dice</span></button>
-            <button type="button" class="nav-menu-item" role="menuitem" data-game="tournament"><span class="nav-menu-icon" aria-hidden="true">&#127942;</span><span>Knockout Tournament</span></button>
+            <h3 id="nav-cat-party" class="nav-menu-heading">Casual &amp; Party Games<small>Social games with optional
+                chip bets</small></h3>
+            <button type="button" class="nav-menu-item" role="menuitem" data-game="uno"><span class="nav-menu-icon"
+                aria-hidden="true">&#127924;</span><span>UNO</span></button>
+            <button type="button" class="nav-menu-item" role="menuitem" data-game="parques"><span class="nav-menu-icon"
+                aria-hidden="true">&#127922;</span><span>Parqu&eacute;s</span></button>
+            <button type="button" class="nav-menu-item" role="menuitem" data-game="dominoes"><span class="nav-menu-icon"
+                aria-hidden="true">&#127074;</span><span>Dominoes</span></button>
+            <button type="button" class="nav-menu-item" role="menuitem" data-game="chess"><span class="nav-menu-icon"
+                aria-hidden="true">&#9823;</span><span>Chess</span></button>
+            <button type="button" class="nav-menu-item" role="menuitem" data-game="checkers"><span class="nav-menu-icon"
+                aria-hidden="true">&#11088;</span><span>Chinese Checkers</span></button>
+            <button type="button" class="nav-menu-item" role="menuitem" data-game="mastermind"><span
+                class="nav-menu-icon" aria-hidden="true">&#127912;</span><span>Color Code Breaker</span></button>
+            <button type="button" class="nav-menu-item" role="menuitem" data-game="bullscows"><span
+                class="nav-menu-icon" aria-hidden="true">&#128290;</span><span>Picas y Fijas</span></button>
+            <button type="button" class="nav-menu-item" role="menuitem" data-game="dice"><span class="nav-menu-icon"
+                aria-hidden="true">&#127922;</span><span>Quick Dice</span></button>
+            <button type="button" class="nav-menu-item" role="menuitem" data-game="tournament"><span
+                class="nav-menu-icon" aria-hidden="true">&#127942;</span><span>Knockout Tournament</span></button>
           </div>
         </div>
       </nav>
 
       <div class="top-panel-actions">
-        <button type="button" id="btn-sound-toggle" class="btn btn-icon" aria-pressed="true" aria-label="Mute sound">&#128266;</button>
+        <button type="button" id="btn-sound-toggle" class="btn btn-icon" aria-pressed="true"
+          aria-label="Mute sound">&#128266;</button>
         <button type="button" id="btn-open-leaderboard" class="btn btn-secondary">&#127942;</button>
         <button type="button" id="btn-open-admin-lobby" class="btn btn-secondary" hidden>&#9881;</button>
         <button type="button" id="btn-open-shop" class="btn btn-secondary" title="Profile Shop">&#128717; Shop</button>
@@ -256,7 +294,8 @@
     </header>
 
     <!-- Community Jackpot Vault -->
-    <div id="jackpot-bar" class="jackpot-bar" title="2% of every wager feeds the shared vault. When it fills, all active players share it!">
+    <div id="jackpot-bar" class="jackpot-bar"
+      title="2% of every wager feeds the shared vault. When it fills, all active players share it!">
       <span class="jp-title">&#128142; Community Vault</span>
       <div class="jp-track"><i id="jp-fill"></i></div>
       <span class="jp-count"><b id="jp-amount">0</b> / <span id="jp-target">500</span></span>
@@ -265,9 +304,12 @@
     <div id="react-layer" class="react-layer" aria-hidden="true"></div>
 
     <!-- Room chat + floating reactions -->
-    <button type="button" id="btn-chat-toggle" class="chat-toggle" aria-label="Toggle room chat" aria-controls="chat-panel" aria-expanded="false">&#128172;<span id="chat-unread" class="chat-unread" hidden>0</span></button>
+    <button type="button" id="btn-chat-toggle" class="chat-toggle" aria-label="Toggle room chat"
+      aria-controls="chat-panel" aria-expanded="false">&#128172;<span id="chat-unread" class="chat-unread"
+        hidden>0</span></button>
     <aside id="chat-panel" class="chat-panel" hidden aria-label="Room chat">
-      <div class="chat-head"><b>Room Chat</b><button type="button" id="btn-chat-close" class="modal-close" aria-label="Close chat">&#10005;</button></div>
+      <div class="chat-head"><b>Room Chat</b><button type="button" id="btn-chat-close" class="modal-close"
+          aria-label="Close chat">&#10005;</button></div>
       <div id="chat-log" class="chat-log" aria-live="polite"></div>
       <div id="react-bar" class="react-bar">
         <button type="button" class="btn btn-small" data-react="&#128079;">&#128079;</button>
@@ -285,9 +327,11 @@
     <!-- ============================= -->
     <!-- GAME SECTION: BLACKJACK       -->
     <!-- ============================= -->
-    <section id="game-blackjack" class="game-section" data-game-section="blackjack" hidden aria-labelledby="blackjack-heading">
+    <section id="game-blackjack" class="game-section" data-game-section="blackjack" hidden
+      aria-labelledby="blackjack-heading">
       <h2 id="blackjack-heading">Blackjack</h2>
-      <p class="bw-info">Up to 5 players per table &middot; beat the dealer without going over 21 &middot; blackjack pays 3 to 2 &middot; play solo or with the room</p>
+      <p class="bw-info">Up to 5 players per table &middot; beat the dealer without going over 21 &middot; blackjack
+        pays 3 to 2 &middot; play solo or with the room</p>
 
       <!-- Pre-game table lobby (built live from Firebase) -->
       <div class="tl" id="bj-lobby" hidden></div>
@@ -313,7 +357,8 @@
         <div class="blackjack-controls">
           <div class="form-group bet-group">
             <label for="input-blackjack-bet">Bet</label>
-            <input type="number" id="input-blackjack-bet" name="blackjackBet" class="input-field input-bet" min="1" step="1" value="10" placeholder="Amount">
+            <input type="number" id="input-blackjack-bet" name="blackjackBet" class="input-field input-bet" min="1"
+              step="1" value="10" placeholder="Amount">
           </div>
           <div class="action-buttons">
             <button type="button" id="btn-blackjack-bet" class="btn btn-primary" disabled>Place bet</button>
@@ -339,18 +384,21 @@
     <!-- GAME SECTION: QUICK DICE (High/Low, shared rounds synced at rooms/<code>/dice) -->
     <section id="game-dice" class="game-section" data-game-section="dice" hidden>
       <h2>Quick Dice</h2>
-      <p class="bw-info">Two dice &middot; bet Low (2&ndash;6), High (8&ndash;12) or Lucky 7 &middot; 9-second shared rounds with the whole room</p>
+      <p class="bw-info">Two dice &middot; bet Low (2&ndash;6), High (8&ndash;12) or Lucky 7 &middot; 9-second shared
+        rounds with the whole room</p>
       <div id="z-dice"></div>
     </section>
 
     <!-- GAME SECTION: KNOCKOUT TOURNAMENT (host builds the bracket from active players) -->
     <section id="game-tournament" class="game-section" data-game-section="tournament" hidden>
       <h2>Knockout Tournament</h2>
-      <p class="bw-info">Single-elimination bracket for casual games &middot; byes are added automatically &middot; the champion wins the prize</p>
+      <p class="bw-info">Single-elimination bracket for casual games &middot; byes are added automatically &middot; the
+        champion wins the prize</p>
       <div id="z-tour"></div>
     </section>
 
-    <section id="game-roulette" class="game-section" data-game-section="roulette" hidden aria-labelledby="roulette-heading">
+    <section id="game-roulette" class="game-section" data-game-section="roulette" hidden
+      aria-labelledby="roulette-heading">
       <h2 id="roulette-heading">Roulette</h2>
 
       <div class="roulette-layout">
@@ -363,9 +411,12 @@
           <div id="roulette-board" class="roulette-board" role="group" aria-label="Betting board">
             <div class="roulette-numbers" id="roulette-numbers"></div>
             <div class="roulette-colors">
-              <button type="button" class="btn roulette-color-bet is-red" id="bet-color-red" data-color="red">Red</button>
-              <button type="button" class="btn roulette-color-bet is-black" id="bet-color-black" data-color="black">Black</button>
-              <button type="button" class="btn roulette-color-bet is-green" id="bet-color-green" data-color="green">Green (0)</button>
+              <button type="button" class="btn roulette-color-bet is-red" id="bet-color-red"
+                data-color="red">Red</button>
+              <button type="button" class="btn roulette-color-bet is-black" id="bet-color-black"
+                data-color="black">Black</button>
+              <button type="button" class="btn roulette-color-bet is-green" id="bet-color-green"
+                data-color="green">Green (0)</button>
             </div>
             <div class="roulette-parity">
               <button type="button" class="btn roulette-parity-bet" id="bet-even" data-parity="even">Even</button>
@@ -385,7 +436,8 @@
 
         <div class="form-group bet-group">
           <label for="input-roulette-bet">Current bet</label>
-          <input type="text" id="input-roulette-bet" name="rouletteBet" class="input-field input-bet" placeholder="Selection: none" readonly>
+          <input type="text" id="input-roulette-bet" name="rouletteBet" class="input-field input-bet"
+            placeholder="Selection: none" readonly>
         </div>
 
         <button type="button" id="btn-roulette-spin" class="btn btn-primary">Spin</button>
@@ -403,7 +455,8 @@
     <!-- ============================= -->
     <section id="game-wheel" class="game-section" data-game-section="wheel" hidden aria-labelledby="wheel-heading">
       <h2 id="wheel-heading">Player Wheel</h2>
-      <p class="modal-subtitle" style="text-align:center;">Spin to land on a room member, then choose whether to keep them in the pool.</p>
+      <p class="modal-subtitle" style="text-align:center;">Spin to land on a room member, then choose whether to keep
+        them in the pool.</p>
 
       <div class="wheel-layout">
         <div id="wheel-container" class="wheel-container" aria-label="Player wheel">
@@ -414,19 +467,23 @@
           <div id="wheel-pointer" class="wheel-pointer" aria-hidden="true"></div>
         </div>
 
-        <p id="wheel-empty-state" class="wheel-empty-state" hidden>No players are currently in the pool. Add players to the room, or restart the wheel below.</p>
+        <p id="wheel-empty-state" class="wheel-empty-state" hidden>No players are currently in the pool. Add players to
+          the room, or restart the wheel below.</p>
 
         <div class="draw-row" id="wheel-prize-row" hidden>
           <span class="draw-row-label">Prize for the winner (host only)</span>
-          <input type="number" id="wheel-prize" class="xg-bet" min="0" step="1" value="0" inputmode="numeric" aria-label="Prize in chips for the wheel winner. 0 means selection only.">
+          <input type="number" id="wheel-prize" class="xg-bet" min="0" step="1" value="0" inputmode="numeric"
+            aria-label="Prize in chips for the wheel winner. 0 means selection only.">
         </div>
         <div class="marble-fate rig-ctl" hidden>
-            <button type="button" class="marble-fate-toggle rig-toggle" aria-expanded="false" title="Host options">&#9672;</button>
-            <div class="marble-fate-panel rig-panel" hidden>
-              <label class="marble-switch"><input type="checkbox" class="rig-on"><span class="marble-slider" aria-hidden="true"></span><span class="rig-label">Fair random</span></label>
-              <select class="marble-select rig-player" aria-label="Chosen winner" disabled></select>
-            </div>
+          <button type="button" class="marble-fate-toggle rig-toggle" aria-expanded="false"
+            title="Host options">&#9672;</button>
+          <div class="marble-fate-panel rig-panel" hidden>
+            <label class="marble-switch"><input type="checkbox" class="rig-on"><span class="marble-slider"
+                aria-hidden="true"></span><span class="rig-label">Fair random</span></label>
+            <select class="marble-select rig-player" aria-label="Chosen winner" disabled></select>
           </div>
+        </div>
         <div class="wheel-controls">
           <button type="button" id="btn-wheel-spin" class="btn btn-primary">&#127920; Spin the Wheel</button>
           <button type="button" id="btn-wheel-restart" class="btn btn-secondary">&#8635; Restart Pool</button>
@@ -452,28 +509,43 @@
       <div class="draw-controls">
         <div class="draw-row" role="group" aria-label="Number of winners">
           <span class="draw-row-label">Winners</span>
-          <button type="button" class="btn btn-game-select draw-count-btn" data-count="1" aria-pressed="false">1</button>
-          <button type="button" class="btn btn-game-select draw-count-btn" data-count="2" aria-pressed="false">2</button>
+          <button type="button" class="btn btn-game-select draw-count-btn" data-count="1"
+            aria-pressed="false">1</button>
+          <button type="button" class="btn btn-game-select draw-count-btn" data-count="2"
+            aria-pressed="false">2</button>
           <button type="button" class="btn btn-game-select draw-count-btn" data-count="3" aria-pressed="true">3</button>
-          <button type="button" class="btn btn-game-select draw-count-btn" data-count="4" aria-pressed="false">4</button>
-          <button type="button" class="btn btn-game-select draw-count-btn" data-count="5" aria-pressed="false">5</button>
-          <button type="button" class="btn btn-game-select draw-count-btn" data-count="6" aria-pressed="false">6</button>
+          <button type="button" class="btn btn-game-select draw-count-btn" data-count="4"
+            aria-pressed="false">4</button>
+          <button type="button" class="btn btn-game-select draw-count-btn" data-count="5"
+            aria-pressed="false">5</button>
+          <button type="button" class="btn btn-game-select draw-count-btn" data-count="6"
+            aria-pressed="false">6</button>
         </div>
         <div class="draw-row" role="group" aria-label="Draw mode">
           <span class="draw-row-label">Mode</span>
-          <button type="button" class="btn btn-game-select draw-mode-btn" data-draw-mode="slots" aria-pressed="true">&#127920; Slot Reels</button>
-          <button type="button" class="btn btn-game-select draw-mode-btn" data-draw-mode="bingo" aria-pressed="false">&#127921; Bingo Blower</button>
-          <button type="button" class="btn btn-game-select draw-mode-btn" data-draw-mode="cards" aria-pressed="false">&#127183; Card Dealer</button>
-          <button type="button" class="btn btn-game-select draw-mode-btn" data-draw-mode="laser" aria-pressed="false">&#128302; Chip Laser</button>
-          <button type="button" class="btn btn-game-select draw-mode-btn" data-draw-mode="bracket" aria-pressed="false">&#127942; 1v1 Bracket</button>
-          <button type="button" class="btn btn-game-select draw-mode-btn" data-draw-mode="plinko" aria-pressed="false">&#128309; Plinko</button>
-          <button type="button" class="btn btn-game-select draw-mode-btn" data-draw-mode="marble" aria-pressed="false">&#128302; Marble Race</button>
-          <button type="button" class="btn btn-game-select draw-mode-btn" data-draw-mode="chests" aria-pressed="false">&#127873; Mystery Chests</button>
-          <button type="button" class="btn btn-game-select draw-mode-btn" data-draw-mode="roles" aria-pressed="false">&#129513; Roles Matrix</button>
+          <button type="button" class="btn btn-game-select draw-mode-btn" data-draw-mode="slots"
+            aria-pressed="true">&#127920; Slot Reels</button>
+          <button type="button" class="btn btn-game-select draw-mode-btn" data-draw-mode="bingo"
+            aria-pressed="false">&#127921; Bingo Blower</button>
+          <button type="button" class="btn btn-game-select draw-mode-btn" data-draw-mode="cards"
+            aria-pressed="false">&#127183; Card Dealer</button>
+          <button type="button" class="btn btn-game-select draw-mode-btn" data-draw-mode="laser"
+            aria-pressed="false">&#128302; Chip Laser</button>
+          <button type="button" class="btn btn-game-select draw-mode-btn" data-draw-mode="bracket"
+            aria-pressed="false">&#127942; 1v1 Bracket</button>
+          <button type="button" class="btn btn-game-select draw-mode-btn" data-draw-mode="plinko"
+            aria-pressed="false">&#128309; Plinko</button>
+          <button type="button" class="btn btn-game-select draw-mode-btn" data-draw-mode="marble"
+            aria-pressed="false">&#128302; Marble Race</button>
+          <button type="button" class="btn btn-game-select draw-mode-btn" data-draw-mode="chests"
+            aria-pressed="false">&#127873; Mystery Chests</button>
+          <button type="button" class="btn btn-game-select draw-mode-btn" data-draw-mode="roles"
+            aria-pressed="false">&#129513; Roles Matrix</button>
         </div>
         <div class="draw-row" id="draw-prize-row" hidden>
           <span class="draw-row-label">Prize pool (host only)</span>
-          <input type="number" id="draw-prize" class="xg-bet" min="0" step="1" value="0" inputmode="numeric" aria-label="Prize pool in chips, split between the winners. 0 means selection only.">
+          <input type="number" id="draw-prize" class="xg-bet" min="0" step="1" value="0" inputmode="numeric"
+            aria-label="Prize pool in chips, split between the winners. 0 means selection only.">
           <span class="xg-bet-label">chips from the house, split between winners (0 = selection only)</span>
         </div>
         <div class="draw-row">
@@ -482,12 +554,14 @@
         </div>
         <p id="draw-player-count" class="draw-player-count"></p>
         <div class="marble-fate rig-ctl" hidden>
-            <button type="button" class="marble-fate-toggle rig-toggle" aria-expanded="false" title="Host options">&#9672;</button>
-            <div class="marble-fate-panel rig-panel" hidden>
-              <label class="marble-switch"><input type="checkbox" class="rig-on"><span class="marble-slider" aria-hidden="true"></span><span class="rig-label">Fair random</span></label>
-              <select class="marble-select rig-player" aria-label="Chosen winner" disabled></select>
-            </div>
+          <button type="button" class="marble-fate-toggle rig-toggle" aria-expanded="false"
+            title="Host options">&#9672;</button>
+          <div class="marble-fate-panel rig-panel" hidden>
+            <label class="marble-switch"><input type="checkbox" class="rig-on"><span class="marble-slider"
+                aria-hidden="true"></span><span class="rig-label">Fair random</span></label>
+            <select class="marble-select rig-player" aria-label="Chosen winner" disabled></select>
           </div>
+        </div>
         <div id="marble-panel" class="marble-panel" hidden>
           <div class="draw-row" role="group" aria-label="Marble race map">
             <span class="draw-row-label">Track</span>
@@ -502,8 +576,13 @@
       <div id="draw-podium" class="draw-podium" role="list" aria-label="Winners"></div>
       <p id="draw-result" class="game-result" role="status" aria-live="polite"></p>
       <div class="draw-history" aria-label="Recent winners">
-        <div class="draw-history-head"><h3>&#127942; Recent Winners</h3><button type="button" id="btn-history-clear" class="btn btn-secondary">Clear</button></div>
-        <ol id="draw-history-list" class="draw-history-list"><li class="draw-history-empty">No draws yet this session.</li></ol>
+        <div class="draw-history-head">
+          <h3>&#127942; Recent Winners</h3><button type="button" id="btn-history-clear"
+            class="btn btn-secondary">Clear</button>
+        </div>
+        <ol id="draw-history-list" class="draw-history-list">
+          <li class="draw-history-empty">No draws yet this session.</li>
+        </ol>
       </div>
     </section>
 
@@ -515,9 +594,18 @@
 
       <div class="slots-machine">
         <div class="slots-reels" role="group" aria-label="Slot machine reels">
-          <div class="sm-reel" id="reel-1" data-reel="1"><div class="sm-strip"></div><div class="sm-streak"></div></div>
-          <div class="sm-reel" id="reel-2" data-reel="2"><div class="sm-strip"></div><div class="sm-streak"></div></div>
-          <div class="sm-reel" id="reel-3" data-reel="3"><div class="sm-strip"></div><div class="sm-streak"></div></div>
+          <div class="sm-reel" id="reel-1" data-reel="1">
+            <div class="sm-strip"></div>
+            <div class="sm-streak"></div>
+          </div>
+          <div class="sm-reel" id="reel-2" data-reel="2">
+            <div class="sm-strip"></div>
+            <div class="sm-streak"></div>
+          </div>
+          <div class="sm-reel" id="reel-3" data-reel="3">
+            <div class="sm-strip"></div>
+            <div class="sm-streak"></div>
+          </div>
           <div class="sm-payline" aria-hidden="true"></div>
         </div>
 
@@ -527,7 +615,8 @@
       <div class="slots-controls">
         <div class="form-group bet-group">
           <label for="input-slots-bet">Bet</label>
-          <input type="number" id="input-slots-bet" name="slotsBet" class="input-field input-bet" min="1" step="1" placeholder="Amount">
+          <input type="number" id="input-slots-bet" name="slotsBet" class="input-field input-bet" min="1" step="1"
+            placeholder="Amount">
         </div>
 
         <button type="button" id="btn-slots-spin" class="btn btn-primary">Spin</button>
@@ -550,14 +639,16 @@
 
         <div class="hilo-next-card-area">
           <h3>Next card</h3>
-          <div id="hilo-next-card" class="hilo-card hilo-card-hidden" aria-label="Next card, hidden until revealed">?</div>
+          <div id="hilo-next-card" class="hilo-card hilo-card-hidden" aria-label="Next card, hidden until revealed">?
+          </div>
         </div>
       </div>
 
       <div class="hilo-controls">
         <div class="form-group bet-group">
           <label for="input-hilo-bet">Bet</label>
-          <input type="number" id="input-hilo-bet" name="hiloBet" class="input-field input-bet" min="1" step="1" placeholder="Amount">
+          <input type="number" id="input-hilo-bet" name="hiloBet" class="input-field input-bet" min="1" step="1"
+            placeholder="Amount">
         </div>
 
         <div class="action-buttons">
@@ -573,9 +664,12 @@
     <section id="game-crash" class="game-section" data-game-section="crash" hidden></section>
     <section id="game-pokerdice" class="game-section" data-game-section="pokerdice" hidden></section>
     <section id="game-moneywheel" class="game-section" data-game-section="moneywheel" hidden></section>
-    <section id="game-blackwidow" class="game-section" data-game-section="blackwidow" hidden aria-labelledby="bw-heading">
+    <section id="game-blackwidow" class="game-section" data-game-section="blackwidow" hidden
+      aria-labelledby="bw-heading">
       <h2 id="bw-heading">La Viuda Negra<span class="bw-title-sub">Black Widow Poker</span></h2>
-      <p class="bw-info">Ante 10 &middot; up to 6 players &middot; 5 cards each &middot; swap with La Viuda (all five or one card), clockwise &middot; fold, or call &ldquo;Me hasta aqu&iacute;&rdquo; to force the final cycle &middot; best poker hand takes the pot</p>
+      <p class="bw-info">Ante 10 &middot; up to 6 players &middot; 5 cards each &middot; swap with La Viuda (all five or
+        one card), clockwise &middot; fold, or call &ldquo;Me hasta aqu&iacute;&rdquo; to force the final cycle &middot;
+        best poker hand takes the pot</p>
 
       <!-- Pre-game table lobby (built live from Firebase) -->
       <div class="tl" id="bw-lobby" hidden></div>
@@ -611,11 +705,17 @@
       <details class="bw-rules">
         <summary>How to play</summary>
         <ul>
-          <li>The host opens a table and waits for players to take seats, then presses Start game now. Playing alone? Start solo and face The House.</li>
-          <li>Everyone antes 10 chips into the pot and gets 5 hidden cards. Five more cards sit in the middle: La Viuda.</li>
-          <li>First turn: you may pass, swap a single card with a face-down La Viuda card (blind swap), or &mdash; if nobody has taken it yet &mdash; swap all 5 of your cards for La Viuda, which flips it face-up for everyone. If you pass or swap one card, the chance to take the whole widow moves on to the next player.</li>
-          <li>Once La Viuda is face-up: swap one of your cards with one La Viuda card, or pass. Fold at any turn to leave the hand and forfeit your ante.</li>
-          <li>On your turn you can call &ldquo;Me hasta aqu&iacute;&rdquo;. Everyone else then gets one last turn; you can&rsquo;t change your hand.</li>
+          <li>The host opens a table and waits for players to take seats, then presses Start game now. Playing alone?
+            Start solo and face The House.</li>
+          <li>Everyone antes 10 chips into the pot and gets 5 hidden cards. Five more cards sit in the middle: La Viuda.
+          </li>
+          <li>First turn: you may pass, swap a single card with a face-down La Viuda card (blind swap), or &mdash; if
+            nobody has taken it yet &mdash; swap all 5 of your cards for La Viuda, which flips it face-up for everyone.
+            If you pass or swap one card, the chance to take the whole widow moves on to the next player.</li>
+          <li>Once La Viuda is face-up: swap one of your cards with one La Viuda card, or pass. Fold at any turn to
+            leave the hand and forfeit your ante.</li>
+          <li>On your turn you can call &ldquo;Me hasta aqu&iacute;&rdquo;. Everyone else then gets one last turn; you
+            can&rsquo;t change your hand.</li>
           <li>Then all hands are revealed and the best poker hand wins the pot (ties split it).</li>
         </ul>
       </details>
@@ -624,20 +724,28 @@
 
     <section id="game-uno" class="game-section" data-game-section="uno" hidden aria-labelledby="uno-heading">
       <h2 id="uno-heading">UNO<span class="bw-title-sub">Casual &amp; Party Games</span></h2>
-      <p class="bw-info">2&ndash;6 players &middot; match colour or number &middot; stack Draw Two / Draw Four &middot; optional table stake, winner takes the pot</p>
+      <p class="bw-info">2&ndash;6 players &middot; match colour or number &middot; stack Draw Two / Draw Four &middot;
+        optional table stake, winner takes the pot</p>
       <div class="tl" id="uno-lobby" hidden></div>
       <div id="uno-live" hidden>
         <div class="bw-table uno-table">
           <div class="uno-opps" id="uno-opps"></div>
           <div class="uno-mid">
             <div class="uno-pile" id="uno-deck" role="button" tabindex="0" aria-label="Draw pile"></div>
-            <div class="uno-info"><div id="uno-pot"></div><span class="uno-dir" id="uno-dir" aria-hidden="true">&#10227;</span></div>
+            <div class="uno-info">
+              <div id="uno-pot"></div><span class="uno-dir" id="uno-dir" aria-hidden="true">&#10227;</span>
+            </div>
             <div class="uno-pile" id="uno-disc"></div>
           </div>
           <div class="bw-info" id="uno-status" aria-live="polite"></div>
           <div class="bw-log" id="uno-log"></div>
           <div class="uno-hand" id="uno-hand"></div>
-          <div class="uno-pick" id="uno-pick" hidden><b>Choose a colour</b><div><button type="button" data-c="0" aria-label="Red"></button><button type="button" data-c="1" aria-label="Yellow"></button><button type="button" data-c="2" aria-label="Green"></button><button type="button" data-c="3" aria-label="Blue"></button></div><button type="button" class="btn btn-ghost" id="uno-wild-x">Cancel</button></div>
+          <div class="uno-pick" id="uno-pick" hidden><b>Choose a colour</b>
+            <div><button type="button" data-c="0" aria-label="Red"></button><button type="button" data-c="1"
+                aria-label="Yellow"></button><button type="button" data-c="2" aria-label="Green"></button><button
+                type="button" data-c="3" aria-label="Blue"></button></div><button type="button" class="btn btn-ghost"
+              id="uno-wild-x">Cancel</button>
+          </div>
         </div>
         <div class="bw-actions">
           <button type="button" class="btn btn-action" id="uno-pass" hidden>Keep drawn card</button>
@@ -650,13 +758,18 @@
 
     <section id="game-parques" class="game-section" data-game-section="parques" hidden aria-labelledby="pq-heading">
       <h2 id="pq-heading">Parqu&eacute;s<span class="bw-title-sub">Casual &amp; Party Games</span></h2>
-      <p class="bw-info">2&ndash;4 players &middot; roll a 6 to leave base &middot; land on a rival to send it home (&#10022; squares are safe) &middot; two tokens form a blockade &middot; exact roll to reach the centre &middot; optional stake, first home takes the pot</p>
+      <p class="bw-info">2&ndash;4 players &middot; roll a 6 to leave base &middot; land on a rival to send it home
+        (&#10022; squares are safe) &middot; two tokens form a blockade &middot; exact roll to reach the centre &middot;
+        optional stake, first home takes the pot</p>
       <div class="tl" id="pq-lobby" hidden></div>
       <div id="pq-live" hidden>
         <div class="bw-table pq-table">
           <div class="pq-players" id="pq-players"></div>
           <div class="pq-board" id="pq-board" role="group" aria-label="Parqu&eacute;s board"></div>
-          <div class="pq-bar"><div class="pq-die" id="pq-die" role="button" aria-label="Dice"></div><div id="pq-pot"></div></div>
+          <div class="pq-bar">
+            <div class="pq-die" id="pq-die" role="button" aria-label="Dice"></div>
+            <div id="pq-pot"></div>
+          </div>
           <div class="bw-info" id="pq-status" aria-live="polite"></div>
           <div class="bw-log" id="pq-log"></div>
         </div>
@@ -671,17 +784,25 @@
 
     <section id="game-dominoes" class="game-section" data-game-section="dominoes" hidden aria-labelledby="dm-heading">
       <h2 id="dm-heading">Dominoes<span class="bw-title-sub">Casual &amp; Party Games</span></h2>
-      <p class="bw-info">2&ndash;4 players &middot; double-six set, 7 tiles each &middot; match an open end &middot; draw from the boneyard or pass &middot; optional stake, first to empty their hand takes the pot</p>
+      <p class="bw-info">2&ndash;4 players &middot; double-six set, 7 tiles each &middot; match an open end &middot;
+        draw from the boneyard or pass &middot; optional stake, first to empty their hand takes the pot</p>
       <div class="tl" id="dm-lobby" hidden></div>
       <div id="dm-live" hidden>
         <div class="bw-table dm-table">
           <div class="dm-opps" id="dm-opps"></div>
           <div class="dm-chain" id="dm-chain" aria-label="Domino line"></div>
-          <div class="dm-mid"><div class="dm-yard" id="dm-yard" role="button" tabindex="0" aria-label="Boneyard"></div><div id="dm-pot"></div></div>
+          <div class="dm-mid">
+            <div class="dm-yard" id="dm-yard" role="button" tabindex="0" aria-label="Boneyard"></div>
+            <div id="dm-pot"></div>
+          </div>
           <div class="bw-info" id="dm-status" aria-live="polite"></div>
           <div class="bw-log" id="dm-log"></div>
           <div class="dm-hand" id="dm-hand"></div>
-          <div class="uno-pick" id="dm-pick" hidden><b>Which end?</b><div><button type="button" class="btn btn-secondary" id="dm-pick-l"></button> <button type="button" class="btn btn-secondary" id="dm-pick-r"></button></div><button type="button" class="btn btn-ghost" id="dm-pick-x">Cancel</button></div>
+          <div class="uno-pick" id="dm-pick" hidden><b>Which end?</b>
+            <div><button type="button" class="btn btn-secondary" id="dm-pick-l"></button> <button type="button"
+                class="btn btn-secondary" id="dm-pick-r"></button></div><button type="button" class="btn btn-ghost"
+              id="dm-pick-x">Cancel</button>
+          </div>
         </div>
         <div class="bw-actions">
           <button type="button" class="btn btn-primary" id="dm-again" hidden>Back to table lobby</button>
@@ -693,14 +814,23 @@
 
     <section id="game-chess" class="game-section" data-game-section="chess" hidden aria-labelledby="ch-heading">
       <h2 id="ch-heading">Chess<span class="bw-title-sub">Casual &amp; Party Games</span></h2>
-      <p class="bw-info">2 players &middot; full chess rules: check, checkmate, castling, en passant, promotion &middot; optional stake, winner takes the pot &middot; no opponent? Play the AI</p>
+      <p class="bw-info">2 players &middot; full chess rules: check, checkmate, castling, en passant, promotion &middot;
+        optional stake, winner takes the pot &middot; no opponent? Play the AI</p>
       <div class="tl" id="ch-lobby" hidden></div>
       <div id="ch-live" class="duel-live" hidden>
         <div class="bw-table duel-table">
           <div class="pq-players" id="ch-players"></div>
           <div class="ch-board" id="ch-board" role="group" aria-label="Chess board"></div>
-          <div class="uno-pick" id="ch-promo" hidden><b>Promote pawn to</b><div><button type="button" class="btn btn-secondary" data-p="Q">&#9819; Queen</button> <button type="button" class="btn btn-secondary" data-p="R">&#9820; Rook</button> <button type="button" class="btn btn-secondary" data-p="B">&#9821; Bishop</button> <button type="button" class="btn btn-secondary" data-p="N">&#9822; Knight</button></div><button type="button" class="btn btn-ghost" id="ch-promo-x">Cancel</button></div>
-          <div class="pq-bar"><div id="ch-pot"></div></div>
+          <div class="uno-pick" id="ch-promo" hidden><b>Promote pawn to</b>
+            <div><button type="button" class="btn btn-secondary" data-p="Q">&#9819; Queen</button> <button type="button"
+                class="btn btn-secondary" data-p="R">&#9820; Rook</button> <button type="button"
+                class="btn btn-secondary" data-p="B">&#9821; Bishop</button> <button type="button"
+                class="btn btn-secondary" data-p="N">&#9822; Knight</button></div><button type="button"
+              class="btn btn-ghost" id="ch-promo-x">Cancel</button>
+          </div>
+          <div class="pq-bar">
+            <div id="ch-pot"></div>
+          </div>
           <div class="bw-info" id="ch-status" aria-live="polite"></div>
           <div class="bw-log" id="ch-log"></div>
         </div>
@@ -714,13 +844,16 @@
 
     <section id="game-checkers" class="game-section" data-game-section="checkers" hidden aria-labelledby="cc-heading">
       <h2 id="cc-heading">Chinese Checkers<span class="bw-title-sub">Casual &amp; Party Games</span></h2>
-      <p class="bw-info">2&ndash;4 players &middot; march all 10 marbles to the opposite star point &middot; step or chain jumps over any marble &middot; optional stake &middot; solo vs AI available</p>
+      <p class="bw-info">2&ndash;4 players &middot; march all 10 marbles to the opposite star point &middot; step or
+        chain jumps over any marble &middot; optional stake &middot; solo vs AI available</p>
       <div class="tl" id="cc-lobby" hidden></div>
       <div id="cc-live" class="duel-live" hidden>
         <div class="bw-table duel-table">
           <div class="pq-players" id="cc-players"></div>
           <div class="cc-board" id="cc-board" role="group" aria-label="Chinese Checkers star board"></div>
-          <div class="pq-bar"><div id="cc-pot"></div></div>
+          <div class="pq-bar">
+            <div id="cc-pot"></div>
+          </div>
           <div class="bw-info" id="cc-status" aria-live="polite"></div>
           <div class="bw-log" id="cc-log"></div>
         </div>
@@ -732,17 +865,25 @@
       </div>
     </section>
 
-    <section id="game-mastermind" class="game-section" data-game-section="mastermind" hidden aria-labelledby="mm-heading">
+    <section id="game-mastermind" class="game-section" data-game-section="mastermind" hidden
+      aria-labelledby="mm-heading">
       <h2 id="mm-heading">Color Code Breaker<span class="bw-title-sub">Casual &amp; Party Games</span></h2>
-      <p class="bw-info">2 players race to crack their own secret 4-colour code in 10 tries &middot; gold pin = right colour &amp; place, silver pin = right colour only &middot; optional stake &middot; solo vs AI available</p>
+      <p class="bw-info">2 players race to crack their own secret 4-colour code in 10 tries &middot; gold pin = right
+        colour &amp; place, silver pin = right colour only &middot; optional stake &middot; solo vs AI available</p>
       <div class="tl" id="mm-lobby" hidden></div>
       <div id="mm-live" class="duel-live" hidden>
         <div class="bw-table duel-table">
           <div class="pq-players" id="mm-players"></div>
           <div class="cd-boards" id="mm-boards"></div>
-          <div class="cd-entry" id="mm-entry" hidden><div class="cd-cur" id="mm-cur" aria-live="polite"></div><div class="cd-pal" id="mm-pal"></div>
-            <div class="bw-actions"><button type="button" class="btn btn-secondary" id="mm-back">Undo</button><button type="button" class="btn btn-action" id="mm-submit">Submit guess</button></div></div>
-          <div class="pq-bar"><div id="mm-pot"></div></div>
+          <div class="cd-entry" id="mm-entry" hidden>
+            <div class="cd-cur" id="mm-cur" aria-live="polite"></div>
+            <div class="cd-pal" id="mm-pal"></div>
+            <div class="bw-actions"><button type="button" class="btn btn-secondary" id="mm-back">Undo</button><button
+                type="button" class="btn btn-action" id="mm-submit">Submit guess</button></div>
+          </div>
+          <div class="pq-bar">
+            <div id="mm-pot"></div>
+          </div>
           <div class="bw-info" id="mm-status" aria-live="polite"></div>
           <div class="bw-log" id="mm-log"></div>
         </div>
@@ -756,15 +897,22 @@
 
     <section id="game-bullscows" class="game-section" data-game-section="bullscows" hidden aria-labelledby="bc-heading">
       <h2 id="bc-heading">Picas y Fijas<span class="bw-title-sub">Casual &amp; Party Games</span></h2>
-      <p class="bw-info">2 players race to crack a secret 4-digit code (no repeats) in 10 tries &middot; Fija = right digit &amp; place, Pica = right digit, wrong place &middot; optional stake &middot; solo vs AI available</p>
+      <p class="bw-info">2 players race to crack a secret 4-digit code (no repeats) in 10 tries &middot; Fija = right
+        digit &amp; place, Pica = right digit, wrong place &middot; optional stake &middot; solo vs AI available</p>
       <div class="tl" id="bc-lobby" hidden></div>
       <div id="bc-live" class="duel-live" hidden>
         <div class="bw-table duel-table">
           <div class="pq-players" id="bc-players"></div>
           <div class="cd-boards" id="bc-boards"></div>
-          <div class="cd-entry" id="bc-entry" hidden><div class="cd-cur" id="bc-cur" aria-live="polite"></div><div class="cd-pal" id="bc-pal"></div>
-            <div class="bw-actions"><button type="button" class="btn btn-secondary" id="bc-back">Undo</button><button type="button" class="btn btn-action" id="bc-submit">Submit guess</button></div></div>
-          <div class="pq-bar"><div id="bc-pot"></div></div>
+          <div class="cd-entry" id="bc-entry" hidden>
+            <div class="cd-cur" id="bc-cur" aria-live="polite"></div>
+            <div class="cd-pal" id="bc-pal"></div>
+            <div class="bw-actions"><button type="button" class="btn btn-secondary" id="bc-back">Undo</button><button
+                type="button" class="btn btn-action" id="bc-submit">Submit guess</button></div>
+          </div>
+          <div class="pq-bar">
+            <div id="bc-pot"></div>
+          </div>
           <div class="bw-info" id="bc-status" aria-live="polite"></div>
           <div class="bw-log" id="bc-log"></div>
         </div>
@@ -783,7 +931,8 @@
   <!-- ============================= -->
   <div id="bw-result" class="modal-overlay" hidden>
     <div class="modal bw-modal" role="dialog" aria-modal="true" aria-labelledby="bw-result-title">
-      <button type="button" class="modal-close" id="bw-result-x" aria-label="Close" onclick="document.getElementById('bw-result-close').click()">&#10005;</button>
+      <button type="button" class="modal-close" id="bw-result-x" aria-label="Close"
+        onclick="document.getElementById('bw-result-close').click()">&#10005;</button>
       <h2 id="bw-result-title">Winner</h2>
       <p class="modal-subtitle" id="bw-result-sub"></p>
       <div class="bw-res-list" id="bw-result-body"></div>
@@ -831,7 +980,8 @@
         <input type="password" id="input-admin-code" class="input-field" placeholder="Access PIN" autocomplete="off">
         <span id="admin-lock-error" class="form-error" role="alert"></span>
         <button type="button" id="btn-admin-unlock" class="btn btn-primary btn-block">Unlock</button>
-        <small class="form-help">Default PIN: <code>admin123</code> (editable in CONFIG.ADMIN_CODE). Only this room's Host device can open this panel.</small>
+        <small class="form-help">Default PIN: <code>admin123</code> (editable in CONFIG.ADMIN_CODE). Only this room's
+          Host device can open this panel.</small>
       </div>
 
       <div id="admin-content" class="admin-content" hidden>
@@ -889,7 +1039,8 @@
         <button type="button" id="btn-wheel-remove" class="btn btn-danger">Remove from Pool</button>
         <button type="button" id="btn-wheel-keep" class="btn btn-secondary">Keep In Pool</button>
       </div>
-      <small class="form-help" style="display:block; text-align:center; margin-top:0.75rem;">This only affects this round of the wheel &mdash; the player stays in the room either way.</small>
+      <small class="form-help" style="display:block; text-align:center; margin-top:0.75rem;">This only affects this
+        round of the wheel &mdash; the player stays in the room either way.</small>
     </div>
   </div>
 
@@ -901,7 +1052,8 @@
       <h2 id="wheel-resume-title">&#127905; Welcome Back to the Wheel</h2>
       <p class="modal-subtitle" id="wheel-resume-subtitle">You have a wheel pool from earlier in this session.</p>
       <div class="modal-actions">
-        <button type="button" id="btn-wheel-resume-restart" class="btn btn-secondary">Restart Wheel (all room players)</button>
+        <button type="button" id="btn-wheel-resume-restart" class="btn btn-secondary">Restart Wheel (all room
+          players)</button>
         <button type="button" id="btn-wheel-resume-continue" class="btn btn-primary">Continue Previous Pool</button>
       </div>
     </div>
@@ -909,4 +1061,5 @@
 
   <script type="module" src="JS/app.js"></script>
 </body>
+
 </html>
