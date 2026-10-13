@@ -8698,3 +8698,26 @@ details.mx-det>summary::-webkit-details-marker {
     background: rgba(244, 196, 48, 0.15);
     border-radius: 4px;
   }
+
+/* =========================================================================
+   BACCARAT — dealing & flipping animations (appended)
+   ========================================================================= */
+.bac-hand .card-row { min-height: 96px; }          /* no layout jump while dealing */
+.bac-card { backface-visibility: hidden; transform-origin: center; }
+
+.bac-card.bac-dealing { animation: bac-deal-in .6s cubic-bezier(.2, .75, .25, 1) both; z-index: 5; }
+@keyframes bac-deal-in {
+    0%   { transform: translate3d(var(--bac-from-x, 0px), var(--bac-from-y, -90px), 0) rotate(-14deg) scale(.7); opacity: 0; }
+    15%  { opacity: 1; }
+    70%  { transform: translate3d(0, -6px, 0) rotate(3deg) scale(1.06); opacity: 1; }
+    100% { transform: translate3d(0, 0, 0) rotate(0) scale(1); opacity: 1; }
+}
+
+.bac-card.bac-flip-out { animation: bac-flip-out .14s ease-in forwards; }
+.bac-card.bac-flip-in  { animation: bac-flip-in .19s ease-out both; }
+@keyframes bac-flip-out { from { transform: perspective(520px) rotateY(0); }      to { transform: perspective(520px) rotateY(90deg); } }
+@keyframes bac-flip-in  { from { transform: perspective(520px) rotateY(-90deg); } to { transform: perspective(520px) rotateY(0); } }
+
+@media (prefers-reduced-motion: reduce) {
+    .bac-card.bac-dealing, .bac-card.bac-flip-out, .bac-card.bac-flip-in { animation: none; }
+}

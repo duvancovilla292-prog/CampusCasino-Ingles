@@ -542,7 +542,7 @@ const Baccarat = {
 
     ref: null, cb: null, offRef: null, offCb: null, tick: null,
     off: 0, d: { st: "idle" }, busy: false, dealing: false, animating: false,
-    run: 0, tableId: null, settledIds: {},
+    run: 0, tableId: null, revealedId: null, pendingSettle: null, settledIds: {},
 
     $(id) { return document.getElementById(id); },
     now() { return Date.now() + this.off; },
@@ -586,7 +586,7 @@ const Baccarat = {
         if (this.tick) window.clearInterval(this.tick);
         this.run += 1;
         this.ref = this.cb = this.offRef = this.offCb = this.tick = null;
-        this.d = { st: "idle" }; this.busy = false; this.dealing = false; this.animating = false; this.tableId = null; this.settledIds = {};
+        this.d = { st: "idle" }; this.busy = false; this.dealing = false; this.animating = false; this.tableId = null; this.revealedId = null; this.pendingSettle = null; this.settledIds = {};
         if (this.$("bac-cards-p")) { this.clearTable(); this.paint(); }
     },
 
@@ -684,20 +684,36 @@ const Baccarat = {
     },
     on(v) {
         this.d = v || { st: "idle" }; const g = this.d;
-        if (g.st === "done" && this.tableId !== g.id) {
-            this.tableId = g.id;
-            const fresh = this.now() - (g.doneAt || 0) < 9000;
-            this.reveal(g, fresh && Router.currentGameKey === "baccarat" && !document.hidden);
-        } else if (g.st === "bet" && this.tableId !== g.id) {
-            this.run += 1; this.animating = false; this.tableId = g.id; this.clearTable();
+        if (g.st === "done" && Array.isArray(g.p) && Array.isArray(g.b)) {
+            /* FIX: reveal is keyed on its own id. The old code compared against tableId, which the "bet" phase had
+               already set to this same round id, so the reveal for the finished round never ran. */
+            if (this.revealedId !== g.id) {
+                this.revealedId = g.id; this.tableId = g.id;
+                const fresh = this.now() - (g.doneAt || 0) < 9000;
+                this.reveal(g, fresh && this.isActive());
+            }
+        } else if (g.st === "bet") {
+            if (this.tableId !== g.id) { this.cancelReveal(); this.tableId = g.id; this.revealedId = null; this.clearTable(); }
         } else if (g.st === "idle" && this.tableId !== null) {
-            this.run += 1; this.animating = false; this.tableId = null; this.clearTable();
+            this.cancelReveal(); this.tableId = null; this.revealedId = null; this.clearTable();
         }
         this.paint();
     },
 
+    /* True only when the Baccarat table is actually on screen (no dependency on Router internals). */
+    isActive() {
+        const sec = this.$("game-baccarat");
+        return !!sec && !sec.hidden && sec.getClientRects().length > 0 && !document.hidden;
+    },
+    /* Stops any running reveal; if a payout was still waiting for the animation, settle it quietly first. */
+    cancelReveal() {
+        const g = this.pendingSettle;
+        this.run += 1; this.animating = false; this.pendingSettle = null;
+        if (g) this.settle(g, true);
+    },
+
     clearTable() {
-        ["p", "b"].forEach((k) => {
+        [ "p", "b" ].forEach((k) => {
             const elCards = this.$("bac-cards-" + k), elScore = this.$("bac-score-" + k), elHand = this.$("bac-hand-" + k);
             if (elCards) elCards.textContent = "";
             if (elScore) elScore.textContent = "";
@@ -706,11 +722,43 @@ const Baccarat = {
         const t = this.$("bac-table"); if (t) t.classList.remove("tie");
         const res = this.$("baccarat-result"); if (res) res.textContent = "";
     },
-    addCard(side, c, round, ord) {
-        const el = document.createElement("div"); el.className = "card card-back";
-        const container = this.$("bac-cards-" + side);
-        if (container) container.appendChild(el);
-        CardFX.add(el, { round, ord, flip: true, reveal: () => Blackjack.setFront(el, c) });
+
+    /* Creates a face-down card inside the hand container and slides it in from the shoe. */
+    dealCard(side, card) {
+        const cont = this.$("bac-cards-" + side); if (!cont) return null;
+        const el = document.createElement("div");
+        el.className = "card card-back bac-card";
+        el.dataset.card = String(card);
+        cont.appendChild(el);
+        if (!this.reduced()) {
+            const shoe = this.$("bac-shoe");
+            if (shoe) {
+                const s = shoe.getBoundingClientRect(), r = el.getBoundingClientRect();
+                el.style.setProperty("--bac-from-x", Math.round(s.left + s.width / 2 - (r.left + r.width / 2)) + "px");
+                el.style.setProperty("--bac-from-y", Math.round(s.top + s.height / 2 - (r.top + r.height / 2)) + "px");
+            }
+            el.classList.add("bac-dealing");
+            el.addEventListener("animationend", () => el.classList.remove("bac-dealing"), { once: true });
+        }
+        if (typeof Sound !== "undefined" && Sound && Sound.card) Sound.card();
+        return el;
+    },
+    /* Two-step flip: edge-on (90deg) -> swap in the real face -> back to flat. */
+    async flipCard(el, card) {
+        if (!el) return;
+        if (this.reduced()) { Blackjack.setFront(el, card); el.classList.add("bac-card"); return; }
+        el.classList.remove("bac-dealing"); el.classList.add("bac-flip-out");
+        await this.wait(140);
+        Blackjack.setFront(el, card);               /* setFront() resets className, so re-add ours */
+        el.classList.add("bac-card", "bac-flip-in");
+        await this.wait(190);
+        el.classList.remove("bac-flip-in");
+    },
+    /* Instant, no-animation card (late joiners, background tab, returning to the table). */
+    placeCard(side, card) {
+        const cont = this.$("bac-cards-" + side); if (!cont) return;
+        const el = document.createElement("div"); Blackjack.setFront(el, card); el.classList.add("bac-card");
+        cont.appendChild(el);
     },
     setScore(side, hand, label) { const sc = this.$("bac-score-" + side); if (sc) sc.textContent = `${label}: ${this.total(hand)}`; },
     say(text) { const st = this.$("bac-status"); if (st) st.textContent = text; },
@@ -720,27 +768,55 @@ const Baccarat = {
         this.clearTable();
         const P = g.p || [], B = g.b || [];
         if (!animate) {
-            [["p", P], ["b", B]].forEach(([s, h]) => h.forEach((c) => { const el = document.createElement("div"); Blackjack.setFront(el, c); const cont = this.$("bac-cards-" + s); if (cont) cont.appendChild(el); }));
+            P.forEach((c) => this.placeCard("p", c)); B.forEach((c) => this.placeCard("b", c));
             this.setScore("p", P, "Player"); this.setScore("b", B, "Banker");
             this.finish(g); return;
         }
-        this.animating = true; this.paint();
+        this.animating = true; this.pendingSettle = g; this.paint();
+        const el = { p: [], b: [] };
+        const deal = async (side, hand, i, ms) => { el[side][i] = this.dealCard(side, hand[i]); await this.wait(ms || 420); return alive(); };
+
+        /* 1. Deal four cards face-down, one at a time: Player, Banker, Player, Banker */
         this.say("Dealing cards...");
-        this.addCard("p", P[0], 0, 0); this.addCard("b", B[0], 0, 1); this.addCard("p", P[1], 1, 0); this.addCard("b", B[1], 1, 1);
-        CardFX.flush(this.$("bac-shoe"), 240);
-        await this.wait(2500); if (!alive()) return;
-        this.setScore("p", P.slice(0, 2), "Player"); this.setScore("b", B.slice(0, 2), "Banker");
-        if (g.nat) { this.say(`Natural ${Math.max(this.total(P.slice(0, 2)), this.total(B.slice(0, 2)))}! No more cards drawn.`); await this.wait(1200); if (!alive()) return; }
-        else {
-            if (P.length > 2) { this.say("Player draws 3rd card..."); this.addCard("p", P[2], 2, 0); CardFX.flush(this.$("bac-shoe"), 200); await this.wait(1600); if (!alive()) return; this.setScore("p", P, "Player"); }
-            else { this.say("Player stands."); await this.wait(800); if (!alive()) return; }
-            if (B.length > 2) { this.say("Banker draws 3rd card..."); this.addCard("b", B[2], 2, 1); CardFX.flush(this.$("bac-shoe"), 200); await this.wait(1600); if (!alive()) return; this.setScore("b", B, "Banker"); }
-            else { this.say("Banker stands."); await this.wait(800); if (!alive()) return; }
+        if (!await deal("p", P, 0)) return; if (!await deal("b", B, 0)) return;
+        if (!await deal("p", P, 1)) return; if (!await deal("b", B, 1)) return;
+        await this.wait(350); if (!alive()) return;
+
+        /* 2. Flip Player's hand, then Banker's hand */
+        this.say("Player reveals...");
+        await this.flipCard(el.p[0], P[0]); if (!alive()) return;
+        await this.flipCard(el.p[1], P[1]); if (!alive()) return;
+        this.setScore("p", P.slice(0, 2), "Player"); await this.wait(500); if (!alive()) return;
+        this.say("Banker reveals...");
+        await this.flipCard(el.b[0], B[0]); if (!alive()) return;
+        await this.flipCard(el.b[1], B[1]); if (!alive()) return;
+        this.setScore("b", B.slice(0, 2), "Banker"); await this.wait(700); if (!alive()) return;
+
+        /* 3. Third-card rules */
+        if (g.nat) {
+            this.say(`Natural ${Math.max(this.total(P.slice(0, 2)), this.total(B.slice(0, 2)))}! No more cards drawn.`);
+            await this.wait(1200); if (!alive()) return;
+        } else {
+            if (P.length > 2) {
+                this.say("Player draws a third card...");
+                if (!await deal("p", P, 2, 500)) return;
+                await this.flipCard(el.p[2], P[2]); if (!alive()) return;
+                this.setScore("p", P, "Player"); await this.wait(700); if (!alive()) return;
+            } else { this.say("Player stands."); await this.wait(800); if (!alive()) return; }
+            if (B.length > 2) {
+                this.say("Banker draws a third card...");
+                if (!await deal("b", B, 2, 500)) return;
+                await this.flipCard(el.b[2], B[2]); if (!alive()) return;
+                this.setScore("b", B, "Banker"); await this.wait(700); if (!alive()) return;
+            } else { this.say("Banker stands."); await this.wait(800); if (!alive()) return; }
         }
+
+        /* 4. Result, then payout */
         this.animating = false;
         this.finish(g);
     },
     finish(g) {
+        this.pendingSettle = null; this.animating = false;
         const names = { p: "Player", b: "Banker", t: "Tie" };
         const handP = this.$("bac-hand-p"), handB = this.$("bac-hand-b"), tbl = this.$("bac-table");
         if (handP) { handP.classList.toggle("win", g.win === "p"); handP.classList.toggle("lose", g.win === "b"); }
@@ -750,21 +826,25 @@ const Baccarat = {
         this.say(line); const res = this.$("baccarat-result"); if (res) res.textContent = line;
         this.paint(); this.settle(g);
     },
-    settle(g) {
+    /* Pays once per player per round (Firebase "paid/<user>" guard). quiet = don't touch the result line. */
+    settle(g, quiet) {
         const me = State.username, my = (g.bets || {})[me];
         if (!me || !my || !this.ref || this.settledIds[g.id]) return;
         this.settledIds[g.id] = true;
         this.ref.child("paid/" + me).transaction((v) => (v === g.id ? undefined : g.id), (e, ok) => {
             if (!ok) return;
-            const stake = this.staked(my), pay = this.payout(my, g.win), net = pay - stake;
+            const stake = this.staked(my), pay = this.payout(my, g.win), net = pay - stake, fmt = (n) => n.toLocaleString("en-US");
             resolveGameOutcome("baccarat", { roundId: g.id + "-" + me, entries: [{ wager: stake, payout: pay }] });
-            const res = this.$("baccarat-result");
-            if (res) {
-                if (net > 0) {
-                    res.textContent += ` You won ${pay.toLocaleString("en-US")} chips!`; Notify.success(`Baccarat: won ${pay.toLocaleString("en-US")} chips.`); Sound.win && Sound.win();
-                    if (pay >= CONFIG.BIG_WIN_THRESHOLD) Effects.celebrate(`BACCARAT! +${pay.toLocaleString("en-US")} chips`);
-                } else if (net === 0) { res.textContent += " Push! Stakes returned."; Notify.warning("Baccarat: push."); }
-                else { res.textContent += ` You lost ${stake.toLocaleString("en-US")} chips.`; Notify.error(`Baccarat: lost ${stake.toLocaleString("en-US")} chips.`); Sound.lose && Sound.lose(); }
+            const res = quiet ? null : this.$("baccarat-result");
+            if (net > 0) {
+                if (res) res.textContent += ` You won ${fmt(pay)} chips!`;
+                Notify.success(`Baccarat: won ${fmt(pay)} chips.`); Sound.win && Sound.win();
+                if (pay >= CONFIG.BIG_WIN_THRESHOLD) Effects.celebrate(`BACCARAT! +${fmt(pay)} chips`);
+            } else if (net === 0) {
+                if (res) res.textContent += " Push! Stakes returned."; Notify.warning("Baccarat: push.");
+            } else {
+                if (res) res.textContent += ` You lost ${fmt(stake)} chips.`;
+                Notify.error(`Baccarat: lost ${fmt(stake)} chips.`); Sound.lose && Sound.lose();
             }
         }, false);
     },
