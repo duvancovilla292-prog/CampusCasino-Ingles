@@ -111,7 +111,15 @@ const Admin = {
             deleteBtn.textContent = "Delete";
             deleteBtn.addEventListener("click", () => this.deletePlayer(player.username));
 
-            actionsCell.append(resetBtn, deleteBtn);
+            // KICK: sends the player back to the start screen (disabled for the Host's own profile).
+            const kickBtn = document.createElement("button");
+            kickBtn.type = "button";
+            kickBtn.className = "btn btn-small btn-secondary btn-kick";
+            kickBtn.textContent = "Kick";
+            kickBtn.disabled = player.username === State.username;
+            kickBtn.addEventListener("click", () => this.kickPlayer(player.username));
+
+            actionsCell.append(resetBtn, kickBtn, deleteBtn);
             row.append(nameCell, balanceCell, roundsCell, netCell, actionsCell);
             DOM.adminTableBody.appendChild(row);
         });
@@ -119,6 +127,36 @@ const Admin = {
         DOM.adminTotalPlayers.textContent = String(players.length);
         DOM.adminTotalChips.textContent = totalChips.toLocaleString("en-US");
         DOM.adminTotalRounds.textContent = String(totalRounds);
+        AdminCtl.render(); // host-only controls (re)build here, only while the panel is unlocked
+    },
+
+    /**
+     * KICK a player: (1) write the kick signal the player's client is listening to (it returns them
+     * to the start screen), (2) free any table seat they hold while no hand is in progress,
+     * (3) delete their player node so they disappear from the room.
+     */
+    kickPlayer(username) {
+        if (!State.isHost || !Admin.unlocked) return;
+        if (username === State.username) return Notify.error("You can't kick yourself.");
+        if (!window.confirm(`Kick "${username}" from the room?`)) return;
+        const NODES = ["bj", "bw", "uno", "parques", "dominoes", "hangman", "chess", "checkers", "mastermind", "bullscows", "connect4", "battleship"];
+        const SAFE = ["lobby", "bet", "done"];
+        zref("kicks/" + username).set({ ts: TS(), by: State.username || "host" })
+            .then(() => Promise.all(NODES.map((n) => {
+                const ref = zref(n);
+                return ref.once("value").then((s) => {
+                    const v = s.val();
+                    if (Tables.isOpen(v) && SAFE.includes(v.phase) && Tables.seatOf(v.seats, username)) return Tables.leave(ref, username);
+                    return null;
+                }).catch(() => null);
+            })))
+            .then(() => Room.deletePlayer(username))
+            .then(() => {
+                Audit.log("kick", `Kicked ${username}`);
+                Notify.warning(`"${username}" was kicked.`);
+                this.renderTable();
+            })
+            .catch(() => Notify.error("Could not kick that player."));
     },
 
     resetPlayerBalance(username) {
@@ -206,6 +244,148 @@ const Admin = {
         });
     }
 };
+
+/* =========================================================================
+   20b. ADMIN CONTROLS (Host-only): Force start, manual score editor, live room settings
+   The DOM is built ONLY when State.isHost && Admin.unlocked (PIN accepted); otherwise the
+   container is emptied and hidden, so none of these controls exist in the page for a player.
+   (UI-level protection: real enforcement would need Firebase Auth + security rules.)
+   ========================================================================= */
+const AdminCtl = {
+    built: false,
+
+    root() { return document.getElementById("admin-controls"); },
+    allowed() { return State.isHost === true && Admin.unlocked === true; },
+
+    /** Removes every control from the DOM (called on logout / leaving the room / failed checks). */
+    clear() {
+        const root = this.root();
+        if (root) { root.textContent = ""; root.hidden = true; }
+        this.built = false;
+    },
+
+    render() {
+        const root = this.root();
+        if (!root) return;
+        if (!this.allowed()) { this.clear(); return; }
+        if (!this.built) this.build(root);
+        root.hidden = false;
+        this.refreshPlayers();
+        this.refreshCfg(false);
+    },
+
+    /** Tiny element helper. */
+    el(tag, cls, text) {
+        const n = document.createElement(tag);
+        if (cls) n.className = cls;
+        if (text != null) n.textContent = text;
+        return n;
+    },
+
+    build(root) {
+        const el = this.el.bind(this);
+        const field = (label, input) => { const l = el("label", "ac-field"); l.append(el("span", "", label), input); return l; };
+        const num = (id, min, max) => { const i = el("input", "input-field"); i.type = "number"; i.id = id; i.min = min; i.max = max; i.inputMode = "numeric"; return i; };
+        const opts = (sel, list) => list.forEach(([v, t]) => { const o = el("option", "", t); o.value = v; sel.appendChild(o); });
+        root.textContent = "";
+
+        // ---- 1) Force start ----
+        const s1 = el("section", "ac-section");
+        s1.append(el("h3", "", "Match control"),
+            el("p", "mx-hint", "Starts the table of the game open behind this panel, even with fewer players than normal. You must be seated at that table while it is in its lobby."));
+        const force = el("button", "btn btn-primary btn-block", "\u26A1 Force start current table");
+        force.type = "button";
+        force.addEventListener("click", () => Force.startCurrent());
+        s1.appendChild(force);
+
+        // ---- 2) Manual scores ----
+        const s2 = el("section", "ac-section");
+        s2.appendChild(el("h3", "", "Edit scores manually"));
+        const player = el("select", "input-field"); player.id = "ac-player";
+        const mode = el("select", "input-field"); mode.id = "ac-mode";
+        opts(mode, [["add", "Add (+)"], ["sub", "Subtract (\u2212)"], ["set", "Set to"]]);
+        const amount = num("ac-amount", 0, 100000000); amount.placeholder = "Chips";
+        const apply = el("button", "btn btn-secondary btn-block", "Apply to scoreboard"); apply.type = "button";
+        apply.addEventListener("click", () => this.applyScore());
+        amount.addEventListener("keydown", (e) => { if (e.key === "Enter") this.applyScore(); });
+        const row2 = el("div", "ac-grid"); row2.append(field("Player", player), field("Action", mode), field("Amount", amount));
+        s2.append(row2, apply);
+
+        // ---- 3) Live settings ----
+        const s3 = el("section", "ac-section");
+        s3.append(el("h3", "", "Live room settings"),
+            el("p", "mx-hint", "Saved to Firebase: every connected player receives them instantly. Turn time is applied to the turn limit of all table games; rounds and difficulty are shared room values (RoomCfg.get(\"rounds\" | \"difficulty\")) that games can read."));
+        const turn = num("ac-turn", 5, 600), rounds = num("ac-rounds", 1, 20);
+        const diff = el("select", "input-field"); diff.id = "ac-diff";
+        opts(diff, [["easy", "Easy"], ["normal", "Normal"], ["hard", "Hard"]]);
+        [turn, rounds, diff].forEach((n) => n.addEventListener("input", () => { this.dirty = true; }));
+        const save = el("button", "btn btn-primary btn-block", "Save & sync settings"); save.type = "button";
+        save.addEventListener("click", () => this.saveCfg());
+        const row3 = el("div", "ac-grid"); row3.append(field("Seconds per turn (5\u2013600)", turn), field("Rounds (1\u201320)", rounds), field("Difficulty", diff));
+        s3.append(row3, save);
+
+        root.append(s1, s2, s3);
+        this.built = true;
+        this.dirty = false;
+    },
+
+    /** Keeps the player dropdown in sync with the room roster without losing the current selection. */
+    refreshPlayers() {
+        const sel = document.getElementById("ac-player");
+        if (!sel) return;
+        const names = Room.list().map((p) => p.username).filter(Boolean).sort((a, b) => a.localeCompare(b));
+        if (names.join("|") === this.lastNames) return;
+        const keep = sel.value;
+        sel.textContent = "";
+        names.forEach((n) => { const o = this.el("option", "", n); o.value = n; sel.appendChild(o); });
+        if (names.includes(keep)) sel.value = keep;
+        this.lastNames = names.join("|");
+    },
+
+    /** Fills the settings inputs from the synced room values (never while the Host is typing). */
+    refreshCfg(force) {
+        if (!this.built || (this.dirty && !force)) return;
+        const t = document.getElementById("ac-turn"), r = document.getElementById("ac-rounds"), d = document.getElementById("ac-diff");
+        if (!t || [t, r, d].includes(document.activeElement)) return;
+        t.value = RoomCfg.get("turnSec"); r.value = RoomCfg.get("rounds"); d.value = RoomCfg.get("difficulty");
+    },
+
+    applyScore() {
+        if (!this.allowed()) return;
+        const user = document.getElementById("ac-player").value, mode = document.getElementById("ac-mode").value;
+        const inp = document.getElementById("ac-amount"), amount = Math.round(Number(inp.value));
+        if (!user || !Room.exists(user)) return Notify.error("Pick a player first.");
+        if (!Number.isFinite(amount) || amount < 0 || (mode !== "set" && amount === 0)) return Notify.error("Enter a valid amount.");
+        const verb = mode === "add" ? "Added" : mode === "sub" ? "Subtracted" : "Set";
+        Room.adjustBalance(user, mode, amount).then((r) => {
+            if (!r || !r.committed) return Notify.error("That player no longer exists.");
+            const after = (r.snapshot.val() || {}).balance || 0;
+            Audit.log("score", `${verb} ${fmt(amount)} chips for ${user} (now ${fmt(after)})`, amount);
+            Notify.success(`${user}: ${fmt(after)} chips.`);
+            inp.value = "";
+            Admin.renderTable();
+        }).catch(() => Notify.error("Could not update the score."));
+    },
+
+    saveCfg() {
+        if (!this.allowed()) return;
+        const clamp = (v, lo, hi, def) => { v = Math.round(Number(v)); return Number.isFinite(v) ? Math.min(hi, Math.max(lo, v)) : def; };
+        const diff = document.getElementById("ac-diff").value;
+        const cfg = {
+            turnSec: clamp(document.getElementById("ac-turn").value, 5, 600, RoomCfg.DEF.turnSec),
+            rounds: clamp(document.getElementById("ac-rounds").value, 1, 20, RoomCfg.DEF.rounds),
+            difficulty: ["easy", "normal", "hard"].includes(diff) ? diff : "normal",
+            ts: TS()
+        };
+        zref("adm/cfg").set(cfg).then(() => {
+            this.dirty = false;
+            Audit.log("config", `Settings: ${cfg.turnSec}s/turn, ${cfg.rounds} rounds, ${cfg.difficulty}`);
+            Notify.success("Settings synced to all players.");
+            this.refreshCfg(true);
+        }).catch(() => Notify.error("Could not save the settings."));
+    }
+};
+PubSub.on("roomcfg-updated", () => AdminCtl.refreshCfg(false));
 
 /* =========================================================================
    X. UPGRADE MODULE: global Rig, default roster, daily missions, host settings
@@ -638,7 +818,7 @@ const ZAdmin = {
     },
     audit() {
         const box = $z("z-a-audit"); if (!box) return;
-        const T = ["all", "bigwin", "rig", "mission", "loan", "spin", "limit", "tour", "bank", "achv"], rows = this.log.filter((r) => this.filter === "all" || r.type === this.filter).slice().reverse();
+        const T = ["all", "bigwin", "rig", "mission", "loan", "spin", "limit", "tour", "bank", "achv", "kick", "force", "score", "config"], rows = this.log.filter((r) => this.filter === "all" || r.type === this.filter).slice().reverse();
         box.innerHTML = `<h3>Room audit log</h3><div class="mx-tools"><select id="za-f">${T.map((t) => `<option ${t === this.filter ? "selected" : ""}>${t}</option>`).join("")}</select><button type="button" class="btn btn-ghost btn-small" id="za-clear">Clear log</button></div>
            <div class="z-log">${rows.map((r) => `<div class="z-lr t-${esc(r.type)}"><small>${new Date(r.ts || 0).toLocaleTimeString()}</small><b>${esc(r.type)}</b><span>${esc(r.u)}: ${esc(r.msg)}</span></div>`).join("") || '<p class="mx-hint">No events yet.</p>'}</div>`;
     },
@@ -656,7 +836,7 @@ const soc0 = { start: Social.start.bind(Social), stop: Social.stop.bind(Social) 
 
 Social.start = function () { soc0.start(); Z.start(); };
 
-Social.stop = function () { soc0.stop(); Z.stop(); };
+Social.stop = function () { soc0.stop(); Z.stop(); AdminCtl.clear(); };
 
 /* =========================================================================
    APP BOOTSTRAP — must register LAST (this is the last script of the page).

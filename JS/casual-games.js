@@ -875,7 +875,7 @@ const UNO = (() => {
     };
 
     const U = {
-        MAX: 6, IDLE: 45000, STAKES: [0, 10, 25, 50, 100, 250],
+        MAX: 6, get IDLE() { return RoomCfg.turnMs(45000); }, STAKES: [0, 10, 25, 50, 100, 250],
         ref: null, cb: null, tick: null, pres: { armed: null }, ann: {}, g: { phase: "lobby" }, hid: null, paid: 0, dealt: null, lastFx: null, wild: null, rect: null, prev: new Set(),
         store(k, v) { try { if (v === undefined) return window.sessionStorage.getItem(k); window.sessionStorage.setItem(k, v); } catch (e) { /* storage unavailable */ } return null; },
         init() {
@@ -931,7 +931,7 @@ const UNO = (() => {
             if (poor.length) return Notify.error(`${poor.join(", ")} can't cover the ${bet}-chip stake.`);
             this.ref.transaction((v) => {
                 if (!Tables.isOpen(v) || v.phase !== "lobby" || !Tables.canDrive(v, me)) return;
-                const n = Tables.names(v.seats); if (n.length < 2 || !n.includes(me)) return;
+                const n = Tables.names(v.seats); if (n.length < Force.min(2) || !n.includes(me)) return;
                 return E.deal(v);
             });
         },
@@ -1085,7 +1085,7 @@ const PT_PIPS = [[], [4], [0, 8], [0, 4, 8], [0, 2, 6, 8], [0, 2, 4, 6, 8], [0, 
 const Party = (o) => {
     const el = (s) => pt$(o.p + "-" + s);
     return {
-        MAX: o.max, IDLE: 45000, STAKES: [0, 10, 25, 50, 100, 250], E: o.E,
+        MAX: o.max, get IDLE() { return RoomCfg.turnMs(45000); }, STAKES: [0, 10, 25, 50, 100, 250], E: o.E,
         ref: null, cb: null, tick: null, pres: { armed: null }, ann: {}, g: { phase: "lobby" }, hid: null, paid: 0, dealt: null, lastFx: null,
         store(k, v) { try { if (v === undefined) return window.sessionStorage.getItem(k); window.sessionStorage.setItem(k, v); } catch (e) { /* storage unavailable */ } return null; },
         init() { el("kick").addEventListener("click", () => this.kick()); el("leave").addEventListener("click", () => this.leave()); el("again").addEventListener("click", () => this.again()); this.setup(); },
@@ -1135,7 +1135,7 @@ const Party = (o) => {
             if (poor.length) return Notify.error(`${poor.join(", ")} can't cover the ${bet}-chip stake.`);
             this.ref.transaction((v) => {
                 if (!Tables.isOpen(v) || v.phase !== "lobby" || !Tables.canDrive(v, me)) return;
-                const n = Tables.names(v.seats); if (n.length < 2 || !n.includes(me)) return;
+                const n = Tables.names(v.seats); if (n.length < Force.min(2) || !n.includes(me)) return;
                 return o.E.deal(v);
             });
         },

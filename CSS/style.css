@@ -8721,3 +8721,53 @@ details.mx-det>summary::-webkit-details-marker {
 @media (prefers-reduced-motion: reduce) {
     .bac-card.bac-dealing, .bac-card.bac-flip-out, .bac-card.bac-flip-in { animation: none; }
 }
+
+
+/* =========================================================================
+     ADMIN CONTROLS (host-only): force start, manual scores, live settings
+     ========================================================================= */
+.admin-controls {
+    display: grid;
+    gap: 1rem;
+    margin: 1.2rem 0;
+}
+
+.admin-controls[hidden] {
+    display: none;
+}
+
+.ac-section {
+    padding: 0.9rem 1rem;
+    border: 1px solid rgba(244, 196, 48, 0.28);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.ac-section h3 {
+    margin: 0 0 0.5rem;
+    font-size: 1rem;
+    color: #f4c430;
+}
+
+.ac-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 0.6rem;
+    margin-bottom: 0.7rem;
+}
+
+.ac-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    font-size: 0.8rem;
+}
+
+.btn-kick {
+    border-color: rgba(255, 140, 60, 0.6);
+}
+
+.btn-kick:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}

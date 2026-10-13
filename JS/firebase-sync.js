@@ -285,6 +285,23 @@ const Room = {
         return this.playersRef.child(username).update({ balance: Math.max(0, Math.round(balance)), updatedAt: Date.now() });
     },
 
+    /**
+     * ADMIN: atomic manual score edit. mode = "add" | "sub" | "set". Uses a transaction so it
+     * never clobbers a payout that lands at the same moment; the balance never drops below 0.
+     * The target player's HUD updates through bindRemoteBalanceSync().
+     */
+    adjustBalance(username, mode, amount) {
+        if (!this.playersRef || !username) return Promise.resolve(null);
+        return this.playersRef.child(username).transaction((p) => {
+            if (!p) return p;
+            const cur = p.balance || 0;
+            const next = mode === "set" ? amount : mode === "sub" ? cur - amount : cur + amount;
+            p.balance = Math.max(0, Math.round(next));
+            p.updatedAt = Date.now();
+            return p;
+        });
+    },
+
     deletePlayer(username) {
         if (!this.playersRef) return Promise.resolve();
         return this.playersRef.child(username).remove();
@@ -388,6 +405,8 @@ const State = {
    while nobody is mid-hand, so a backgrounded phone never drops a live hand.
    ========================================================================= */
 const Tables = {
+    /** gameKey -> the lobby's Start handler (captured on every lobby render; used by Force.startCurrent). */
+    starters: {},
     seatKeys(seats) { return Object.keys(seats || {}).sort((a, b) => parseInt(a.slice(1), 10) - parseInt(b.slice(1), 10)); },
     names(seats) { return this.seatKeys(seats).map((k) => seats[k]); },
     seatOf(seats, u) { return Object.keys(seats || {}).find((k) => seats[k] === u) || null; },
@@ -477,6 +496,7 @@ const Tables = {
             root.appendChild(row); return;
         }
 
+        this.starters[Router.currentGameKey] = cfg.onStart;
         const ring = mk("div", "tl-seats");
         for (let i = 0; i < cfg.max; i += 1) {
             const key = "s" + i, u = seats[key], slot = mk("div", "tl-seat " + (u ? "taken" : "open") + (u && u === me ? " mine" : ""));
@@ -553,6 +573,64 @@ const Bank = {
     }
 };
 
+/* ---------- ADMIN OVERRIDES (shared state used by the Admin Panel) ---------- */
+
+/** Force-start: lets the Host start a table below its normal minimum player count. */
+const Force = {
+    until: 0,
+    /** Table modules call Force.min(2) instead of the literal 2 inside their start transaction. */
+    min(n) { return Date.now() < this.until ? 1 : n; },
+    nodeOf: { blackjack: "bj", blackwidow: "bw" }, // gameKey -> Firebase node when they differ
+    /** Host takes the open table (must be seated, lobby phase) and presses its Start button for it. */
+    startCurrent() {
+        if (!State.isHost) return Notify.error("Only the Host can force a start.");
+        const key = Router.currentGameKey, start = Tables.starters[key], me = State.username;
+        if (!start) return Notify.warning("Open the game you want to start (with an open table) behind this panel first.");
+        const ref = zref(this.nodeOf[key] || key);
+        if (!ref || !me) return;
+        ref.transaction((v) => {
+            if (!Tables.isOpen(v) || v.phase !== "lobby" || !Tables.seatOf(v.seats, me)) return;
+            v.owner = me; return v;
+        }).then((r) => {
+            if (!r.committed) return Notify.warning("Sit at that table (while it is in its lobby) to force-start it.");
+            this.until = Date.now() + 5000; // bypass the player minimum for this one start only
+            start();
+            Audit.log("force", `Forced start of ${key} with ${Tables.names(r.snapshot.val().seats).length} player(s)`);
+            Notify.success("Start forced.");
+        }).catch(() => Notify.error("Could not force the start."));
+    }
+};
+
+/** Live room parameters edited by the Host at rooms/<code>/adm/cfg and received by every client. */
+const RoomCfg = {
+    DEF: { turnSec: 45, rounds: 3, difficulty: "normal" },
+    d: {}, seen: false,
+    get(k) { const v = this.d[k]; return v == null ? this.DEF[k] : v; },
+    /** Per-turn limit in ms, or `fallback` when the Host has not set one. Games read it live. */
+    turnMs(fallback) { const s = Number(this.d.turnSec); return s > 0 ? s * 1000 : fallback; },
+    on(v) {
+        const changed = JSON.stringify(v || {}) !== JSON.stringify(this.d);
+        this.d = v || {};
+        if (changed && this.seen && !State.isHost) {
+            Notify.success(`Host updated the room: ${this.get("turnSec")}s per turn, ${this.get("rounds")} rounds, ${this.get("difficulty")} difficulty.`);
+        }
+        this.seen = true;
+        PubSub.emit("roomcfg-updated", this.d);
+    }
+};
+
+/** Kick signal: rooms/<code>/kicks/<username> = { ts }. The kicked client returns to the start screen. */
+const Kick = {
+    on(v) {
+        const me = State.username, k = me && v && v[me];
+        if (!k) return;
+        const now = Date.now() + (Dice.off || 0);
+        if (!k.ts || Math.abs(now - k.ts) > 20000) return; // stale flag from an older kick: ignore
+        const leave = () => { Notify.error("The Host removed you from the room."); Social.stop(); AuthScreen.leaveRoom(); };
+        zref("kicks/" + me).remove().then(leave, leave);
+    }
+};
+
 /* ---------- Wiring: Firebase listeners per room ---------- */
 const Z = {
     offs: [], iv: 0,
@@ -564,8 +642,10 @@ const Z = {
         on(zref("bank"), (v) => { Bank.d = v || {}; Rewards.render(false); ZAdmin.bank(); });
         on(zref("dice"), (v) => Dice.on(v));
         on(zref("tour"), (v) => Tour.on(v));
+        on(zref("adm/cfg"), (v) => RoomCfg.on(v));
+        on(zref("kicks"), (v) => Kick.on(v));
         if (State.isHost) { const q = zref("audit").limitToLast(200); q.on("value", (s) => { const o = s.val() || {}; ZAdmin.log = Object.keys(o).map((k) => o[k]); ZAdmin.audit(); }); this.offs.push(() => q.off()); }
         this.iv = window.setInterval(() => Dice.tick(), 400);
     },
-    stop() { this.offs.forEach((f) => f()); this.offs = []; clearInterval(this.iv); Dice.shown = null; ZAdmin.log = []; }
+    stop() { this.offs.forEach((f) => f()); this.offs = []; clearInterval(this.iv); Dice.shown = null; ZAdmin.log = []; RoomCfg.d = {}; RoomCfg.seen = false; }
 };

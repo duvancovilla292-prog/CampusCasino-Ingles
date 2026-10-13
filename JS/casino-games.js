@@ -219,7 +219,7 @@ PubSub.on("players-updated", () => GameResolver.syncPrizeUi());
    4. BLACKJACK
    ========================================================================= */
 const Blackjack = {
-    MAX_SEATS: 5, IDLE_MS: 45000, NEXT_MS: 12000, DEAL_MS: 30000,
+    MAX_SEATS: 5, get IDLE_MS() { return RoomCfg.turnMs(45000); }, NEXT_MS: 12000, DEAL_MS: 30000,
     R: "23456789TJQKA", S: ["\u2660", "\u2665", "\u2666", "\u2663"],
     ref: null, cb: null, tick: null, g: { phase: "lobby" }, pres: { armed: null }, ann: {}, claimed: {}, shown: {}, hid: null,
     $(id) { return document.getElementById(id); },
@@ -2031,7 +2031,7 @@ const Extra = (() => {
 const HOUSE = "_house";
 
 const BW = {
-    ANTE: 10, MAX_SEATS: 6, IDLE_MS: 45000, NEXT_MS: 12000,
+    ANTE: 10, MAX_SEATS: 6, get IDLE_MS() { return RoomCfg.turnMs(45000); }, NEXT_MS: 12000,
     ref: null, cb: null, statsRef: null, statsCb: null, tick: null, pres: { armed: null }, ann: {},
     g: { phase: "lobby" }, stats: {}, hid: null, paid: 0, dealt: null, shown: null, faces: {}, sel: { h: null, w: null },
     CATS: ["High Card", "One Pair", "Two Pair", "Three of a Kind", "Straight", "Flush", "Full House", "Four of a Kind", "Straight Flush", "Royal Flush"],
