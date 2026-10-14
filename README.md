@@ -158,6 +158,8 @@ Cada juego se renderiza con la estructura estándar:
 </iframe>
 ```
 
+Para que ningún juego pueda sacar al jugador de la aplicación, el iframe se crea con un atributo **`sandbox`** que **no** incluye `allow-top-navigation` ni `allow-popups` (constante `Arcade.SANDBOX`): si el script de un juego intenta hacer `top.location = ...` o abrir otra pestaña, el navegador lo bloquea. Además, a los juegos de GameDistribution se les añade al cargar el parámetro `gd_sdk_referrer_url` con la URL de tu página (el `src` guardado en `data.json` y Firebase sigue limpio).
+
 El contenedor usa `max-width` y `aspect-ratio` calculados con el ancho y alto de cada juego, así que se adapta a móvil y escritorio. (Nota: el valor válido del atributo es `scrolling="no"`, no `"none"`.)
 
 ### Miniaturas
@@ -414,6 +416,7 @@ La configuración web de Firebase es pública por naturaleza; lo que protege tus
 | "Could not reach Firebase" | Sin conexión o el SDK no cargó (bloqueador de anuncios, red restringida). Revisa la conexión y recarga |
 | "Room not found" | Código incorrecto o sala inexistente. Confirma el código con el Host |
 | Permiso denegado en la consola | Las reglas de Realtime Database bloquean la operación. Revisa las reglas |
+| Al abrir un juego, la página se redirige o abre otra pestaña | El script del juego intenta salir del iframe. El `sandbox` de `Arcade.SANDBOX` lo bloquea; abre la consola (F12) y busca el aviso *"Unsafe attempt to initiate navigation"* para confirmarlo. Si algún juego necesita abrir enlaces, añade `allow-popups` a esa constante |
 | Un juego del Arcade no carga | El proveedor puede bloquear tu dominio o el iframe. Prueba con otro juego o revisa la configuración del dominio en tu cuenta de GameDistribution |
 | "Invalid source" al añadir un juego | Usa un código de GameDistribution, una URL https o un `<iframe>` de un host permitido (`Arcade.ALLOWED_HOSTS`) |
 | Una miniatura no aparece | Se muestra el emoji del juego: la imagen no cargó o el proveedor no tiene una con ese patrón. Puedes indicar otra en el campo **Thumbnail URL** |

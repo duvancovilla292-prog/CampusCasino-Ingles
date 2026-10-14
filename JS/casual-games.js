@@ -3174,6 +3174,13 @@ const Arcade = {
     SEED_URL: "data/data.json",
     ALLOWED_HOSTS: ["gamedistribution.com", "crazygames.com", "poki.com"],
     MAX_GAMES: 60,
+    /**
+     * iframe sandbox. It deliberately OMITS allow-top-navigation (and allow-popups), so a game script can
+     * never run `top.location = ...` / `window.parent.location = ...` or open other tabs: the browser
+     * blocks it and the player stays inside the app. Add "allow-popups" if you want external links to open.
+     * Set to "" to disable the sandbox completely (not recommended).
+     */
+    SANDBOX: "allow-scripts allow-same-origin allow-forms allow-pointer-lock allow-modals allow-orientation-lock allow-presentation",
     /** Fallback when data/data.json cannot be fetched (e.g. page opened from file://). */
     DEFAULT_GAMES: [{
         id: "kick-the-buddy", title: "Kick The Buddy", icon: "\u{1F94A}",
@@ -3328,14 +3335,33 @@ const Arcade = {
             card.type = "button";
             card.append(this.makeThumb(g, false), this.el("strong", "", g.title));
             if (g.description) card.appendChild(this.el("small", "", g.description));
-            card.addEventListener("click", () => this.open(g.id));
+            card.addEventListener("click", (e) => {
+                e.preventDefault();   // never let the browser run a default action for this click
+                e.stopPropagation();  // nothing else (menus, document listeners) should react to it
+                this.open(g.id);
+            });
             box.appendChild(card);
         });
         this.syncAdmin();
         this.renderEditorList();
     },
 
-    /** Mounts the standard iframe inside a responsive 'stage' container. */
+    /**
+     * URL actually loaded in the iframe. data.json / Firebase keep the clean `src`; at load time
+     * GameDistribution games also get `gd_sdk_referrer_url` (this page), which tells their SDK which site
+     * embeds them. Without it some GD games treat the embed as unlisted and try to leave the iframe.
+     */
+    embedUrl(g) {
+        try {
+            const u = new URL(g.src);
+            if (u.hostname.toLowerCase() === "html5.gamedistribution.com" && !u.searchParams.has("gd_sdk_referrer_url")) {
+                u.searchParams.set("gd_sdk_referrer_url", window.location.href.split("#")[0].split("?")[0]);
+            }
+            return u.href;
+        } catch (e) { return g.src; }
+    },
+
+    /** Mounts the standard iframe inside a responsive 'stage' container (always in place, never navigating). */
     open(id) {
         const g = this.list().find((x) => x.id === id && x.enabled);
         if (!g) return;
@@ -3346,7 +3372,8 @@ const Arcade = {
         stage.style.maxWidth = g.width + "px";
         stage.style.aspectRatio = g.width + " / " + g.height;
         const frame = document.createElement("iframe");
-        frame.src = g.src;
+        if (this.SANDBOX) frame.setAttribute("sandbox", this.SANDBOX); // set BEFORE src: no top-navigation from the game
+        frame.src = this.embedUrl(g);
         frame.width = String(g.width);
         frame.height = String(g.height);
         frame.setAttribute("scrolling", "no");
