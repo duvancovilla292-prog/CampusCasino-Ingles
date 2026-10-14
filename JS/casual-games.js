@@ -3155,6 +3155,78 @@ const Tour = {
 };
 
 /* =========================================================================
+   ARCADE PROGRESS — saved by the APP in Firebase (the embedded games run on another domain, so
+   they cannot report anything to us; we record what the app itself can observe).
+
+   Firebase path:  rooms/<code>/players/<username>/arcade
+     {
+       last:   "<gameId>",            // last casual game opened
+       lastAt: <server timestamp>,
+       games: { "<gameId>": { plays: <n>, secs: <seconds played>, best: <score>, at: <server timestamp> } }
+     }
+
+   WHERE IT IS CALLED (all inside the Arcade module below):
+     Arcade.open(id)       -> ArcadeProgress.start(id)      plays +1, last game, timestamps
+     Arcade.unmount()      -> ArcadeProgress.stop()         adds the seconds of this session
+     "pagehide" event      -> ArcadeProgress.stop()         best effort when the tab is closed
+     "Save score" button   -> Arcade.submitScore() -> ArcadeProgress.saveScore(id, n)   keeps the best
+   The score is SELF-REPORTED (the iframe cannot send it to the app). Everything is also read back from
+   the live players cache, so it updates in real time and survives reloads and new devices.
+   ========================================================================= */
+const ArcadeProgress = {
+    MIN_SECS: 3,                 // shorter sessions do not add play time
+    MAX_SESSION_SECS: 4 * 3600,  // safety cap for a forgotten open tab
+    session: null,               // { id, t0 } while a game is open
+
+    /** Reference to the current player's arcade node, or null when not logged in / offline. */
+    ref() { return Room.playersRef && State.username ? Room.playersRef.child(State.username).child("arcade") : null; },
+
+    /** The player's saved progress from the live cache ({} when empty). */
+    mine() { const p = State.username ? Room.get(State.username) : null; return (p && p.arcade) || {}; },
+    gameStats(id) { return (this.mine().games || {})[id] || {}; },
+
+    /** Call when a game is opened: plays +1 and remember it as the last game. */
+    start(id) {
+        this.stop();
+        const r = this.ref();
+        if (!r) return;
+        this.session = { id, t0: Date.now() };
+        r.child("games").child(id).child("plays").transaction((n) => (n || 0) + 1);
+        r.update({ last: id, lastAt: TS(), ["games/" + id + "/at"]: TS() });
+    },
+
+    /** Call when the game is closed: adds this session's seconds to the game's total. */
+    stop() {
+        const s = this.session;
+        this.session = null;
+        const r = this.ref();
+        if (!s || !r) return;
+        const secs = Math.min(this.MAX_SESSION_SECS, Math.round((Date.now() - s.t0) / 1000));
+        if (secs < this.MIN_SECS) return;
+        r.child("games").child(s.id).child("secs").transaction((n) => (n || 0) + secs);
+    },
+
+    /** Saves a score for a game; only a higher score replaces the stored best. */
+    saveScore(id, score) {
+        const r = this.ref();
+        score = Math.round(Number(score));
+        if (!r || !Number.isFinite(score) || score < 0 || score > 1e9) return Promise.resolve(null);
+        return r.child("games").child(id).child("best").transaction((b) => (b == null || score > b ? score : b));
+    },
+
+    fmtSecs(s) { return s >= 3600 ? (s / 3600).toFixed(1) + " h" : s >= 60 ? Math.round(s / 60) + " min" : s + " s"; },
+    /** "Played 3x · 12 min · Best 1,200" (empty string when never played). */
+    summary(id) {
+        const g = this.gameStats(id);
+        if (!g.plays) return "";
+        const parts = ["Played " + g.plays + "\u00D7"];
+        if (g.secs) parts.push(this.fmtSecs(g.secs));
+        if (g.best != null) parts.push("Best " + Number(g.best).toLocaleString("en-US"));
+        return parts.join(" \u00B7 ");
+    }
+};
+
+/* =========================================================================
    ARCADE — Casual iframe games (Poki / CrazyGames style) managed by the Host
 
    * Players only SEE and PLAY the enabled games (one iframe at a time).
@@ -3222,6 +3294,7 @@ const Arcade = {
         if (u.protocol !== "https:") return null;
         const h = u.hostname.toLowerCase();
         if (!this.ALLOWED_HOSTS.some((a) => h === a || h.endsWith("." + a))) return null;
+        u.searchParams.delete("gd_sdk_referrer_url"); // stored src stays clean; see embedUrl()
         return u.href;
     },
     clampInt(v, lo, hi, def) { v = Math.round(Number(v)); return Number.isFinite(v) ? Math.min(hi, Math.max(lo, v)) : def; },
@@ -3329,12 +3402,17 @@ const Arcade = {
         if (!box) return;
         box.textContent = "";
         const games = this.list().filter((g) => g.enabled);
+        const last = ArcadeProgress.mine().last; // highlighted card = last game this player opened
+        this.sig = JSON.stringify(ArcadeProgress.mine());
         if (!games.length) box.appendChild(this.el("p", "bw-info", "No games available yet."));
         games.forEach((g) => {
             const card = this.el("button", "arcade-card");
             card.type = "button";
             card.append(this.makeThumb(g, false), this.el("strong", "", g.title));
             if (g.description) card.appendChild(this.el("small", "", g.description));
+            const stats = ArcadeProgress.summary(g.id);
+            if (stats) card.appendChild(this.el("small", "arcade-stats", stats));
+            if (g.id === last) { card.classList.add("is-last"); card.title = "Last game you played"; }
             card.addEventListener("click", (e) => {
                 e.preventDefault();   // never let the browser run a default action for this click
                 e.stopPropagation();  // nothing else (menus, document listeners) should react to it
@@ -3354,7 +3432,7 @@ const Arcade = {
     embedUrl(g) {
         try {
             const u = new URL(g.src);
-            if (u.hostname.toLowerCase() === "html5.gamedistribution.com" && !u.searchParams.has("gd_sdk_referrer_url")) {
+            if (u.hostname.toLowerCase() === "html5.gamedistribution.com") {
                 u.searchParams.set("gd_sdk_referrer_url", window.location.href.split("#")[0].split("?")[0]);
             }
             return u.href;
@@ -3384,15 +3462,45 @@ const Arcade = {
         stage.appendChild(frame);
         this.$("arcade-list").hidden = true;
         this.$("arcade-player").hidden = false;
+        ArcadeProgress.start(id); // <-- persists plays / last game in Firebase
+        this.updateBar();
     },
 
     /** Removes the iframe (stops the game and its audio) and shows the list again. */
     unmount() {
+        ArcadeProgress.stop(); // <-- persists the seconds played in this session
         const stage = this.$("arcade-stage"), player = this.$("arcade-player"), list = this.$("arcade-list");
         if (stage) stage.textContent = "";
         if (player) player.hidden = true;
         if (list) list.hidden = false;
         this.activeId = null;
+    },
+
+    /** Shows the active game's best score and play stats under the game. */
+    updateBar() {
+        const out = this.$("arcade-best");
+        if (!out) return;
+        const g = this.activeId ? ArcadeProgress.gameStats(this.activeId) : {};
+        out.textContent = g.best != null ? "Your best: " + Number(g.best).toLocaleString("en-US") : "No score saved yet";
+    },
+    /** Re-renders only when this player's saved progress changed (players-updated fires often). */
+    refreshStats() {
+        if (JSON.stringify(ArcadeProgress.mine()) === this.sig) return;
+        this.render();
+        this.updateBar();
+    },
+    /** "Save score" button: self-reported score for the open game. */
+    submitScore() {
+        const input = this.$("arcade-score");
+        if (!input || !this.activeId) return;
+        const v = Math.round(Number(input.value));
+        if (!input.value || !Number.isFinite(v) || v < 0) return Notify.error("Enter a valid score.");
+        ArcadeProgress.saveScore(this.activeId, v).then((r) => {
+            if (!r) return Notify.error("Could not save the score.");
+            input.value = "";
+            Notify.success(r.committed && r.snapshot.val() === v ? "New best score saved!" : "Saved. Your best is still higher.");
+            this.updateBar();
+        }).catch(() => Notify.error("Could not save the score."));
     },
 
     onTab(key) {
@@ -3655,8 +3763,11 @@ const Arcade = {
 };
 
 document.addEventListener("game-changed", (e) => Arcade.onTab(e.detail.gameKey));
+PubSub.on("players-updated", () => Arcade.refreshStats());
+window.addEventListener("pagehide", () => ArcadeProgress.stop()); // best effort when the tab is closed
 document.addEventListener("click", (e) => {
     if (e.target.closest("#arcade-back")) Arcade.unmount();
+    else if (e.target.closest("#arcade-score-save")) Arcade.submitScore();
     else if (e.target.closest("#arcade-full")) {
         const stage = Arcade.$("arcade-stage");
         if (stage && stage.requestFullscreen) stage.requestFullscreen().catch(() => {});

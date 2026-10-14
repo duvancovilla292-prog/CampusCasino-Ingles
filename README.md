@@ -170,6 +170,16 @@ Cada juego muestra una miniatura cuadrada en la lista:
 2. Si no, y el juego es de GameDistribution, se genera sola con el patrón `https://img.gamedistribution.com/CODIGO-512x512.jpg`.
 3. Si no hay imagen, o **falla al cargar**, se muestra automáticamente el **emoji** del juego. El emoji siempre está debajo de la imagen, así que la interfaz nunca queda rota.
 
+### Progreso del jugador (Firebase)
+
+Los juegos incrustados corren en el dominio del distribuidor y no pueden enviar nada a tu app, así que **la aplicación** guarda lo que sí puede observar, en `rooms/{code}/players/{usuario}/arcade`:
+
+- **Último juego abierto** (`last`, `lastAt`): su tarjeta se resalta en la lista.
+- **Por juego** (`games/{id}`): partidas abiertas (`plays`), segundos jugados (`secs`), mejor puntaje (`best`) y última vez (`at`).
+- El **puntaje es autodeclarado**: bajo el juego hay un campo *My score* y un botón **Save score**; solo un puntaje mayor reemplaza al guardado.
+
+Las funciones están en `ArcadeProgress` (`JS/casual-games.js`) y se invocan en `Arcade.open()` (`start`), `Arcade.unmount()` y el evento `pagehide` (`stop`), y en el botón de puntaje (`saveScore`). Los datos se leen de la caché en vivo de jugadores, así que se actualizan en tiempo real y sobreviven a recargas y cambios de dispositivo.
+
 ### Gestión (solo Host autenticado)
 
 El botón **⚙ Manage games** se construye en el DOM **únicamente** si el dispositivo es el Host y ya introdujo el PIN del panel de admin. Al pulsarlo se abre un **menú flotante (modal)** con las mismas clases que la tienda, la clasificación y el panel de admin: se cierra con la ✕, tocando fuera o con Escape, tiene scroll interno y está optimizado para móvil (botones de 44 px, campos que no provocan zoom en iOS y formulario en una columna). Para los demás jugadores no se crea ni el botón ni el modal; si el Host pierde la sesión de admin, ambos se eliminan del DOM. Desde el modal puedes:
@@ -214,6 +224,8 @@ Mientras haya cambios sin descargar, el editor muestra un aviso naranja. Formato
   ]
 }
 ```
+
+El `src` se guarda **sin** el parámetro `gd_sdk_referrer_url` (si lo pegas con uno, por ejemplo con `example.com`, se elimina al guardar); al cargar el iframe se añade la URL real de tu página.
 
 `thumb` es opcional: si falta y el juego es de GameDistribution se genera automáticamente.
 
@@ -334,6 +346,7 @@ rooms/
       {username}/  username, balance, createdAt, updatedAt, deviceId,
                    stats/ { gamesPlayed, totalWagered, netProfit },
                    loan/  { p, owed, rate, ts }        (solo con préstamo activo)
+                   arcade/ { last, lastAt, games/{id}/{ plays, secs, best, at } }   (progreso del Arcade)
     bj, bw, bwstats, baccarat, uno, parques, dominoes, hangman,
     chess, checkers, mastermind, bullscows, connect4, battleship
                  mesas: phase, owner, seats, max, turnAt, ... (estado de la partida)
@@ -394,6 +407,7 @@ La configuración web de Firebase es pública por naturaleza; lo que protege tus
 - En **modo de prueba**, cualquiera puede leer y escribir todas las salas.
 - El PIN de admin está en el código fuente y la comprobación de Host se hace en el cliente. Los controles del panel (expulsar, forzar inicio, editar puntajes, ajustes en vivo) solo están ocultos por la interfaz: sirve para un entorno educativo, **no** como seguridad real. Alguien con conocimientos podría escribir esos nodos (`kicks/`, `adm/cfg`, `players/`) directamente.
 - Las URLs de los iframes se validan en el cliente (https y hosts permitidos), pero el nodo `arcade/` también debería protegerse con reglas para que solo el Host pueda escribirlo.
+- Con reglas reales, cada jugador solo debería poder escribir en su propio `players/{usuario}/arcade`.
 - Para más protección, añade **Firebase Authentication** y restringe las reglas: por ejemplo, que solo el Host pueda escribir en `kicks/`, `adm/` y `lim/`, y que `players/{username}/balance` se valide por tipo y rango.
 - Considera restringir la clave de API por dominio desde la consola de Google Cloud.
 - No se procesa dinero real: todas las fichas son virtuales.

@@ -9010,3 +9010,38 @@ details.mx-det>summary::-webkit-details-marker {
         flex: 1 1 100%;
     }
 }
+
+/* Arcade progress (saved in Firebase) */
+.arcade-card.is-last {
+    border-color: #f4c430;
+    box-shadow: 0 0 0 1px rgba(244, 196, 48, 0.35);
+}
+
+.arcade-stats {
+    color: #f4c430;
+    font-size: 0.72rem;
+}
+
+.arcade-score {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    max-width: 800px;
+    margin: 0.8rem auto 0;
+}
+
+.arcade-score .input-field {
+    width: 8rem;
+    font-size: 16px;
+    min-height: 44px;
+}
+
+.arcade-score .btn {
+    min-height: 44px;
+}
+
+.arcade-best {
+    font-size: 0.85rem;
+    opacity: 0.8;
+}

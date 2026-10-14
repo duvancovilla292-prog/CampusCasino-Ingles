@@ -484,6 +484,13 @@
         </div>
         <!-- Arcade.open() inserts the standard <iframe width="800" height="600" scrolling="no" frameborder="0" allowfullscreen> here -->
         <div id="arcade-stage" class="arcade-stage"></div>
+        <!-- Progress saved in Firebase (players/<name>/arcade). The score is self-reported: the iframe cannot send it. -->
+        <div class="arcade-score">
+          <label for="arcade-score">My score</label>
+          <input type="number" id="arcade-score" class="input-field" min="0" inputmode="numeric" placeholder="e.g. 1200">
+          <button type="button" id="arcade-score-save" class="btn btn-secondary">Save score</button>
+          <span id="arcade-best" class="arcade-best" aria-live="polite"></span>
+        </div>
       </div>
     </section>
 
