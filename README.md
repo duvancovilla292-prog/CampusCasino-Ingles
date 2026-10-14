@@ -160,11 +160,19 @@ Cada juego se renderiza con la estructura estándar:
 
 El contenedor usa `max-width` y `aspect-ratio` calculados con el ancho y alto de cada juego, así que se adapta a móvil y escritorio. (Nota: el valor válido del atributo es `scrolling="no"`, no `"none"`.)
 
+### Miniaturas
+
+Cada juego muestra una miniatura cuadrada en la lista:
+
+1. Si el juego tiene un campo `thumb` (URL https de un host permitido), se usa esa imagen.
+2. Si no, y el juego es de GameDistribution, se genera sola con el patrón `https://img.gamedistribution.com/CODIGO-512x512.jpg`.
+3. Si no hay imagen, o **falla al cargar**, se muestra automáticamente el **emoji** del juego. El emoji siempre está debajo de la imagen, así que la interfaz nunca queda rota.
+
 ### Gestión (solo Host autenticado)
 
-El botón **⚙ Manage games** y todo el editor se construyen en el DOM **únicamente** si el dispositivo es el Host y ya introdujo el PIN del panel de admin; para los demás jugadores el contenedor queda vacío. Desde el editor puedes:
+El botón **⚙ Manage games** se construye en el DOM **únicamente** si el dispositivo es el Host y ya introdujo el PIN del panel de admin. Al pulsarlo se abre un **menú flotante (modal)** con las mismas clases que la tienda, la clasificación y el panel de admin: se cierra con la ✕, tocando fuera o con Escape, tiene scroll interno y está optimizado para móvil (botones de 44 px, campos que no provocan zoom en iOS y formulario en una columna). Para los demás jugadores no se crea ni el botón ni el modal; si el Host pierde la sesión de admin, ambos se eliminan del DOM. Desde el modal puedes:
 
-- **Añadir y editar** juegos: título, icono (emoji), descripción, ancho y alto, y el origen.
+- **Añadir y editar** juegos: título, emoji de respaldo, descripción, ancho y alto, miniatura opcional y el origen.
 - **Ordenar** (▲ ▼), **ocultar/mostrar** y **eliminar** juegos.
 - **Descargar `data.json`**, **Importar JSON** y **Reset from repo data.json**.
 
@@ -196,6 +204,7 @@ Mientras haya cambios sin descargar, el editor muestra un aviso naranja. Formato
       "icon": "🥊",
       "description": "Relax-and-play ragdoll sandbox.",
       "src": "https://html5.gamedistribution.com/3785ca02d41845c389b09c5e1ff4ced7/",
+      "thumb": "https://img.gamedistribution.com/3785ca02d41845c389b09c5e1ff4ced7-512x512.jpg",
       "width": 800,
       "height": 600,
       "enabled": true
@@ -203,6 +212,8 @@ Mientras haya cambios sin descargar, el editor muestra un aviso naranja. Formato
   ]
 }
 ```
+
+`thumb` es opcional: si falta y el juego es de GameDistribution se genera automáticamente.
 
 Al importar, los juegos inválidos (título vacío o `src` no permitido) se omiten y se avisa cuántos fueron. El límite es de 60 juegos.
 
@@ -264,7 +275,7 @@ El panel de administrador solo se puede abrir desde el **dispositivo que creó l
 - **Delete:** elimina el perfil de un jugador.
 - **Export / Import:** descarga o restaura un respaldo JSON (`casino-campus-backup-<timestamp>.json`).
 - **Delete all:** borra todos los jugadores de la sala.
-- **Arcade:** tras desbloquear el panel, la pestaña Arcade Games muestra el botón **Manage games** (ver [Juegos casuales por iframe](#juegos-casuales-por-iframe-arcade)).
+- **Arcade:** tras desbloquear el panel, la pestaña Arcade Games muestra el botón **Manage games**, que abre un modal de gestión (ver [Juegos casuales por iframe](#juegos-casuales-por-iframe-arcade)).
 
 ### Control total de partida
 - **⚡ Force start current table:** arranca la mesa del juego que tengas abierto detrás del panel aunque falten jugadores. Debes estar sentado en esa mesa mientras está en lobby; el Host toma la mesa y se salta el mínimo de jugadores solo para ese arranque.
@@ -405,6 +416,7 @@ La configuración web de Firebase es pública por naturaleza; lo que protege tus
 | Permiso denegado en la consola | Las reglas de Realtime Database bloquean la operación. Revisa las reglas |
 | Un juego del Arcade no carga | El proveedor puede bloquear tu dominio o el iframe. Prueba con otro juego o revisa la configuración del dominio en tu cuenta de GameDistribution |
 | "Invalid source" al añadir un juego | Usa un código de GameDistribution, una URL https o un `<iframe>` de un host permitido (`Arcade.ALLOWED_HOSTS`) |
+| Una miniatura no aparece | Se muestra el emoji del juego: la imagen no cargó o el proveedor no tiene una con ese patrón. Puedes indicar otra en el campo **Thumbnail URL** |
 | No veo el botón Manage games | Solo aparece en el dispositivo Host y después de introducir el PIN en el panel de admin |
 | La página carga sin estilos o sin scripts | Las rutas `CSS/style.css` y `JS/*.js` deben existir con esos nombres exactos |
 | No se ve el panel de admin | Solo aparece en el dispositivo Host; si borraste el almacenamiento local perdiste esa identidad |

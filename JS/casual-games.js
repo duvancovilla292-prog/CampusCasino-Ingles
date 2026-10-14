@@ -3159,8 +3159,8 @@ const Tour = {
 
    * Players only SEE and PLAY the enabled games (one iframe at a time).
    * The Host (Admin.unlocked + State.isHost) gets a "Manage games" button. That button and the
-     whole editor are built into the DOM only for the authenticated Host; for everyone else the
-     container stays empty.
+     floating editor modal are built into the DOM only for the authenticated Host; for everyone
+     else nothing exists in the page.
    * Hybrid persistence:
        - Realtime: rooms/<code>/arcade = { custom, games:{id:{...,order}}, ts, by } (live for all).
        - Repository: data/data.json is the default list (used while the Host has not edited the
@@ -3187,9 +3187,10 @@ const Arcade = {
     seedPromise: null,
     activeId: null,      // game currently mounted in the player
     editingId: null,     // game loaded in the editor form
-    editorOpen: false,
     repoDirty: false,    // true after an edit until the Host downloads data.json
     f: null,             // editor form fields
+    modal: null,         // floating editor overlay (exists only for the authenticated Host)
+    onKey: null,         // Escape handler of the modal
 
     $(id) { return document.getElementById(id); },
     el(tag, cls, text) {
@@ -3220,6 +3221,43 @@ const Arcade = {
     slug(t) { return String(t).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 36) || "game"; },
     uniqueId(base, taken) { let id = base || "game", n = 2; while (taken.has(id)) id = base + "-" + n++; return id; },
 
+    /** Optional thumbnail URL: https and an allowed host (image CDNs such as img.gamedistribution.com). */
+    parseThumb(raw) {
+        let u;
+        try { u = new URL(String(raw || "").trim()); } catch (e) { return ""; }
+        if (u.protocol !== "https:") return "";
+        const h = u.hostname.toLowerCase();
+        return this.ALLOWED_HOSTS.some((a) => h === a || h.endsWith("." + a)) ? u.href : "";
+    },
+    /** Thumbnail for a game: its own `thumb`, else the GameDistribution pattern built from the game code, else "". */
+    thumbFor(g) {
+        if (g.thumb) return g.thumb;
+        try {
+            const u = new URL(g.src);
+            if (u.hostname.toLowerCase() === "html5.gamedistribution.com") {
+                const code = u.pathname.split("/").filter(Boolean)[0] || "";
+                if (/^[a-f0-9]{32}$/i.test(code)) return "https://img.gamedistribution.com/" + code.toLowerCase() + "-512x512.jpg";
+            }
+        } catch (e) { /* no thumbnail available */ }
+        return "";
+    },
+    /** Square thumbnail box. The emoji is always rendered underneath: if the image fails, it simply stays. */
+    makeThumb(g, small) {
+        const box = this.el("span", "arcade-thumb" + (small ? " is-small" : ""));
+        box.appendChild(this.el("span", "arcade-emoji", g.icon));
+        const url = this.thumbFor(g);
+        if (url) {
+            const img = document.createElement("img");
+            img.alt = "";
+            img.decoding = "async";
+            img.addEventListener("load", () => box.classList.add("has-img"));
+            img.addEventListener("error", () => img.remove()); // fallback: emoji stays visible
+            img.src = url;
+            box.appendChild(img);
+        }
+        return box;
+    },
+
     /** Returns a clean game object or null when it is invalid. */
     normalize(g) {
         if (!g || typeof g !== "object") return null;
@@ -3229,7 +3267,7 @@ const Arcade = {
         const icon = Array.from(String(g.icon || "").trim()).slice(0, 2).join("") || "\u{1F3AE}";
         return {
             id: String(g.id || "").toLowerCase().replace(/[^a-z0-9-]/g, "").slice(0, 48),
-            title, icon, src,
+            title, icon, src, thumb: this.parseThumb(g.thumb || g.image),
             description: String(g.description || "").trim().slice(0, 120),
             width: this.clampInt(g.width, 200, 2000, 800),
             height: this.clampInt(g.height, 200, 2000, 600),
@@ -3288,7 +3326,7 @@ const Arcade = {
         games.forEach((g) => {
             const card = this.el("button", "arcade-card");
             card.type = "button";
-            card.append(this.el("span", "arcade-card-icon", g.icon), this.el("strong", "", g.title));
+            card.append(this.makeThumb(g, false), this.el("strong", "", g.title));
             if (g.description) card.appendChild(this.el("small", "", g.description));
             card.addEventListener("click", () => this.open(g.id));
             box.appendChild(card);
@@ -3347,17 +3385,20 @@ const Arcade = {
 
     adminAllowed() { return State.isHost === true && Admin.unlocked === true; },
 
-    /** Builds the editor only for the authenticated Host; empties it for everybody else. */
+    /** Builds the "Manage games" button and its floating modal ONLY for the authenticated Host. */
     syncAdmin() {
         const slot = this.$("arcade-admin-slot");
         if (!slot) return;
         if (!this.adminAllowed()) { this.teardownAdmin(); return; }
-        if (!slot.firstElementChild) this.buildAdmin(slot);
+        if (!this.modal) this.buildAdmin(slot);
     },
+    /** Removes the button and the modal from the DOM (not hidden: removed). */
     teardownAdmin() {
         const slot = this.$("arcade-admin-slot");
         if (slot) slot.textContent = "";
-        this.editorOpen = false; this.editingId = null; this.f = null;
+        if (this.onKey) { document.removeEventListener("keydown", this.onKey); this.onKey = null; }
+        if (this.modal) { this.modal.remove(); this.modal = null; }
+        this.editingId = null; this.f = null;
     },
 
     buildAdmin(slot) {
@@ -3367,24 +3408,34 @@ const Arcade = {
         const btn = (text, cls, fn) => { const b = el("button", cls, text); b.type = "button"; b.addEventListener("click", fn); return b; };
         slot.textContent = "";
 
-        const toggle = btn("\u2699 Manage games", "btn btn-secondary", () => {
-            this.editorOpen = !this.editorOpen;
-            panel.hidden = !this.editorOpen;
-            toggle.setAttribute("aria-expanded", String(this.editorOpen));
-            if (this.editorOpen) this.renderEditorList();
-        });
-        toggle.setAttribute("aria-expanded", "false");
+        const open = btn("\u2699 Manage games", "btn btn-secondary", () => this.openEditor());
+        open.id = "arcade-manage-btn";
+        slot.appendChild(open);
 
-        const panel = el("div", "arcade-admin");
-        panel.hidden = true;
-        panel.appendChild(el("h3", "", "Game list (live for the whole room)"));
-        const listBox = el("div", "arcade-ed-list"); listBox.id = "arcade-ed-list";
-        panel.appendChild(listBox);
+        // Floating menu: same overlay / card classes as the Shop, Leaderboard and Admin modals.
+        const overlay = el("div", "modal-overlay");
+        overlay.id = "arcade-modal";
+        overlay.hidden = true;
+        const card = el("div", "modal arcade-modal");
+        card.setAttribute("role", "dialog");
+        card.setAttribute("aria-modal", "true");
+        card.setAttribute("aria-labelledby", "arcade-modal-title");
+        const close = btn("\u2715", "modal-close", () => this.closeEditor());
+        close.setAttribute("aria-label", "Close");
+        const title = el("h2", "", "\u{1F579} Manage casual games");
+        title.id = "arcade-modal-title";
+        card.append(close, title, el("p", "modal-subtitle", "Changes are live for everyone in the room."));
+
+        // --- current list ---
+        const listBox = el("div", "arcade-ed-list");
+        listBox.id = "arcade-ed-list";
+        card.appendChild(listBox);
 
         // --- add / edit form ---
         const f = this.f = {
             title: input("text", 40, "Game title"), icon: input("text", 4, "\u{1F3AE}"),
             src: input("text", 600, "GameDistribution code, URL or <iframe> snippet"),
+            thumb: input("text", 600, "Optional: https image URL (auto for GameDistribution)"),
             desc: input("text", 120, "Short description (optional)"),
             w: input("number"), h: input("number")
         };
@@ -3393,14 +3444,17 @@ const Arcade = {
         f.cancel = btn("Cancel edit", "btn btn-secondary", () => this.resetForm());
         f.cancel.hidden = true;
         const grid = el("div", "ac-grid");
-        grid.append(field("Title", f.title), field("Icon (emoji)", f.icon), field("Code / URL / iframe", f.src),
-            field("Description", f.desc), field("Width", f.w), field("Height", f.h));
-        const formActions = el("div", "arcade-actions"); formActions.append(f.save, f.cancel);
-        panel.append(el("h4", "", "Add or edit a game"), grid, formActions);
-        panel.appendChild(el("p", "mx-hint", "Allowed providers: " + this.ALLOWED_HOSTS.join(", ") + ". Only https links are accepted."));
+        grid.append(field("Title", f.title), field("Fallback emoji", f.icon), field("Code / URL / iframe", f.src),
+            field("Thumbnail URL", f.thumb), field("Description", f.desc), field("Width", f.w), field("Height", f.h));
+        const formActions = el("div", "arcade-actions");
+        formActions.append(f.save, f.cancel);
+        card.append(el("h4", "", "Add or edit a game"), grid, formActions,
+            el("p", "mx-hint", "Allowed providers: " + this.ALLOWED_HOSTS.join(", ") + ". Only https links are accepted. If a thumbnail cannot load, the emoji is shown instead."));
 
         // --- repository tools ---
-        const file = input("file"); file.accept = "application/json,.json"; file.hidden = true;
+        const file = input("file");
+        file.accept = "application/json,.json";
+        file.hidden = true;
         file.addEventListener("change", () => { this.importJson(file.files[0]); file.value = ""; });
         const tools = el("div", "arcade-actions");
         tools.append(
@@ -3410,11 +3464,23 @@ const Arcade = {
             file
         );
         const warn = el("p", "arcade-repo-warn", "\u26A0 Changes are live in the room but NOT in the repository yet: download data.json and replace data/data.json in the repo.");
-        warn.id = "arcade-repo-warn"; warn.hidden = !this.repoDirty;
-        panel.append(el("h4", "", "Repository file (data/data.json)"), tools, warn);
+        warn.id = "arcade-repo-warn";
+        warn.hidden = !this.repoDirty;
+        card.append(el("h4", "", "Repository file (data/data.json)"), tools, warn);
 
-        slot.append(toggle, panel);
+        overlay.appendChild(card);
+        overlay.addEventListener("click", (e) => { if (e.target === overlay) this.closeEditor(); });
+        this.onKey = (e) => { if (e.key === "Escape" && !overlay.hidden) this.closeEditor(); };
+        document.addEventListener("keydown", this.onKey);
+        document.body.appendChild(overlay);
+        this.modal = overlay;
     },
+    openEditor() {
+        if (!this.modal || !this.adminAllowed()) return;
+        this.modal.hidden = false;
+        this.renderEditorList();
+    },
+    closeEditor() { if (this.modal) Fx.closeModal(this.modal); },
 
     renderEditorList() {
         const box = this.$("arcade-ed-list");
@@ -3426,7 +3492,9 @@ const Arcade = {
         list.forEach((g, i) => {
             const row = el("div", "arcade-row" + (g.enabled ? "" : " is-off"));
             let host = ""; try { host = new URL(g.src).hostname; } catch (e) { /* ignore */ }
-            row.append(el("span", "arcade-row-icon", g.icon), el("span", "arcade-row-title", g.title + (g.enabled ? "" : " (hidden)")), el("span", "arcade-row-host", host));
+            const info = el("span", "arcade-row-info");
+            info.append(el("span", "arcade-row-title", g.title + (g.enabled ? "" : " (hidden)")), el("span", "arcade-row-host", host));
+            row.append(this.makeThumb(g, true), info);
             const acts = el("span", "arcade-row-actions");
             acts.append(
                 btn("\u25B2", "Move up", () => this.move(g.id, -1), i === 0),
@@ -3464,7 +3532,9 @@ const Arcade = {
         if (!f.title.value.trim()) return Notify.error("Enter a title.");
         const src = this.parseSrc(f.src.value);
         if (!src) return Notify.error("Invalid source. Use a GameDistribution code or an https iframe URL (" + this.ALLOWED_HOSTS.join(", ") + ").");
-        const data = { title: f.title.value, icon: f.icon.value, description: f.desc.value, src, width: f.w.value, height: f.h.value };
+        const thumb = f.thumb.value.trim() ? this.parseThumb(f.thumb.value) : "";
+        if (f.thumb.value.trim() && !thumb) return Notify.error("Invalid thumbnail URL (https and an allowed host).");
+        const data = { title: f.title.value, icon: f.icon.value, description: f.desc.value, src, thumb, width: f.w.value, height: f.h.value };
         let what;
         if (this.editingId) {
             const i = list.findIndex((g) => g.id === this.editingId);
@@ -3485,16 +3555,17 @@ const Arcade = {
         if (!g || !this.f) return;
         const f = this.f;
         this.editingId = id;
-        f.title.value = g.title; f.icon.value = g.icon; f.src.value = g.src; f.desc.value = g.description;
+        f.title.value = g.title; f.icon.value = g.icon; f.src.value = g.src; f.thumb.value = g.thumb || ""; f.desc.value = g.description;
         f.w.value = g.width; f.h.value = g.height;
         f.save.textContent = "Save changes"; f.cancel.hidden = false;
-        f.title.focus();
+        f.title.focus({ preventScroll: true });
+        f.title.scrollIntoView({ block: "center", behavior: "smooth" }); // reveal the form inside the modal on phones
     },
     resetForm() {
         const f = this.f;
         this.editingId = null;
         if (!f) return;
-        f.title.value = f.icon.value = f.src.value = f.desc.value = "";
+        f.title.value = f.icon.value = f.src.value = f.thumb.value = f.desc.value = "";
         f.w.value = 800; f.h.value = 600;
         f.save.textContent = "Add game"; f.cancel.hidden = true;
     },
@@ -3523,7 +3594,7 @@ const Arcade = {
     /** Downloads the current list as data.json (replace data/data.json in the repository). */
     exportJson() {
         if (!this.adminAllowed()) return;
-        const games = this.list().map(({ id, title, icon, description, src, width, height, enabled }) => ({ id, title, icon, description, src, width, height, enabled }));
+        const games = this.list().map(({ id, title, icon, description, src, thumb, width, height, enabled }) => ({ id, title, icon, description, src, ...(thumb ? { thumb } : {}), width, height, enabled }));
         const json = JSON.stringify({ version: 1, updatedAt: new Date().toISOString(), games }, null, 2) + "\n";
         const url = URL.createObjectURL(new Blob([json], { type: "application/json" }));
         const a = document.createElement("a");

@@ -8789,14 +8789,13 @@ details.mx-det>summary::-webkit-details-marker {
 
 .arcade-list {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
     gap: 0.8rem;
     margin: 1rem 0;
 }
 
 .arcade-list[hidden],
-.arcade-player[hidden],
-.arcade-admin[hidden] {
+.arcade-player[hidden] {
     display: none;
 }
 
@@ -8819,11 +8818,6 @@ details.mx-det>summary::-webkit-details-marker {
 .arcade-card:focus-visible {
     transform: translateY(-2px);
     border-color: #f4c430;
-}
-
-.arcade-card-icon {
-    font-size: 2.2rem;
-    line-height: 1;
 }
 
 .arcade-card small {
@@ -8861,28 +8855,89 @@ details.mx-det>summary::-webkit-details-marker {
     border: 0;
 }
 
-/* Host editor */
-.arcade-admin {
-    flex-basis: 100%;
-    margin-top: 0.8rem;
-    padding: 0.9rem 1rem;
-    border: 1px solid rgba(244, 196, 48, 0.28);
-    border-radius: 12px;
-    background: rgba(255, 255, 255, 0.03);
+/* Thumbnails: the emoji is always rendered underneath; a loaded image covers it (.has-img). */
+.arcade-thumb {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    overflow: hidden;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.06);
+    font-size: 2.6rem;
 }
 
-.arcade-admin h3,
-.arcade-admin h4 {
-    margin: 0.6rem 0 0.4rem;
+.arcade-thumb img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.arcade-emoji {
+    line-height: 1;
+}
+
+.arcade-thumb.has-img .arcade-emoji {
+    opacity: 0;
+}
+
+.arcade-thumb.is-small {
+    flex: 0 0 48px;
+    width: 48px;
+    height: 48px;
+    border-radius: 8px;
+    font-size: 1.6rem;
+}
+
+/* Host editor: floating modal (same .modal-overlay / .modal as the rest of the app) */
+.arcade-modal {
+    max-width: 720px;
+    max-height: 90vh;
+    max-height: 90dvh;
+    padding: 1.25rem;
+}
+
+.arcade-modal h2 {
+    padding-right: 2.5rem;
+}
+
+.arcade-modal h4 {
+    margin: 1rem 0 0.4rem;
     color: #f4c430;
+}
+
+.arcade-modal .modal-close {
+    top: 0.4rem;
+    right: 0.4rem;
+    width: 44px;
+    height: 44px;
+    font-size: 1.3rem;
+}
+
+.arcade-modal .input-field {
+    font-size: 16px; /* avoids the iOS zoom-on-focus */
+    min-height: 44px;
+}
+
+.arcade-modal .btn {
+    min-height: 44px;
+}
+
+.arcade-modal .btn-small {
+    min-width: 40px;
+    min-height: 40px;
 }
 
 .arcade-row {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 0.5rem;
-    padding: 0.45rem 0;
+    gap: 0.6rem;
+    padding: 0.5rem 0;
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
@@ -8890,8 +8945,16 @@ details.mx-det>summary::-webkit-details-marker {
     opacity: 0.55;
 }
 
+.arcade-row-info {
+    display: flex;
+    flex: 1 1 140px;
+    flex-direction: column;
+    min-width: 0;
+}
+
 .arcade-row-title {
     font-weight: 600;
+    overflow-wrap: anywhere;
 }
 
 .arcade-row-host {
@@ -8910,7 +8973,7 @@ details.mx-det>summary::-webkit-details-marker {
     display: flex;
     flex-wrap: wrap;
     gap: 0.5rem;
-    margin: 0.5rem 0;
+    margin: 0.6rem 0;
 }
 
 .arcade-repo-warn {
@@ -8921,4 +8984,29 @@ details.mx-det>summary::-webkit-details-marker {
 
 .arcade-repo-warn[hidden] {
     display: none;
+}
+
+@media (max-width: 600px) {
+    #arcade-modal.modal-overlay {
+        padding: 0.5rem;
+    }
+
+    .arcade-modal {
+        max-height: 94vh;
+        max-height: 94dvh;
+        padding: 1rem;
+    }
+
+    .arcade-modal .ac-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .arcade-row-actions {
+        flex: 1 0 100%;
+        justify-content: flex-end;
+    }
+
+    .arcade-actions .btn {
+        flex: 1 1 100%;
+    }
 }
