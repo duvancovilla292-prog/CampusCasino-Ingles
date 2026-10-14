@@ -262,6 +262,7 @@ const AdminCtl = {
         const root = this.root();
         if (root) { root.textContent = ""; root.hidden = true; }
         this.built = false;
+        Arcade.teardownAdmin(); // remove the Arcade editor too
     },
 
     render() {
@@ -272,6 +273,7 @@ const AdminCtl = {
         root.hidden = false;
         this.refreshPlayers();
         this.refreshCfg(false);
+        Arcade.syncAdmin(); // Arcade editor appears only while the Host is authenticated
     },
 
     /** Tiny element helper. */

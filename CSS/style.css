@@ -8771,3 +8771,154 @@ details.mx-det>summary::-webkit-details-marker {
     opacity: 0.4;
     cursor: not-allowed;
 }
+
+/* =========================================================================
+     ARCADE (casual iframe games)
+     ========================================================================= */
+.arcade-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.8rem;
+}
+
+.arcade-admin-slot:empty {
+    display: none;
+}
+
+.arcade-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 0.8rem;
+    margin: 1rem 0;
+}
+
+.arcade-list[hidden],
+.arcade-player[hidden],
+.arcade-admin[hidden] {
+    display: none;
+}
+
+.arcade-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 1rem 0.7rem;
+    text-align: center;
+    color: inherit;
+    cursor: pointer;
+    border: 1px solid rgba(244, 196, 48, 0.3);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.04);
+    transition: transform 0.15s ease, border-color 0.15s ease;
+}
+
+.arcade-card:hover,
+.arcade-card:focus-visible {
+    transform: translateY(-2px);
+    border-color: #f4c430;
+}
+
+.arcade-card-icon {
+    font-size: 2.2rem;
+    line-height: 1;
+}
+
+.arcade-card small {
+    opacity: 0.75;
+}
+
+.arcade-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.6rem;
+    margin: 0.8rem 0;
+}
+
+/* Responsive container: JS sets max-width and aspect-ratio from the game's width/height. */
+.arcade-stage {
+    position: relative;
+    width: 100%;
+    max-width: 800px;
+    aspect-ratio: 4 / 3;
+    min-height: 300px;
+    margin: 0 auto;
+    overflow: hidden;
+    border: 1px solid rgba(244, 196, 48, 0.35);
+    border-radius: 12px;
+    background: #000;
+}
+
+.arcade-stage iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+}
+
+/* Host editor */
+.arcade-admin {
+    flex-basis: 100%;
+    margin-top: 0.8rem;
+    padding: 0.9rem 1rem;
+    border: 1px solid rgba(244, 196, 48, 0.28);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.arcade-admin h3,
+.arcade-admin h4 {
+    margin: 0.6rem 0 0.4rem;
+    color: #f4c430;
+}
+
+.arcade-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.45rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.arcade-row.is-off {
+    opacity: 0.55;
+}
+
+.arcade-row-title {
+    font-weight: 600;
+}
+
+.arcade-row-host {
+    font-size: 0.75rem;
+    opacity: 0.6;
+}
+
+.arcade-row-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+    margin-left: auto;
+}
+
+.arcade-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin: 0.5rem 0;
+}
+
+.arcade-repo-warn {
+    margin: 0.5rem 0 0;
+    color: #ffb347;
+    font-size: 0.85rem;
+}
+
+.arcade-repo-warn[hidden] {
+    display: none;
+}

@@ -15,16 +15,17 @@ Simulador educativo de casino y juegos de mesa **multijugador en tiempo real** c
 3. [Inicio rápido](#inicio-rápido)
 4. [Flujo de uso](#flujo-de-uso)
 5. [Juegos](#juegos)
-6. [Herramientas de selección al azar](#herramientas-de-selección-al-azar)
-7. [Funciones sociales y de progreso](#funciones-sociales-y-de-progreso)
-8. [Panel de administrador y ajustes del Host](#panel-de-administrador-y-ajustes-del-host)
-9. [Arquitectura](#arquitectura)
-10. [Modelo de datos en Firebase](#modelo-de-datos-en-firebase)
-11. [Configuración](#configuración)
-12. [Seguridad y reglas de Firebase](#seguridad-y-reglas-de-firebase)
-13. [Compatibilidad y accesibilidad](#compatibilidad-y-accesibilidad)
-14. [Solución de problemas](#solución-de-problemas)
-15. [Cómo extender el proyecto](#cómo-extender-el-proyecto)
+6. [Juegos casuales por iframe (Arcade)](#juegos-casuales-por-iframe-arcade)
+7. [Herramientas de selección al azar](#herramientas-de-selección-al-azar)
+8. [Funciones sociales y de progreso](#funciones-sociales-y-de-progreso)
+9. [Panel de administrador y ajustes del Host](#panel-de-administrador-y-ajustes-del-host)
+10. [Arquitectura](#arquitectura)
+11. [Modelo de datos en Firebase](#modelo-de-datos-en-firebase)
+12. [Configuración](#configuración)
+13. [Seguridad y reglas de Firebase](#seguridad-y-reglas-de-firebase)
+14. [Compatibilidad y accesibilidad](#compatibilidad-y-accesibilidad)
+15. [Solución de problemas](#solución-de-problemas)
+16. [Cómo extender el proyecto](#cómo-extender-el-proyecto)
 
 ---
 
@@ -34,6 +35,7 @@ Simulador educativo de casino y juegos de mesa **multijugador en tiempo real** c
 - **Conexión automática** a Firebase: la configuración está incrustada en el código, sin pantallas de configuración.
 - **Jugadores persistentes por sala:** saldo y estadísticas se guardan en Firebase y se actualizan en vivo en todos los dispositivos.
 - **Más de 20 juegos** en tres bloques: casino, juegos casuales y de fiesta, y herramientas de sorteo.
+- **Arcade de juegos por iframe** (estilo Poki / CrazyGames) cuya lista administra el Host en tiempo real y se respalda en `data/data.json`.
 - **Mesas compartidas** con lobby y asientos (Blackjack, Black Widow Poker, UNO, Parqués, Dominoes y más), con apuestas opcionales y relleno con un bot cuando juegas solo.
 - **Capa social y de progreso:** chat y reacciones de sala, jackpot comunitario, tienda de cosméticos, misiones diarias, Lucky Spin diario, títulos y logros, y un Banco Central con préstamos de emergencia.
 - **Torneos de eliminación directa** que todos ven en vivo.
@@ -50,6 +52,8 @@ Simulador educativo de casino y juegos de mesa **multijugador en tiempo real** c
 index.html
 CSS/
   style.css
+data/
+  data.json          Lista por defecto de juegos del Arcade (reemplázala con la que descargues del panel)
 JS/
   firebase-sync.js   (1) Firebase, Room, State, mesas compartidas (Tables), Banco, listeners por sala
   ui-audio.js        (2) DOM, audio, UI, router, tienda, chat, jackpot, misiones, logros, Lucky Spin
@@ -118,6 +122,7 @@ La barra superior muestra sala, jugador, saldo y la navegación entre juegos, ad
 | **Parqués**, **Dominoes**, **Chinese Checkers** | Hasta 4 |
 | **Chess**, **Connect Four**, **Battleship**, **Color Code Breaker**, **Picas y Fijas** | 2 |
 | **Hangman** | Multijugador |
+| **Arcade Games** | Juegos HTML5 externos embebidos en `<iframe>` (por defecto, Kick The Buddy). Sin fichas; ver la sección siguiente |
 | **Marble Gravity Race** | Toda la sala; carrera de canicas por un laberinto con gravedad |
 
 Todas las mesas comparten el mismo flujo:
@@ -133,6 +138,73 @@ Notas generales:
 - Un premio mayor o igual a **250 fichas** dispara la animación de celebración (`BIG_WIN_THRESHOLD`).
 - Cada ronda actualiza `gamesPlayed`, `totalWagered` y `netProfit` del jugador.
 - Si el saldo baja a 0 no puedes apostar: puedes pedir un préstamo al Banco Central o pedirle al Host que reinicie tu saldo.
+
+---
+
+## Juegos casuales por iframe (Arcade)
+
+Pestaña **Arcade Games** (*Casual Games*). Los jugadores ven una cuadrícula de juegos, abren uno y lo juegan en un contenedor responsive; solo hay un iframe montado a la vez, y se elimina al volver a la lista, cambiar de pestaña o salir de la sala (así no queda sonido en segundo plano). Los juegos no usan fichas ni afectan a las estadísticas.
+
+Cada juego se renderiza con la estructura estándar:
+
+```html
+<iframe
+  src="https://html5.gamedistribution.com/CODIGO_DEL_JUEGO/"
+  width="800"
+  height="600"
+  scrolling="no"
+  frameborder="0"
+  allowfullscreen>
+</iframe>
+```
+
+El contenedor usa `max-width` y `aspect-ratio` calculados con el ancho y alto de cada juego, así que se adapta a móvil y escritorio. (Nota: el valor válido del atributo es `scrolling="no"`, no `"none"`.)
+
+### Gestión (solo Host autenticado)
+
+El botón **⚙ Manage games** y todo el editor se construyen en el DOM **únicamente** si el dispositivo es el Host y ya introdujo el PIN del panel de admin; para los demás jugadores el contenedor queda vacío. Desde el editor puedes:
+
+- **Añadir y editar** juegos: título, icono (emoji), descripción, ancho y alto, y el origen.
+- **Ordenar** (▲ ▼), **ocultar/mostrar** y **eliminar** juegos.
+- **Descargar `data.json`**, **Importar JSON** y **Reset from repo data.json**.
+
+El campo de origen acepta un **código de GameDistribution** (32 caracteres), una **URL https**, un fragmento `<iframe ...>` pegado o un enlace Markdown `[url](url)`. Por seguridad solo se aceptan URLs `https` de los hosts permitidos en `Arcade.ALLOWED_HOSTS` (`gamedistribution.com`, `crazygames.com` y `poki.com`, incluidos sus subdominios). Para añadir otro proveedor, edita esa lista en `JS/casual-games.js`.
+
+### Persistencia híbrida
+
+| Capa | Dónde | Para qué |
+|---|---|---|
+| **Tiempo real** | Firebase: `rooms/{code}/arcade` | Cada cambio del Host llega al instante a todos los jugadores de la sala |
+| **Repositorio** | `data/data.json` | Lista por defecto: se usa mientras el Host no haya editado la lista en esa sala. Si no se puede leer (por ejemplo, al abrir el HTML con `file://`), se usa una copia integrada |
+
+GitHub Pages es estático y la página no puede escribir en el repositorio, así que el flujo para hacer un cambio permanente es:
+
+1. En el editor, añade o edita los juegos (se ven al instante en la sala).
+2. Pulsa **⬇ Download data.json**.
+3. Reemplaza `data/data.json` en tu repositorio, haz commit y espera a que GitHub Pages se actualice.
+
+Mientras haya cambios sin descargar, el editor muestra un aviso naranja. Formato del archivo:
+
+```json
+{
+  "version": 1,
+  "updatedAt": "2026-10-13T00:00:00.000Z",
+  "games": [
+    {
+      "id": "kick-the-buddy",
+      "title": "Kick The Buddy",
+      "icon": "🥊",
+      "description": "Relax-and-play ragdoll sandbox.",
+      "src": "https://html5.gamedistribution.com/3785ca02d41845c389b09c5e1ff4ced7/",
+      "width": 800,
+      "height": 600,
+      "enabled": true
+    }
+  ]
+}
+```
+
+Al importar, los juegos inválidos (título vacío o `src` no permitido) se omiten y se avisa cuántos fueron. El límite es de 60 juegos.
 
 ---
 
@@ -192,6 +264,7 @@ El panel de administrador solo se puede abrir desde el **dispositivo que creó l
 - **Delete:** elimina el perfil de un jugador.
 - **Export / Import:** descarga o restaura un respaldo JSON (`casino-campus-backup-<timestamp>.json`).
 - **Delete all:** borra todos los jugadores de la sala.
+- **Arcade:** tras desbloquear el panel, la pestaña Arcade Games muestra el botón **Manage games** (ver [Juegos casuales por iframe](#juegos-casuales-por-iframe-arcade)).
 
 ### Control total de partida
 - **⚡ Force start current table:** arranca la mesa del juego que tengas abierto detrás del panel aunque falten jugadores. Debes estar sentado en esa mesa mientras está en lobby; el Host toma la mesa y se salta el mínimo de jugadores solo para ese arranque.
@@ -226,7 +299,7 @@ El código está organizado en módulos (objetos literales) repartidos en cinco 
 | `firebase-sync.js` | `CONFIG`, `Room`, `PubSub`, `ConnectionStatus`, `State`, `Tables`, `Bank`, `Force`, `RoomCfg`, `Kick`, `Z` | Constantes y Firebase, capa de red (crear/unirse a sala, listeners, CRUD de jugadores, puntajes), sesión activa, lobbies de mesa compartidos, banco y listeners por sala |
 | `ui-audio.js` | `DOM`, `Sound`, `Effects`, `Notify`, `HUD`, `Validate`, `Router`, `AuthScreen`, `Leaderboard`, `Shop`, `Chat`, `Jackpot`, `Social`, `Missions`, `Rewards` | Caché del DOM, audio, celebraciones, toasts, navegación SPA, pantallas de sala y jugadores, tienda, chat, misiones, logros y Lucky Spin |
 | `casino-games.js` | `CardFX`, `Deck`, `GameResolver`, `Blackjack`, `Baccarat`, `Roulette`, `Slots`, `HiLo`, `BW`, `Dice`, `Keno`, `PokerDice` y más | Motor de cartas y juegos de casino |
-| `casual-games.js` | `PlayerWheel`, `LuckyDraw`, UNO, mesas casuales, `MarbleRace`, `Tour` | Juegos casuales, sorteos y torneos |
+| `casual-games.js` | `PlayerWheel`, `LuckyDraw`, UNO, mesas casuales, `MarbleRace`, `Tour`, `Arcade` | Juegos casuales, sorteos, torneos y el Arcade de juegos por iframe |
 | `admin-panel.js` | `Admin`, `AdminCtl`, `Plus`, `Rig`, `BetLimits`, `Audit`, `ZAdmin` | Panel de admin, ajustes del Host, límites, auditoría y arranque |
 
 Principios de diseño:
@@ -260,6 +333,7 @@ rooms/
     bank/            cfg, res (reserva), req/{username} (solicitudes)
     audit            registro de eventos
     adm/cfg          ajustes en vivo { turnSec, rounds, difficulty, ts }
+    arcade           lista de juegos del Arcade { custom, games/{id}/{title, icon, description, src, width, height, enabled, order}, ts, by }
     kicks/{username} señal de expulsión { ts, by }
 ```
 
@@ -306,6 +380,7 @@ La configuración web de Firebase es pública por naturaleza; lo que protege tus
 
 - En **modo de prueba**, cualquiera puede leer y escribir todas las salas.
 - El PIN de admin está en el código fuente y la comprobación de Host se hace en el cliente. Los controles del panel (expulsar, forzar inicio, editar puntajes, ajustes en vivo) solo están ocultos por la interfaz: sirve para un entorno educativo, **no** como seguridad real. Alguien con conocimientos podría escribir esos nodos (`kicks/`, `adm/cfg`, `players/`) directamente.
+- Las URLs de los iframes se validan en el cliente (https y hosts permitidos), pero el nodo `arcade/` también debería protegerse con reglas para que solo el Host pueda escribirlo.
 - Para más protección, añade **Firebase Authentication** y restringe las reglas: por ejemplo, que solo el Host pueda escribir en `kicks/`, `adm/` y `lim/`, y que `players/{username}/balance` se valide por tipo y rango.
 - Considera restringir la clave de API por dominio desde la consola de Google Cloud.
 - No se procesa dinero real: todas las fichas son virtuales.
@@ -328,6 +403,9 @@ La configuración web de Firebase es pública por naturaleza; lo que protege tus
 | "Could not reach Firebase" | Sin conexión o el SDK no cargó (bloqueador de anuncios, red restringida). Revisa la conexión y recarga |
 | "Room not found" | Código incorrecto o sala inexistente. Confirma el código con el Host |
 | Permiso denegado en la consola | Las reglas de Realtime Database bloquean la operación. Revisa las reglas |
+| Un juego del Arcade no carga | El proveedor puede bloquear tu dominio o el iframe. Prueba con otro juego o revisa la configuración del dominio en tu cuenta de GameDistribution |
+| "Invalid source" al añadir un juego | Usa un código de GameDistribution, una URL https o un `<iframe>` de un host permitido (`Arcade.ALLOWED_HOSTS`) |
+| No veo el botón Manage games | Solo aparece en el dispositivo Host y después de introducir el PIN en el panel de admin |
 | La página carga sin estilos o sin scripts | Las rutas `CSS/style.css` y `JS/*.js` deben existir con esos nombres exactos |
 | No se ve el panel de admin | Solo aparece en el dispositivo Host; si borraste el almacenamiento local perdiste esa identidad |
 | "Force start" no hace nada | Debes estar sentado en la mesa abierta del juego que tienes en pantalla, mientras está en lobby |
@@ -343,6 +421,7 @@ La configuración web de Firebase es pública por naturaleza; lo que protege tus
 - **Nuevo juego de mesa:** reutiliza `Tables` (apertura, asientos, lobby con `Tables.renderLobby`) y, para turnos, lee el límite con `RoomCfg.turnMs(45000)` para respetar el ajuste del Host.
 - **Leer los ajustes en vivo:** `RoomCfg.get("rounds")`, `RoomCfg.get("difficulty")` y el evento `PubSub.on("roomcfg-updated", fn)`.
 - **Nuevo modo de sorteo:** agrega un botón `.draw-mode-btn` con `data-draw-mode` y un método `runXxx(names, winners, id)` en `LuckyDraw`. Usa `this.frames(id, fn)` y `this.wait(ms, id)` para que sea cancelable, y `this.announce(name, rank)` para poblar el podio.
+- **Nuevo proveedor de juegos por iframe:** añade su dominio a `Arcade.ALLOWED_HOSTS` en `JS/casual-games.js`.
 - **Nuevos controles de admin:** añádelos dentro de `AdminCtl.build()` en `JS/admin-panel.js`; así solo existen en el DOM cuando el Host ha desbloqueado el panel.
 - **Estilos:** los colores y radios están en variables CSS (`:root`); cambiar el tema es editar esas variables.
 

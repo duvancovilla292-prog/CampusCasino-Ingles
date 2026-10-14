@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "updatedAt": "2026-10-13T00:00:00.000Z",
+  "games": [
+    {
+      "id": "kick-the-buddy",
+      "title": "Kick The Buddy",
+      "icon": "🥊",
+      "description": "Relax-and-play ragdoll sandbox.",
+      "src": "https://html5.gamedistribution.com/3785ca02d41845c389b09c5e1ff4ced7/",
+      "width": 800,
+      "height": 600,
+      "enabled": true
+    }
+  ]
+}

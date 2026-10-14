@@ -274,6 +274,8 @@
                 class="nav-menu-icon" aria-hidden="true">&#128290;</span><span>Picas y Fijas</span></button>
             <button type="button" class="nav-menu-item" role="menuitem" data-game="hangman"><span
                 class="nav-menu-icon" aria-hidden="true">&#128292;</span><span>Hangman</span></button>
+            <button type="button" class="nav-menu-item" role="menuitem" data-game="arcade"><span
+                class="nav-menu-icon" aria-hidden="true">&#128377;</span><span>Arcade Games</span></button>
             <button type="button" class="nav-menu-item" role="menuitem" data-game="dice"><span class="nav-menu-icon"
                 aria-hidden="true">&#127922;</span><span>Quick Dice</span></button>
             <button type="button" class="nav-menu-item" role="menuitem" data-game="tournament"><span
@@ -458,6 +460,31 @@
       <p class="bw-info">Two dice &middot; bet Low (2&ndash;6), High (8&ndash;12) or Lucky 7 &middot; 9-second shared
         rounds with the whole room</p>
       <div id="z-dice"></div>
+    </section>
+
+    <!-- GAME SECTION: ARCADE (casual iframe games; the list comes from Firebase + data/data.json) -->
+    <section id="game-arcade" class="game-section" data-game-section="arcade" hidden aria-labelledby="arcade-heading">
+      <div class="arcade-head">
+        <div>
+          <h2 id="arcade-heading">Casual Games</h2>
+          <p class="bw-info">Relax-and-play games &middot; no chips, no bets &middot; a game loads only while it is open</p>
+        </div>
+        <!-- Host-only: Arcade.syncAdmin() builds the "Manage games" button and editor here ONLY for the
+             authenticated Host (host device + PIN). For any other player this container stays empty. -->
+        <div id="arcade-admin-slot" class="arcade-admin-slot"></div>
+      </div>
+
+      <div id="arcade-list" class="arcade-list"></div>
+
+      <div id="arcade-player" class="arcade-player" hidden>
+        <div class="arcade-bar">
+          <button type="button" id="arcade-back" class="btn btn-secondary">&larr; All games</button>
+          <strong id="arcade-title"></strong>
+          <button type="button" id="arcade-full" class="btn btn-secondary" aria-label="Fullscreen">&#9974; Fullscreen</button>
+        </div>
+        <!-- Arcade.open() inserts the standard <iframe width="800" height="600" scrolling="no" frameborder="0" allowfullscreen> here -->
+        <div id="arcade-stage" class="arcade-stage"></div>
+      </div>
     </section>
 
     <!-- GAME SECTION: KNOCKOUT TOURNAMENT (host builds the bracket from active players) -->

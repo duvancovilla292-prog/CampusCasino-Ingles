@@ -643,6 +643,7 @@ const Z = {
         on(zref("dice"), (v) => Dice.on(v));
         on(zref("tour"), (v) => Tour.on(v));
         on(zref("adm/cfg"), (v) => RoomCfg.on(v));
+        on(zref("arcade"), (v) => Arcade.onRemote(v));
         on(zref("kicks"), (v) => Kick.on(v));
         if (State.isHost) { const q = zref("audit").limitToLast(200); q.on("value", (s) => { const o = s.val() || {}; ZAdmin.log = Object.keys(o).map((k) => o[k]); ZAdmin.audit(); }); this.offs.push(() => q.off()); }
         this.iv = window.setInterval(() => Dice.tick(), 400);

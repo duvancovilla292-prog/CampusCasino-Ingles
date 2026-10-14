@@ -3153,3 +3153,419 @@ const Tour = {
         PubSub.on("players-updated", () => this.paint());
     }
 };
+
+/* =========================================================================
+   ARCADE — Casual iframe games (Poki / CrazyGames style) managed by the Host
+
+   * Players only SEE and PLAY the enabled games (one iframe at a time).
+   * The Host (Admin.unlocked + State.isHost) gets a "Manage games" button. That button and the
+     whole editor are built into the DOM only for the authenticated Host; for everyone else the
+     container stays empty.
+   * Hybrid persistence:
+       - Realtime: rooms/<code>/arcade = { custom, games:{id:{...,order}}, ts, by } (live for all).
+       - Repository: data/data.json is the default list (used while the Host has not edited the
+         list in this room). The editor can Download the current list as data.json (replace the file
+         in the repo) and Import a JSON file. GitHub Pages is static, so the page cannot write it.
+   * Every iframe src is validated: https only and host in ALLOWED_HOSTS (edit the list to add
+     providers). Text is inserted with textContent, never as raw HTML.
+   ========================================================================= */
+const Arcade = {
+    KEY: "arcade",
+    SEED_URL: "data/data.json",
+    ALLOWED_HOSTS: ["gamedistribution.com", "crazygames.com", "poki.com"],
+    MAX_GAMES: 60,
+    /** Fallback when data/data.json cannot be fetched (e.g. page opened from file://). */
+    DEFAULT_GAMES: [{
+        id: "kick-the-buddy", title: "Kick The Buddy", icon: "\u{1F94A}",
+        description: "Relax-and-play ragdoll sandbox.",
+        src: "https://html5.gamedistribution.com/3785ca02d41845c389b09c5e1ff4ced7/",
+        width: 800, height: 600, enabled: true
+    }],
+
+    seed: null,          // list from data/data.json (or DEFAULT_GAMES)
+    remote: null,        // list synced from Firebase (null = Host never saved a custom list)
+    seedPromise: null,
+    activeId: null,      // game currently mounted in the player
+    editingId: null,     // game loaded in the editor form
+    editorOpen: false,
+    repoDirty: false,    // true after an edit until the Host downloads data.json
+    f: null,             // editor form fields
+
+    $(id) { return document.getElementById(id); },
+    el(tag, cls, text) {
+        const n = document.createElement(tag);
+        if (cls) n.className = cls;
+        if (text != null) n.textContent = text;
+        return n;
+    },
+
+    /* ---------------- parsing & validation ---------------- */
+
+    /** Accepts a GameDistribution code, a URL, a pasted <iframe ...> snippet or a [url](url) link. */
+    parseSrc(raw) {
+        let s = String(raw || "").trim();
+        const tag = s.match(/src\s*=\s*["']([^"']+)["']/i);
+        if (tag) s = tag[1].trim();
+        const md = s.match(/^\[[^\]]*\]\((.+)\)$/);
+        if (md) s = md[1].trim();
+        if (/^[a-f0-9]{32}$/i.test(s)) s = "https://html5.gamedistribution.com/" + s.toLowerCase() + "/";
+        let u;
+        try { u = new URL(s); } catch (e) { return null; }
+        if (u.protocol !== "https:") return null;
+        const h = u.hostname.toLowerCase();
+        if (!this.ALLOWED_HOSTS.some((a) => h === a || h.endsWith("." + a))) return null;
+        return u.href;
+    },
+    clampInt(v, lo, hi, def) { v = Math.round(Number(v)); return Number.isFinite(v) ? Math.min(hi, Math.max(lo, v)) : def; },
+    slug(t) { return String(t).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 36) || "game"; },
+    uniqueId(base, taken) { let id = base || "game", n = 2; while (taken.has(id)) id = base + "-" + n++; return id; },
+
+    /** Returns a clean game object or null when it is invalid. */
+    normalize(g) {
+        if (!g || typeof g !== "object") return null;
+        const src = this.parseSrc(g.src || g.url || g.code);
+        const title = String(g.title || "").replace(/\s+/g, " ").trim().slice(0, 40);
+        if (!src || !title) return null;
+        const icon = Array.from(String(g.icon || "").trim()).slice(0, 2).join("") || "\u{1F3AE}";
+        return {
+            id: String(g.id || "").toLowerCase().replace(/[^a-z0-9-]/g, "").slice(0, 48),
+            title, icon, src,
+            description: String(g.description || "").trim().slice(0, 120),
+            width: this.clampInt(g.width, 200, 2000, 800),
+            height: this.clampInt(g.height, 200, 2000, 600),
+            enabled: g.enabled !== false
+        };
+    },
+    normalizeList(arr) {
+        const out = [], taken = new Set();
+        let skipped = 0;
+        (Array.isArray(arr) ? arr : []).slice(0, this.MAX_GAMES).forEach((raw) => {
+            const g = this.normalize(raw);
+            if (!g) { skipped++; return; }
+            g.id = this.uniqueId(g.id || this.slug(g.title), taken);
+            taken.add(g.id);
+            out.push(g);
+        });
+        return { list: out, skipped };
+    },
+
+    /** Current list: the room's custom list when it exists, otherwise data/data.json. */
+    list() { return this.remote || this.seed || this.normalizeList(this.DEFAULT_GAMES).list; },
+
+    /* ---------------- data sources ---------------- */
+
+    /** Loads data/data.json once (or again when `force`). Falls back to DEFAULT_GAMES. */
+    loadSeed(force) {
+        if (this.seedPromise && !force) return this.seedPromise;
+        this.seedPromise = fetch(this.SEED_URL, { cache: "no-store" })
+            .then((r) => { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
+            .then((j) => this.normalizeList(Array.isArray(j) ? j : j && j.games).list)
+            .catch(() => this.normalizeList(this.DEFAULT_GAMES).list)
+            .then((list) => { this.seed = list; this.render(); return list; });
+        return this.seedPromise;
+    },
+
+    /** Firebase listener (rooms/<code>/arcade). */
+    onRemote(v) {
+        this.remote = v && v.custom
+            ? this.normalizeList(Object.values(v.games || {}).sort((a, b) => (a.order || 0) - (b.order || 0))).list
+            : null;
+        if (this.activeId && !this.list().some((g) => g.id === this.activeId && g.enabled)) {
+            this.unmount();
+            Notify.warning("The Host removed that game.");
+        }
+        this.render();
+    },
+
+    /* ---------------- player view ---------------- */
+
+    render() {
+        const box = this.$("arcade-list");
+        if (!box) return;
+        box.textContent = "";
+        const games = this.list().filter((g) => g.enabled);
+        if (!games.length) box.appendChild(this.el("p", "bw-info", "No games available yet."));
+        games.forEach((g) => {
+            const card = this.el("button", "arcade-card");
+            card.type = "button";
+            card.append(this.el("span", "arcade-card-icon", g.icon), this.el("strong", "", g.title));
+            if (g.description) card.appendChild(this.el("small", "", g.description));
+            card.addEventListener("click", () => this.open(g.id));
+            box.appendChild(card);
+        });
+        this.syncAdmin();
+        this.renderEditorList();
+    },
+
+    /** Mounts the standard iframe inside a responsive 'stage' container. */
+    open(id) {
+        const g = this.list().find((x) => x.id === id && x.enabled);
+        if (!g) return;
+        this.unmount();
+        this.activeId = id;
+        this.$("arcade-title").textContent = g.title;
+        const stage = this.$("arcade-stage");
+        stage.style.maxWidth = g.width + "px";
+        stage.style.aspectRatio = g.width + " / " + g.height;
+        const frame = document.createElement("iframe");
+        frame.src = g.src;
+        frame.width = String(g.width);
+        frame.height = String(g.height);
+        frame.setAttribute("scrolling", "no");
+        frame.setAttribute("frameborder", "0");
+        frame.setAttribute("allowfullscreen", "");
+        frame.setAttribute("allow", "autoplay; fullscreen");
+        frame.title = g.title;
+        stage.appendChild(frame);
+        this.$("arcade-list").hidden = true;
+        this.$("arcade-player").hidden = false;
+    },
+
+    /** Removes the iframe (stops the game and its audio) and shows the list again. */
+    unmount() {
+        const stage = this.$("arcade-stage"), player = this.$("arcade-player"), list = this.$("arcade-list");
+        if (stage) stage.textContent = "";
+        if (player) player.hidden = true;
+        if (list) list.hidden = false;
+        this.activeId = null;
+    },
+
+    onTab(key) {
+        if (key === this.KEY) this.render();
+        else this.unmount();
+    },
+
+    /** Clears per-room state when the player leaves the room. */
+    reset() {
+        this.unmount();
+        this.remote = null;
+        this.repoDirty = false;
+        this.teardownAdmin();
+    },
+
+    /* ---------------- Host-only management ---------------- */
+
+    adminAllowed() { return State.isHost === true && Admin.unlocked === true; },
+
+    /** Builds the editor only for the authenticated Host; empties it for everybody else. */
+    syncAdmin() {
+        const slot = this.$("arcade-admin-slot");
+        if (!slot) return;
+        if (!this.adminAllowed()) { this.teardownAdmin(); return; }
+        if (!slot.firstElementChild) this.buildAdmin(slot);
+    },
+    teardownAdmin() {
+        const slot = this.$("arcade-admin-slot");
+        if (slot) slot.textContent = "";
+        this.editorOpen = false; this.editingId = null; this.f = null;
+    },
+
+    buildAdmin(slot) {
+        const el = this.el.bind(this);
+        const field = (label, input) => { const l = el("label", "ac-field"); l.append(el("span", "", label), input); return l; };
+        const input = (type, max, ph) => { const i = el("input", "input-field"); i.type = type; if (max) i.maxLength = max; if (ph) i.placeholder = ph; return i; };
+        const btn = (text, cls, fn) => { const b = el("button", cls, text); b.type = "button"; b.addEventListener("click", fn); return b; };
+        slot.textContent = "";
+
+        const toggle = btn("\u2699 Manage games", "btn btn-secondary", () => {
+            this.editorOpen = !this.editorOpen;
+            panel.hidden = !this.editorOpen;
+            toggle.setAttribute("aria-expanded", String(this.editorOpen));
+            if (this.editorOpen) this.renderEditorList();
+        });
+        toggle.setAttribute("aria-expanded", "false");
+
+        const panel = el("div", "arcade-admin");
+        panel.hidden = true;
+        panel.appendChild(el("h3", "", "Game list (live for the whole room)"));
+        const listBox = el("div", "arcade-ed-list"); listBox.id = "arcade-ed-list";
+        panel.appendChild(listBox);
+
+        // --- add / edit form ---
+        const f = this.f = {
+            title: input("text", 40, "Game title"), icon: input("text", 4, "\u{1F3AE}"),
+            src: input("text", 600, "GameDistribution code, URL or <iframe> snippet"),
+            desc: input("text", 120, "Short description (optional)"),
+            w: input("number"), h: input("number")
+        };
+        f.w.value = 800; f.h.value = 600; f.w.min = f.h.min = 200; f.w.max = f.h.max = 2000;
+        f.save = btn("Add game", "btn btn-primary", () => this.submitForm());
+        f.cancel = btn("Cancel edit", "btn btn-secondary", () => this.resetForm());
+        f.cancel.hidden = true;
+        const grid = el("div", "ac-grid");
+        grid.append(field("Title", f.title), field("Icon (emoji)", f.icon), field("Code / URL / iframe", f.src),
+            field("Description", f.desc), field("Width", f.w), field("Height", f.h));
+        const formActions = el("div", "arcade-actions"); formActions.append(f.save, f.cancel);
+        panel.append(el("h4", "", "Add or edit a game"), grid, formActions);
+        panel.appendChild(el("p", "mx-hint", "Allowed providers: " + this.ALLOWED_HOSTS.join(", ") + ". Only https links are accepted."));
+
+        // --- repository tools ---
+        const file = input("file"); file.accept = "application/json,.json"; file.hidden = true;
+        file.addEventListener("change", () => { this.importJson(file.files[0]); file.value = ""; });
+        const tools = el("div", "arcade-actions");
+        tools.append(
+            btn("\u2B07 Download data.json", "btn btn-secondary", () => this.exportJson()),
+            btn("\u2B06 Import JSON", "btn btn-secondary", () => file.click()),
+            btn("\u21BA Reset from repo data.json", "btn btn-secondary", () => this.resetFromRepo()),
+            file
+        );
+        const warn = el("p", "arcade-repo-warn", "\u26A0 Changes are live in the room but NOT in the repository yet: download data.json and replace data/data.json in the repo.");
+        warn.id = "arcade-repo-warn"; warn.hidden = !this.repoDirty;
+        panel.append(el("h4", "", "Repository file (data/data.json)"), tools, warn);
+
+        slot.append(toggle, panel);
+    },
+
+    renderEditorList() {
+        const box = this.$("arcade-ed-list");
+        if (!box || !this.adminAllowed()) return;
+        const el = this.el.bind(this), list = this.list();
+        const btn = (text, title, fn, disabled) => { const b = el("button", "btn btn-small btn-secondary", text); b.type = "button"; b.title = title; b.disabled = !!disabled; b.addEventListener("click", fn); return b; };
+        box.textContent = "";
+        if (!list.length) box.appendChild(el("p", "bw-info", "The list is empty. Add a game below."));
+        list.forEach((g, i) => {
+            const row = el("div", "arcade-row" + (g.enabled ? "" : " is-off"));
+            let host = ""; try { host = new URL(g.src).hostname; } catch (e) { /* ignore */ }
+            row.append(el("span", "arcade-row-icon", g.icon), el("span", "arcade-row-title", g.title + (g.enabled ? "" : " (hidden)")), el("span", "arcade-row-host", host));
+            const acts = el("span", "arcade-row-actions");
+            acts.append(
+                btn("\u25B2", "Move up", () => this.move(g.id, -1), i === 0),
+                btn("\u25BC", "Move down", () => this.move(g.id, 1), i === list.length - 1),
+                btn("Edit", "Edit this game", () => this.edit(g.id)),
+                btn(g.enabled ? "Hide" : "Show", "Show or hide for players", () => this.toggleGame(g.id)),
+                btn("Delete", "Delete this game", () => this.removeGame(g.id))
+            );
+            row.appendChild(acts);
+            box.appendChild(row);
+        });
+    },
+    updateWarn() { const w = this.$("arcade-repo-warn"); if (w) w.hidden = !this.repoDirty; },
+
+    /** Writes the full list to Firebase (everyone receives it instantly). */
+    persist(list, what) {
+        if (!this.adminAllowed()) return Promise.reject(new Error("not admin"));
+        const ref = zref("arcade");
+        if (!ref) { Notify.error("Not connected to a room."); return Promise.reject(new Error("no room")); }
+        const games = {};
+        list.forEach((g, i) => { games[g.id] = { ...g, order: i }; });
+        return ref.set({ custom: true, games, ts: TS(), by: State.username || "host" })
+            .then(() => {
+                this.repoDirty = true; this.updateWarn();
+                Audit.log("config", `Arcade: ${what} (${list.length} games)`);
+                Notify.success(`${what}. Synced to the room.`);
+            })
+            .catch((e) => { Notify.error("Could not save the game list."); throw e; });
+    },
+    copyList() { return this.list().map((g) => ({ ...g })); },
+
+    submitForm() {
+        if (!this.adminAllowed() || !this.f) return;
+        const f = this.f, list = this.copyList();
+        if (!f.title.value.trim()) return Notify.error("Enter a title.");
+        const src = this.parseSrc(f.src.value);
+        if (!src) return Notify.error("Invalid source. Use a GameDistribution code or an https iframe URL (" + this.ALLOWED_HOSTS.join(", ") + ").");
+        const data = { title: f.title.value, icon: f.icon.value, description: f.desc.value, src, width: f.w.value, height: f.h.value };
+        let what;
+        if (this.editingId) {
+            const i = list.findIndex((g) => g.id === this.editingId);
+            if (i < 0) return Notify.error("That game no longer exists.");
+            list[i] = { ...this.normalize({ ...list[i], ...data }), id: this.editingId };
+            what = "Updated " + list[i].title;
+        } else {
+            if (list.length >= this.MAX_GAMES) return Notify.error(`Maximum ${this.MAX_GAMES} games.`);
+            const g = this.normalize(data);
+            g.id = this.uniqueId(this.slug(g.title), new Set(list.map((x) => x.id)));
+            list.push(g);
+            what = "Added " + g.title;
+        }
+        this.persist(list, what).then(() => this.resetForm()).catch(() => {});
+    },
+    edit(id) {
+        const g = this.list().find((x) => x.id === id);
+        if (!g || !this.f) return;
+        const f = this.f;
+        this.editingId = id;
+        f.title.value = g.title; f.icon.value = g.icon; f.src.value = g.src; f.desc.value = g.description;
+        f.w.value = g.width; f.h.value = g.height;
+        f.save.textContent = "Save changes"; f.cancel.hidden = false;
+        f.title.focus();
+    },
+    resetForm() {
+        const f = this.f;
+        this.editingId = null;
+        if (!f) return;
+        f.title.value = f.icon.value = f.src.value = f.desc.value = "";
+        f.w.value = 800; f.h.value = 600;
+        f.save.textContent = "Add game"; f.cancel.hidden = true;
+    },
+    move(id, dir) {
+        if (!this.adminAllowed()) return;
+        const list = this.copyList(), i = list.findIndex((g) => g.id === id), j = i + dir;
+        if (i < 0 || j < 0 || j >= list.length) return;
+        [list[i], list[j]] = [list[j], list[i]];
+        this.persist(list, "Reordered games").catch(() => {});
+    },
+    toggleGame(id) {
+        if (!this.adminAllowed()) return;
+        const list = this.copyList(), g = list.find((x) => x.id === id);
+        if (!g) return;
+        g.enabled = !g.enabled;
+        this.persist(list, (g.enabled ? "Showed " : "Hid ") + g.title).catch(() => {});
+    },
+    removeGame(id) {
+        if (!this.adminAllowed()) return;
+        const list = this.copyList(), g = list.find((x) => x.id === id);
+        if (!g || !window.confirm(`Delete "${g.title}" from the list?`)) return;
+        if (this.editingId === id) this.resetForm();
+        this.persist(list.filter((x) => x.id !== id), "Deleted " + g.title).catch(() => {});
+    },
+
+    /** Downloads the current list as data.json (replace data/data.json in the repository). */
+    exportJson() {
+        if (!this.adminAllowed()) return;
+        const games = this.list().map(({ id, title, icon, description, src, width, height, enabled }) => ({ id, title, icon, description, src, width, height, enabled }));
+        const json = JSON.stringify({ version: 1, updatedAt: new Date().toISOString(), games }, null, 2) + "\n";
+        const url = URL.createObjectURL(new Blob([json], { type: "application/json" }));
+        const a = document.createElement("a");
+        a.href = url; a.download = "data.json";
+        document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+        this.repoDirty = false; this.updateWarn();
+        Notify.success("data.json downloaded. Replace data/data.json in your repository.");
+    },
+    importJson(file) {
+        if (!file || !this.adminAllowed()) return;
+        if (file.size > 512 * 1024) return Notify.error("File too large (max 512 KB).");
+        const reader = new FileReader();
+        reader.onload = () => {
+            let json;
+            try { json = JSON.parse(String(reader.result)); } catch (e) { return Notify.error("That file is not valid JSON."); }
+            const { list, skipped } = this.normalizeList(Array.isArray(json) ? json : json && json.games);
+            if (!list.length) return Notify.error("No valid games found in that file.");
+            const extra = skipped ? ` (${skipped} invalid skipped)` : "";
+            if (!window.confirm(`Replace the current list with ${list.length} game(s)${extra}?`)) return;
+            this.persist(list, "Imported " + list.length + " games").catch(() => {});
+        };
+        reader.readAsText(file);
+    },
+    /** Replaces the room's custom list with the one stored in the repository's data/data.json. */
+    resetFromRepo() {
+        if (!this.adminAllowed()) return;
+        if (!window.confirm("Replace the room's list with the repository's data/data.json?")) return;
+        this.loadSeed(true).then((list) => this.persist(list, "Reset from data.json").catch(() => {}));
+    }
+};
+
+document.addEventListener("game-changed", (e) => Arcade.onTab(e.detail.gameKey));
+document.addEventListener("click", (e) => {
+    if (e.target.closest("#arcade-back")) Arcade.unmount();
+    else if (e.target.closest("#arcade-full")) {
+        const stage = Arcade.$("arcade-stage");
+        if (stage && stage.requestFullscreen) stage.requestFullscreen().catch(() => {});
+    }
+});
+{
+    const start0 = Social.start, stop0 = Social.stop;
+    Social.start = function () { start0.call(Social); Arcade.loadSeed(); };
+    Social.stop = function () { stop0.call(Social); Arcade.reset(); };
+}
