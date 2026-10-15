@@ -263,6 +263,7 @@ const AdminCtl = {
         if (root) { root.textContent = ""; root.hidden = true; }
         this.built = false;
         Arcade.teardownAdmin(); // remove the Arcade editor too
+        Quiz.clearAdmin();
     },
 
     render() {
@@ -274,6 +275,7 @@ const AdminCtl = {
         this.refreshPlayers();
         this.refreshCfg(false);
         Arcade.syncAdmin(); // Arcade editor appears only while the Host is authenticated
+        Quiz.syncAdmin();
     },
 
     /** Tiny element helper. */
@@ -801,7 +803,7 @@ GameResolver.resolve = function (id, r) {
 /* ---------- Host Settings tabs: Limits | Bank | Audit ---------- */
 const ZAdmin = {
     log: [], q: null, filter: "all",
-    games() { return [...document.querySelectorAll(".nav-menu-item[data-game]")].map((b) => b.dataset.game).filter((g, i, a) => a.indexOf(g) === i && !["draw", "wheel", "tournament"].includes(g)); },
+    games() { return [...document.querySelectorAll(".nav-menu-item[data-game]")].map((b) => b.dataset.game).filter((g, i, a) => a.indexOf(g) === i && !["draw", "wheel", "quiz", "tournament"].includes(g)); },
     render() { if (!State.isHost) return; this.limits(); this.bank(); this.audit(); },
     limits() {
         const box = $z("z-a-limits"); if (!box) return;
@@ -852,15 +854,15 @@ window.__zAdmin = () => { const a = $z("px-adm"); if (!a.dataset.z) { a.dataset.
 
 const soc0 = { start: Social.start.bind(Social), stop: Social.stop.bind(Social) };
 
-Social.start = function () { soc0.start(); Z.start(); };
+Social.start = function () { soc0.start(); Z.start(); Quiz.start(); };
 
-Social.stop = function () { soc0.stop(); Z.stop(); AdminCtl.clear(); };
+Social.stop = function () { soc0.stop(); Z.stop(); Quiz.stop(); AdminCtl.clear(); };
 
 /* =========================================================================
    APP BOOTSTRAP — must register LAST (this is the last script of the page).
    DOMContentLoaded listeners run in registration order, exactly as in the original build:
    first the VIP widgets (daily-spin tabs, quick dice, tournaments), then init() from ui-audio.js.
    ========================================================================= */
-document.addEventListener("DOMContentLoaded", () => { Rewards.init(); Dice.init(); Tour.init(); });
+document.addEventListener("DOMContentLoaded", () => { Rewards.init(); Dice.init(); Tour.init(); Quiz.init(); });
 
 document.addEventListener("DOMContentLoaded", init);

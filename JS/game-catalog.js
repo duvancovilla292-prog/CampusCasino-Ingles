@@ -3,7 +3,7 @@
 const GameCatalog = {
     categories: [
         { id: "casino", label: "Casino Games", games: ["blackjack", "baccarat", "pokerdice", "keno", "roulette", "slots", "hilo", "craps", "crash", "moneywheel", "blackwidow"] },
-        { id: "tools", label: "Random Selection Tools", games: ["draw", "wheel"] },
+        { id: "tools", label: "Tools", games: ["draw", "wheel", "quiz"] },
         { id: "casual", label: "Casual & Party Games", games: ["uno", "parques", "dominoes", "chess", "checkers", "connect4", "battleship", "mastermind", "bullscows", "hangman", "arcade"] }
     ],
     label(key) {

@@ -228,10 +228,11 @@
             <button type="button" class="nav-menu-item" role="menuitem" data-game="blackwidow"><span class="nav-menu-icon" aria-hidden="true">&#128375;</span><span>Black Widow Poker</span></button>
           </div>
           <div class="nav-menu-group" role="group" data-category="tools" aria-labelledby="nav-cat-tools">
-            <h3 id="nav-cat-tools" class="nav-menu-heading">Random Selection Tools<small>Student draw, teams and
+            <h3 id="nav-cat-tools" class="nav-menu-heading">Tools<small>Quizzes, student draw, teams and
                 turns</small></h3>
             <button type="button" class="nav-menu-item" role="menuitem" data-game="draw"><span class="nav-menu-icon"
                 aria-hidden="true">&#127873;</span><span>Lucky Draw</span></button>
+            <button type="button" class="nav-menu-item" role="menuitem" data-game="quiz"><span class="nav-menu-icon" aria-hidden="true">❓</span><span>Quiz / Preguntas Interactivas</span></button>
             <div class="nav-menu-chips" role="group" aria-label="Lucky Draw visual modes"><button type="button"
                 class="nav-menu-chip" role="menuitem" data-game="draw" data-draw-mode="slots">Slot Reels</button><button
                 type="button" class="nav-menu-chip" role="menuitem" data-game="draw" data-draw-mode="bingo">Bingo
@@ -489,6 +490,17 @@
           <span id="arcade-best" class="arcade-best" aria-live="polite"></span>
         </div>
       </div>
+    </section>
+
+    <!-- GAME SECTION: CLASSROOM QUIZ -->
+    <section id="game-quiz" class="game-section" data-game-section="quiz" hidden aria-labelledby="quiz-heading" lang="es">
+      <div class="quiz-toolbar">
+        <h2 id="quiz-heading">❓ Quiz / Preguntas Interactivas</h2>
+        <button type="button" id="quiz-fullscreen" class="btn btn-secondary">Pantalla completa</button>
+      </div>
+      <p id="quiz-connection" class="form-help" role="status">Conectando el quiz…</p>
+      <div id="quiz-stage" class="quiz-stage" aria-live="polite" aria-atomic="true"></div>
+      <div id="quiz-host" class="quiz-host" hidden></div>
     </section>
 
     <!-- GAME SECTION: KNOCKOUT TOURNAMENT (host builds the bracket from active players) -->
@@ -1374,6 +1386,7 @@
 
         <!-- Host-only controls: built by AdminCtl (admin-panel.js) only after the PIN is accepted -->
         <div id="admin-controls" class="admin-controls" hidden></div>
+        <section id="quiz-admin" class="ac-section" lang="es" hidden></section>
 
         <div class="admin-actions">
           <button type="button" id="btn-admin-export" class="btn btn-secondary">&#8681; Export Backup (.json)</button>
@@ -1424,6 +1437,7 @@
   <script defer src="JS/ui-audio.js"></script>        <!-- 2. DOM, sound, HUD, router, screens, shop, chat, missions -->
   <script defer src="JS/casino-games.js"></script>    <!-- 3. GameResolver + Blackjack, Roulette, Slots, Hi-Lo, Viuda Negra... -->
   <script defer src="JS/casual-games.js"></script>    <!-- 4. UNO, Parqués, Dominoes, duels, Marble Race, Lucky Draw... -->
+  <script defer src="JS/quiz.js"></script>
   <script defer src="JS/admin-panel.js"></script>     <!-- 5. Admin panel, Host Settings, rig, bet limits, audit, bootstrap -->
   
 </body>
