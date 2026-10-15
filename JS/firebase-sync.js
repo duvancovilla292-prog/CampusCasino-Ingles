@@ -191,6 +191,8 @@ const Room = {
     },
 
     detachListeners() {
+        if (this.cfgRef) this.cfgRef.off();
+        this.cfgRef = null;
         if (this.playersRef && this.onPlayersChange) {
             this.playersRef.off("value", this.onPlayersChange);
         }

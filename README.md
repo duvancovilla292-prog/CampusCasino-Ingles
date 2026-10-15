@@ -459,3 +459,43 @@ La configuración web de Firebase es pública por naturaleza; lo que protege tus
 ## Aviso
 
 Proyecto con fines **educativos y de entretenimiento**. Las fichas no tienen valor monetario y la aplicación no promueve el juego con dinero real.
+
+## Menú y partidas de deducción
+
+La entrada activa es `index.html`: carga los módulos `firebase-sync`, `game-catalog`,
+`ui-audio`, `casino-games`, `casual-games` y `admin-panel`. `JS/app.js` es la versión
+monolítica antigua y no se carga en la página.
+
+- **Host Settings → Room → Games & sections** permite activar cada juego o toda
+  una categoría al instante. Los estados se guardan en `rooms/{code}/cfg/disabled`
+  y `rooms/{code}/cfg/sectionsDisabled`. Una categoría pausada conserva los ajustes
+  individuales. Se ocultan también los atajos de Lucky Draw. Sin juegos disponibles
+  aparece un mensaje de pausa; al reactivar uno se vuelve a mostrar una partida.
+- Quick Dice y Knockout Tournament ya no forman parte del catálogo ni del menú.
+- **Color Code Breaker / Picas y Fijas:** dos jugadores se sientan e inician la
+  partida. Por turnos, cada uno introduce el secreto para su rival y pulsa
+  **Lock secret for opponent**. Al quedar ambos confirmados comienzan los intentos.
+  El PIN admite cero inicial y exige cuatro dígitos diferentes; el código de colores
+  admite repeticiones. Los intentos y las pistas se comparten mediante transacciones
+  de Realtime Database. El modo contra el bot utiliza las mismas reglas localmente.
+- **Hangman:** quien controla la mesa elige **I set a secret word**, introduce la
+  palabra y la confirma. Solo una escritura confirmada anuncia que está guardada.
+  El Word Master no adivina; los demás participantes alternan letras o soluciones.
+
+### Alcance de los secretos y los permisos
+
+Esta aplicación estática conserva el modelo de salas compartidas existente:
+los secretos no se muestran a los rivales en la interfaz durante la partida,
+pero están en el estado descargado por los clientes. La codificación de la palabra
+de Hangman no es cifrado. Los controles de host tampoco sustituyen reglas de
+seguridad de Firebase. Para impedir inspección o modificación desde herramientas
+de desarrollo hace falta una migración a Firebase Authentication, reglas de acceso
+por usuario y evaluación de intentos en un servicio de confianza (por ejemplo,
+Cloud Functions). No se despliegan reglas ni servicios remotos con estos cambios.
+
+### Comprobación local
+
+Sin dependencias adicionales: `node --test tests/deduction.test.cjs` ejecuta pruebas
+sobre los motores utilizados por la aplicación: turnos, configuración, pistas,
+validación del PIN, Word Master y política de visibilidad de categorías.
+Sirve la carpeta con `python3 -m http.server 8080` para inspeccionar la interfaz.

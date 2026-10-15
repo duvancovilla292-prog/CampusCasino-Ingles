@@ -213,7 +213,7 @@
           </svg>
         </button>
         <div id="nav-menu-panel" class="nav-menu-panel" role="menu" aria-label="Games and tools">
-          <div class="nav-menu-group" role="group" aria-labelledby="nav-cat-games">
+          <div class="nav-menu-group" role="group" data-category="casino" aria-labelledby="nav-cat-games">
             <h3 id="nav-cat-games" class="nav-menu-heading">Casino Games<small>Play with your chips</small></h3>
             <button type="button" class="nav-menu-item" role="menuitem" data-game="blackjack"><span class="nav-menu-icon" aria-hidden="true">&#127137;</span><span>Blackjack</span></button>
             <button type="button" class="nav-menu-item" role="menuitem" data-game="baccarat"><span class="nav-menu-icon" aria-hidden="true">&#127153;</span><span>Baccarat</span></button>
@@ -227,7 +227,7 @@
             <button type="button" class="nav-menu-item" role="menuitem" data-game="moneywheel"><span class="nav-menu-icon" aria-hidden="true">&#128176;</span><span>Money Wheel</span></button>
             <button type="button" class="nav-menu-item" role="menuitem" data-game="blackwidow"><span class="nav-menu-icon" aria-hidden="true">&#128375;</span><span>Black Widow Poker</span></button>
           </div>
-          <div class="nav-menu-group" role="group" aria-labelledby="nav-cat-tools">
+          <div class="nav-menu-group" role="group" data-category="tools" aria-labelledby="nav-cat-tools">
             <h3 id="nav-cat-tools" class="nav-menu-heading">Random Selection Tools<small>Student draw, teams and
                 turns</small></h3>
             <button type="button" class="nav-menu-item" role="menuitem" data-game="draw"><span class="nav-menu-icon"
@@ -251,7 +251,7 @@
             <button type="button" class="nav-menu-item" role="menuitem" data-game="draw" data-draw-mode="roles"><span
                 class="nav-menu-icon" aria-hidden="true">&#129513;</span><span>Roles &amp; Task Matrix</span></button>
           </div>
-          <div class="nav-menu-group" role="group" aria-labelledby="nav-cat-party">
+          <div class="nav-menu-group" role="group" data-category="casual" aria-labelledby="nav-cat-party">
             <h3 id="nav-cat-party" class="nav-menu-heading">Casual &amp; Party Games<small>Social games with optional
                 chip bets</small></h3>
             <button type="button" class="nav-menu-item" role="menuitem" data-game="uno"><span class="nav-menu-icon"
@@ -276,12 +276,9 @@
                 class="nav-menu-icon" aria-hidden="true">&#128292;</span><span>Hangman</span></button>
             <button type="button" class="nav-menu-item" role="menuitem" data-game="arcade"><span
                 class="nav-menu-icon" aria-hidden="true">&#128377;</span><span>Arcade Games</span></button>
-            <button type="button" class="nav-menu-item" role="menuitem" data-game="dice"><span class="nav-menu-icon"
-                aria-hidden="true">&#127922;</span><span>Quick Dice</span></button>
-            <button type="button" class="nav-menu-item" role="menuitem" data-game="tournament"><span
-                class="nav-menu-icon" aria-hidden="true">&#127942;</span><span>Knockout Tournament</span></button>
           </div>
         </div>
+        <p id="games-empty" class="bw-info" role="status" hidden>No games are available. The host can enable them in Host Settings.</p>
       </nav>
 
       <div class="top-panel-actions">
@@ -1078,7 +1075,7 @@
     <section id="game-mastermind" class="game-section" data-game-section="mastermind" hidden
       aria-labelledby="mm-heading">
       <h2 id="mm-heading">Color Code Breaker<span class="bw-title-sub">Casual &amp; Party Games</span></h2>
-      <p class="bw-info">2 players race to crack their own secret 4-colour code in 10 tries &middot; gold pin = right
+      <p class="bw-info">2 players choose a secret 4-colour code for each other, then race to solve it in 10 tries &middot; gold pin = right
         colour &amp; place, silver pin = right colour only &middot; optional stake &middot; solo vs AI available</p>
       <div class="tl" id="mm-lobby" hidden></div>
       <div id="mm-live" class="duel-live" hidden>
@@ -1107,7 +1104,7 @@
 
     <section id="game-bullscows" class="game-section" data-game-section="bullscows" hidden aria-labelledby="bc-heading">
       <h2 id="bc-heading">Picas y Fijas<span class="bw-title-sub">Casual &amp; Party Games</span></h2>
-      <p class="bw-info">2 players race to crack a secret 4-digit code (no repeats) in 10 tries &middot; Fija = right
+      <p class="bw-info">2 players choose a secret 4-digit PIN for each other (no repeats), then race to solve it in 10 tries &middot; Fija = right
         digit &amp; place, Pica = right digit, wrong place &middot; optional stake &middot; solo vs AI available</p>
       <div class="tl" id="bc-lobby" hidden></div>
       <div id="bc-live" class="duel-live" hidden>
@@ -1423,6 +1420,7 @@
   </div>
 
   <script defer src="JS/firebase-sync.js"></script>   <!-- 1. Firebase, Room, State, Tables, Bank, room listeners -->
+  <script defer src="JS/game-catalog.js"></script>
   <script defer src="JS/ui-audio.js"></script>        <!-- 2. DOM, sound, HUD, router, screens, shop, chat, missions -->
   <script defer src="JS/casino-games.js"></script>    <!-- 3. GameResolver + Blackjack, Roulette, Slots, Hi-Lo, Viuda Negra... -->
   <script defer src="JS/casual-games.js"></script>    <!-- 4. UNO, Parqués, Dominoes, duels, Marble Race, Lucky Draw... -->
