@@ -68,7 +68,11 @@ const Dialog = (() => {
             title.id = "ui-dialog-title"; box.setAttribute("aria-labelledby", title.id);
             const grab = el("div", "sheet-grabber"); grab.setAttribute("aria-hidden", "true");
             box.append(grab, title);
-            if (o.message) box.append(el("p", "ui-dialog-message", o.message));
+            if (o.message) {
+                const message = el("p", "ui-dialog-message", o.message);
+                message.style.whiteSpace = "pre-line"; // keeps the line breaks of multi-line summaries
+                box.append(message);
+            }
 
             let input = null;
             if (prompt) {
@@ -263,6 +267,448 @@ const GamesAdmin = {
         }
     }
 };
+
+/* =========================================================================
+   19f. BACKUP — full room export / import (data.json)
+   -------------------------------------------------------------------------
+   One structured JSON file backs up and restores the whole room:
+
+     {
+       app, schemaVersion, exportedAt, roomCode,
+       games: [...],                         // alias of modules.casualGames.games so the file also works
+                                             // as the repository seed (Arcade.loadSeed reads `games`)
+       modules: {
+         casualGames: { custom, games[] },   // title, icon/emoji, iframe src, thumbnail, size, enabled
+         quiz:        { questions[], live },  // prompt, options A/B/C/D..., correctIndex + "question on air" state
+         store:       { items[], hidden[] },  // host-added items (prices, SVG, icons) + items removed from sale
+         room:        { cfg, visibility, settings, limits, bank },
+         players:     { <username>: {...} }
+       }
+     }
+
+   - Export reads the server state once, so the file always matches what players see.
+   - Import never trusts the file: every module is re-validated with the same normalizers the
+     admin forms use (Arcade.normalizeList, Quiz.question, Catalog.norm / Svg.clean), keys are
+     checked against Firebase's key rules, sizes are capped, and invalid entries are skipped
+     (and reported) instead of being written.
+   - Everything is written with ONE multi-path update(): Firebase applies it atomically (all or
+     nothing) and the room listeners then refresh every connected player instantly.
+   - The secret "rig / chosen winner" switch is deliberately never exported or imported.
+   - Older files ({ players } or a bare players map) and bare game lists still import.
+   ========================================================================= */
+/* BACKUP:BEGIN (tests/backup_test.cjs slices the file between these markers) */
+const Backup = {
+    APP: "casino-campus",
+    VERSION: 2,
+    FILE_NAME: "data.json",
+    MAX_BYTES: 5 * 1024 * 1024,
+    MAX: { questions: 200, items: 300, names: 80, players: 500, depth: 8 },
+    busy: false,
+
+    /* ------------------------------ small pure helpers ------------------------------ */
+
+    isObj(v) { return v !== null && typeof v === "object" && !Array.isArray(v); },
+
+    /** Firebase keys must be non-empty and cannot contain . $ # [ ] / or control characters. */
+    safeKey(k) { return typeof k === "string" && k.length > 0 && k.length <= 100 && !/[.$#\[\]\/\u0000-\u001F\u007F]/.test(k); },
+
+    /** True when a value holds only JSON primitives and Firebase-safe keys, and is not absurdly deep. */
+    cleanTree(v, depth = 0) {
+        if (depth > this.MAX.depth) return false;
+        if (Array.isArray(v)) return v.every((x) => this.cleanTree(x, depth + 1));
+        if (this.isObj(v)) return Object.keys(v).every((k) => this.safeKey(k) && this.cleanTree(v[k], depth + 1));
+        return v === null || typeof v === "string" || typeof v === "boolean" || (typeof v === "number" && Number.isFinite(v));
+    },
+
+    clamp(v, lo, hi, def) { v = Number(v); return Number.isFinite(v) ? Math.min(hi, Math.max(lo, v)) : def; },
+
+    /** Keeps only { key: true } entries, optionally restricted to a list of known keys. */
+    flags(obj, known) {
+        const out = {};
+        if (this.isObj(obj)) Object.keys(obj).forEach((k) => { if (obj[k] === true && (!known || known.includes(k))) out[k] = true; });
+        return out;
+    },
+
+    /** Empty maps are stored as null (Firebase cannot hold empty objects). */
+    orNull(obj) { return Object.keys(obj).length ? obj : null; },
+
+    /** Firebase hands arrays back as objects when indexes are sparse; accept both shapes. */
+    toList(v) { return Array.isArray(v) ? v : Object.values(this.isObj(v) ? v : {}); },
+
+    /** Fresh push-style key (falls back to a random id when no room is connected, e.g. in tests). */
+    newKey() {
+        const ref = typeof zref === "function" ? zref("quiz") : null;
+        return ref ? ref.push().key : "q" + Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
+    },
+
+    /* ------------------------------ EXPORT ------------------------------ */
+
+    /** Reads every module from the server (one-shot reads) and packs it into the backup object. */
+    async collect() {
+        const read = (path) => { const ref = zref(path); return ref ? ref.once("value").then((s) => s.val()) : Promise.resolve(null); };
+        const [quiz, shop, cfg, adm, lim, bank, players] = await Promise.all(["quiz", "shop", "cfg", "adm/cfg", "lim", "bank/cfg", "players"].map(read));
+        return this.build({ quiz, shop, cfg, adm, lim, bank, players, games: Arcade.list(), custom: !!Arcade.remote, roomCode: State.roomCode });
+    },
+
+    /** Pure: raw Firebase nodes -> backup object (no DOM / network, so it can be unit-tested). */
+    build(raw) {
+        const games = (raw.games || []).map((g) => ({ ...g }));
+
+        const questions = Object.entries((raw.quiz && raw.quiz.questions) || {})
+            .filter(([, q]) => this.isObj(q))
+            .map(([id, q]) => ({ id, prompt: q.prompt, options: this.toList(q.options), correctIndex: q.correctIndex }));
+        const lv = raw.quiz && raw.quiz.live;
+        const live = lv && this.isObj(lv.question) ? {
+            questionId: lv.questionId || null,
+            optionsVisible: !!lv.optionsVisible,                 // "On air": options A/B/C/D hidden until revealed
+            answerVisible: !!lv.answerVisible,
+            question: { prompt: lv.question.prompt, options: this.toList(lv.question.options), correctIndex: lv.question.correctIndex }
+        } : null;
+
+        const hiddenMap = (raw.shop && raw.shop.hidden) || {};
+        const items = Object.values((raw.shop && raw.shop.items) || {}).filter((i) => this.isObj(i)).map((i) => {
+            const out = { slot: i.slot, id: i.id, name: i.name, price: i.price, rarity: i.rarity };
+            if (i.icon) out.icon = i.icon;
+            if (i.svg) out.svg = i.svg;
+            if (i.color) out.color = i.color;
+            return out;
+        });
+
+        const c = raw.cfg || {};
+        const adm = raw.adm, lim = raw.lim, bank = raw.bank;
+        return {
+            app: this.APP,
+            schemaVersion: this.VERSION,
+            exportedAt: new Date().toISOString(),
+            roomCode: raw.roomCode || null,
+            games,
+            modules: {
+                casualGames: { custom: !!raw.custom, games },
+                quiz: { questions, live },
+                store: { items, hidden: Object.keys(hiddenMap).filter((k) => hiddenMap[k]) },
+                room: {
+                    cfg: {
+                        roomName: c.roomName || "", bonusMult: c.bonusMult || 1, missionsOn: c.missionsOn !== false,
+                        names: this.isObj(c.names) ? { ...c.names } : {}, mDisabled: this.flags(c.mDisabled)
+                    },
+                    visibility: { sectionsDisabled: this.flags(c.sectionsDisabled), disabled: this.flags(c.disabled) },
+                    settings: adm ? { turnSec: adm.turnSec, rounds: adm.rounds, difficulty: adm.difficulty } : null,
+                    limits: lim ? { g: lim.g, games: this.isObj(lim.games) ? { ...lim.games } : {} } : null,
+                    bank: bank ? { on: bank.on !== false, max: bank.max, rate: bank.rate, auto: !!bank.auto } : null
+                },
+                players: this.isObj(raw.players) ? raw.players : {}
+            }
+        };
+    },
+
+    /** Saves the object as a file (Blob + temporary link; works on GitHub Pages and on phones). */
+    download(payload) {
+        const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+        const url = URL.createObjectURL(blob), link = document.createElement("a");
+        link.href = url; link.download = this.FILE_NAME;
+        document.body.appendChild(link); link.click(); link.remove();
+        window.setTimeout(() => URL.revokeObjectURL(url), 1000); // revoking at once cancels the download in some browsers
+    },
+
+    async exportData() {
+        if (!AdminCtl.allowed()) return Notify.error("Only the unlocked Host can export data.");
+        if (this.busy) return;
+        this.busy = true;
+        try {
+            const payload = await this.collect(), m = payload.modules;
+            this.download(payload);
+            Notify.success(`${this.FILE_NAME} downloaded: ${m.casualGames.games.length} games, ${m.quiz.questions.length} questions, ` +
+                `${m.store.items.length} store items, ${Object.keys(m.players).length} players.`);
+        } catch (e) {
+            Notify.error("Could not export the data. Check your connection and try again.");
+        } finally { this.busy = false; }
+    },
+
+    /* ------------------------------ IMPORT: validation ------------------------------ */
+
+    /**
+     * Validates and sanitizes a parsed JSON file. Returns { plan, skipped } where `plan` only holds
+     * clean data ready to write; throws an Error with a user-facing message when nothing is usable.
+     */
+    validate(json) {
+        if (Array.isArray(json)) json = { games: json };            // a bare game list (repository data/data.json)
+        if (!this.isObj(json)) throw new Error("The file must contain a JSON object.");
+        if (json.app != null && json.app !== this.APP) throw new Error("This file was not exported from Casino Campus.");
+        if (json.schemaVersion != null && !(Number.isInteger(json.schemaVersion) && json.schemaVersion >= 1 && json.schemaVersion <= this.VERSION)) {
+            throw new Error("This backup comes from a newer version of the app.");
+        }
+        const mods = this.isObj(json.modules) ? json.modules : {};
+        const plan = {}, skipped = { players: 0, games: 0, questions: 0, items: 0 };
+
+        /* ----- players (also the legacy shapes: { players } or the players map itself) ----- */
+        let rawPlayers = mods.players !== undefined ? mods.players : json.players;
+        const looksLegacy = rawPlayers === undefined && json.modules === undefined && json.games === undefined && json.app == null &&
+            Object.keys(json).length > 0 && Object.values(json).every((v) => this.isObj(v));
+        if (looksLegacy) rawPlayers = json;
+        if (rawPlayers !== undefined) {
+            if (!this.isObj(rawPlayers)) throw new Error("The players section is not valid.");
+            const players = {};
+            let count = 0;
+            Object.keys(rawPlayers).forEach((key) => {
+                const p = rawPlayers[key];
+                if (count >= this.MAX.players || !this.safeKey(key) || !this.isObj(p) || !this.cleanTree(p) ||
+                    (p.balance != null && !Number.isFinite(p.balance))) { skipped.players++; return; }
+                players[key] = { ...p, username: key };            // the node key is the source of truth
+                count++;
+            });
+            if (count) plan.players = players;
+        }
+
+        /* ----- casual games (iframe list) ----- */
+        const cg = mods.casualGames !== undefined ? mods.casualGames : (json.games !== undefined ? { games: json.games } : undefined);
+        if (cg !== undefined) {
+            const raw = Array.isArray(cg) ? cg : (this.isObj(cg) ? cg.games : null);
+            if (!Array.isArray(raw) && !this.isObj(raw)) throw new Error("The casual games section is not valid.");
+            const list = this.toList(raw);
+            const r = Arcade.normalizeList(list);                    // checks title, iframe host allow-list, thumbnail, size, unique ids
+            skipped.games = r.skipped + Math.max(0, list.length - Arcade.MAX_GAMES);
+            if (r.list.length || !skipped.games) plan.casualGames = r.list;
+        }
+
+        /* ----- quiz (questions + the "question on air" state) ----- */
+        if (mods.quiz !== undefined) {
+            const qz = mods.quiz;
+            if (!this.isObj(qz)) throw new Error("The quiz section is not valid.");
+            const entries = Array.isArray(qz.questions)
+                ? qz.questions.map((q) => [this.isObj(q) ? q.id : null, q])
+                : Object.entries(this.isObj(qz.questions) ? qz.questions : {});
+            const questions = {}, idMap = {};
+            let count = 0;
+            entries.forEach(([oldId, q]) => {
+                if (count >= this.MAX.questions || !this.isObj(q)) { skipped.questions++; return; }
+                try {
+                    const clean = Quiz.question(q.prompt, this.toList(q.options), Number(q.correctIndex)); // same rules as the editor
+                    let id = String(oldId == null ? "" : oldId);
+                    if (!/^[A-Za-z0-9_-]{1,40}$/.test(id) || questions[id]) id = this.newKey();
+                    questions[id] = clean;
+                    if (oldId != null) idMap[String(oldId)] = id;
+                    count++;
+                } catch (e) { skipped.questions++; }
+            });
+            let live = null;
+            const lv = qz.live;
+            if (this.isObj(lv)) {
+                const mapped = idMap[String(lv.questionId)];
+                let snapshot = mapped ? questions[mapped] : null;
+                if (!snapshot && this.isObj(lv.question)) {
+                    try { snapshot = Quiz.question(lv.question.prompt, this.toList(lv.question.options), Number(lv.question.correctIndex)); } catch (e) { snapshot = null; }
+                }
+                if (snapshot) {
+                    live = {
+                        id: this.newKey(),                            // new token: stale controls can never hit the restored question
+                        question: { prompt: snapshot.prompt, options: [...snapshot.options], correctIndex: snapshot.correctIndex },
+                        optionsVisible: lv.optionsVisible === true,
+                        answerVisible: lv.optionsVisible === true && lv.answerVisible === true
+                    };
+                    if (mapped) live.questionId = mapped;
+                }
+            }
+            if (count || !skipped.questions) plan.quiz = { questions, live };
+        }
+
+        /* ----- store (host-added items + items removed from sale) ----- */
+        if (mods.store !== undefined) {
+            const st = mods.store;
+            if (!this.isObj(st)) throw new Error("The store section is not valid.");
+            const list = this.toList(st.items), items = {};
+            skipped.items = Math.max(0, list.length - this.MAX.items);
+            list.slice(0, this.MAX.items).forEach((raw) => {
+                const it = this.isObj(raw) ? Catalog.norm(raw) : null; // validates slot / id / price and sanitizes raw SVG
+                if (!it) { skipped.items++; return; }
+                const rec = { slot: it.slot, id: it.id, name: it.name, price: it.price, rarity: it.rarity };
+                if (it.icon) rec.icon = it.icon;
+                if (it.svg) rec.svg = it.svg;
+                if (it.color) rec.color = it.color;
+                items[Catalog.key(it.slot, it.id)] = rec;               // key is recomputed, never trusted
+            });
+            const hidden = {};
+            const hiddenList = Array.isArray(st.hidden) ? st.hidden : Object.keys(this.isObj(st.hidden) ? st.hidden : {}).filter((k) => st.hidden[k] === true);
+            hiddenList.forEach((k) => {
+                const m = /^([a-z]+):([a-z0-9_-]{1,40})$/.exec(String(k));
+                if (m && SLOTS.includes(m[1])) hidden[m[0]] = true;
+            });
+            if (Object.keys(items).length || !skipped.items) plan.store = { items, hidden };
+        }
+
+        /* ----- room & admin settings ----- */
+        if (mods.room !== undefined) {
+            const rm = mods.room;
+            if (!this.isObj(rm)) throw new Error("The room settings section is not valid.");
+            const room = {};
+            if (this.isObj(rm.cfg)) {
+                const c = rm.cfg, names = {};
+                let n = 0;
+                if (this.isObj(c.names)) Object.keys(c.names).forEach((k) => {
+                    const v = String(c.names[k] == null ? "" : c.names[k]).trim().slice(0, 32);
+                    if (n < this.MAX.names && /^[A-Za-z0-9_-]{1,48}$/.test(k) && v) { names[k] = v; n++; }
+                });
+                room.cfg = {
+                    roomName: String(c.roomName || "").trim().slice(0, 40),
+                    bonusMult: Math.round(this.clamp(c.bonusMult, 0, 10, 1) * 100) / 100,
+                    missionsOn: c.missionsOn !== false,
+                    names,
+                    mDisabled: this.flags(c.mDisabled, Missions.QUESTS.map((q) => q.id))
+                };
+            }
+            if (this.isObj(rm.visibility)) {
+                room.visibility = {
+                    sectionsDisabled: this.flags(rm.visibility.sectionsDisabled, GameCatalog.categories.map((c) => c.id)),
+                    disabled: this.flags(rm.visibility.disabled, GameCatalog.categories.flatMap((c) => c.games))
+                };
+            }
+            if (this.isObj(rm.settings)) {
+                const s = rm.settings;
+                room.settings = {
+                    turnSec: Math.round(this.clamp(s.turnSec, 5, 600, RoomCfg.DEF.turnSec)),
+                    rounds: Math.round(this.clamp(s.rounds, 1, 20, RoomCfg.DEF.rounds)),
+                    difficulty: ["easy", "normal", "hard"].includes(s.difficulty) ? s.difficulty : "normal"
+                };
+            }
+            if (this.isObj(rm.limits)) {
+                const games = {};
+                if (this.isObj(rm.limits.games)) Object.keys(rm.limits.games).forEach((k) => {
+                    const v = Math.round(Number(rm.limits.games[k]));
+                    if (/^[A-Za-z0-9:_-]{1,48}$/.test(k) && v > 0 && v <= 1e9) games[k] = v;
+                });
+                room.limits = { g: Math.round(this.clamp(rm.limits.g, 1, 1e9, BetLimits.DEF)), games };
+            }
+            if (this.isObj(rm.bank)) {
+                const b = rm.bank;
+                room.bank = { on: b.on !== false, max: Math.round(this.clamp(b.max, 1, 1e9, 500)), rate: this.clamp(b.rate, 0, 100, 10), auto: b.auto === true };
+            }
+            if (Object.keys(room).length) plan.room = room;
+        }
+
+        if (!Object.keys(plan).length) {
+            const any = skipped.players + skipped.games + skipped.questions + skipped.items > 0;
+            throw new Error(any ? "None of the entries in that file were valid." : "No importable data found in that file.");
+        }
+        return { plan, skipped };
+    },
+
+    /** Human-readable summary of what an import will replace (shown in the confirmation dialog). */
+    describe(plan) {
+        const n = (o) => Object.keys(o).length, lines = [];
+        if (plan.casualGames) lines.push(`\u2022 Casual games: ${plan.casualGames.length}`);
+        if (plan.quiz) lines.push(`\u2022 Quiz: ${n(plan.quiz.questions)} question(s)${plan.quiz.live ? ", question on air restored" : ""}`);
+        if (plan.store) lines.push(`\u2022 Store: ${n(plan.store.items)} custom item(s), ${n(plan.store.hidden)} removed from sale`);
+        if (plan.room) {
+            const r = plan.room, parts = [];
+            if (r.cfg) parts.push("room options");
+            if (r.visibility) parts.push("game visibility");
+            if (r.settings) parts.push("turn rules");
+            if (r.limits) parts.push("bet limits");
+            if (r.bank) parts.push("bank");
+            lines.push(`\u2022 Room & admin settings: ${parts.join(", ")}`);
+        }
+        if (plan.players) lines.push(`\u2022 Players: ${n(plan.players)} (merged by username)`);
+        return lines;
+    },
+
+    /** "Skipped 2 games, 1 question." — or an empty string when nothing was rejected. */
+    skippedText(skipped) {
+        const parts = [["players", "player"], ["games", "game"], ["questions", "question"], ["items", "store item"]]
+            .filter(([k]) => skipped[k] > 0).map(([k, label]) => `${skipped[k]} ${label}${skipped[k] === 1 ? "" : "s"}`);
+        return parts.length ? `Skipped invalid entries: ${parts.join(", ")}.` : "";
+    },
+
+    /* ------------------------------ IMPORT: write ------------------------------ */
+
+    /** Pure: sanitized plan -> one multi-path update object, relative to rooms/<code>/. */
+    toUpdates(plan) {
+        const u = {}, by = State.username || "host";
+        if (plan.casualGames) {
+            const games = {};
+            plan.casualGames.forEach((g, i) => { games[g.id] = { ...g, order: i }; });   // same node shape as Arcade.persist()
+            u.arcade = { custom: true, games, ts: TS(), by };
+        }
+        if (plan.quiz) {
+            u["quiz/questions"] = this.orNull(plan.quiz.questions);
+            u["quiz/live"] = plan.quiz.live;                                              // null clears the screen
+        }
+        if (plan.store) {
+            const items = {};
+            Object.keys(plan.store.items).forEach((k) => { items[k] = { ...plan.store.items[k], by, ts: TS() }; });
+            u["shop/items"] = this.orNull(items);
+            u["shop/hidden"] = this.orNull(plan.store.hidden);
+        }
+        if (plan.room) {
+            const r = plan.room;
+            // Individual children (never the whole cfg node) so the secret rig switch is left untouched.
+            if (r.cfg) {
+                u["cfg/roomName"] = r.cfg.roomName; u["cfg/bonusMult"] = r.cfg.bonusMult; u["cfg/missionsOn"] = r.cfg.missionsOn;
+                u["cfg/names"] = this.orNull(r.cfg.names); u["cfg/mDisabled"] = this.orNull(r.cfg.mDisabled);
+            }
+            if (r.visibility) {
+                u["cfg/sectionsDisabled"] = this.orNull(r.visibility.sectionsDisabled);
+                u["cfg/disabled"] = this.orNull(r.visibility.disabled);
+            }
+            if (r.settings) u["adm/cfg"] = { ...r.settings, ts: TS() };
+            if (r.limits) u.lim = { g: r.limits.g, games: r.limits.games };
+            if (r.bank) u["bank/cfg"] = r.bank;
+        }
+        if (plan.players) Object.keys(plan.players).forEach((k) => { u["players/" + k] = plan.players[k]; });
+        return u;
+    },
+
+    /** Writes the plan atomically, then refreshes the panels that are currently open. */
+    async apply(plan) {
+        const root = Room.db && Room.code ? Room.db.ref(`rooms/${Room.code}`) : null;
+        if (!root) throw new Error("Not connected to a room.");
+        await root.update(this.toUpdates(plan));      // all or nothing; local listeners fire immediately
+        // Listeners (Arcade, Quiz, Catalog, Missions cfg, RoomCfg, BetLimits, Bank, players) already updated the
+        // local state; refresh the open panels explicitly as well.
+        Arcade.repoDirty = true;
+        if (typeof Arcade.updateWarn === "function") Arcade.updateWarn();
+        Admin.renderTable();
+        Quiz.syncAdmin();
+    },
+
+    /* ------------------------------ IMPORT: UI flow ------------------------------ */
+
+    /** <input type="file"> change handler. */
+    importData(event) {
+        const input = event.target, file = input.files && input.files[0];
+        input.value = "";                              // lets the Host pick the same file again later
+        if (!file) return;
+        if (!AdminCtl.allowed()) return Notify.error("Only the unlocked Host can import data.");
+        if (file.size > this.MAX_BYTES) return Notify.error("That file is too large (5 MB maximum).");
+        const reader = new FileReader();
+        reader.onerror = () => Notify.error("Could not read that file.");
+        reader.onload = () => this.run(String(reader.result));
+        reader.readAsText(file);
+    },
+
+    /** Parse -> validate -> confirm -> write -> toast. */
+    async run(text) {
+        if (this.busy) return;
+        let parsed, result;
+        try { parsed = JSON.parse(text); } catch (e) { return Notify.error("That file is not valid JSON."); }
+        try { result = this.validate(parsed); } catch (e) { return Notify.error(e.message || "That file doesn't have a valid format."); }
+        const { plan, skipped } = result, extra = this.skippedText(skipped);
+        const ok = await Dialog.confirm({
+            title: "Import data", tone: "danger", confirmLabel: "Import & sync",
+            message: "This replaces the following data in this room and syncs it to every connected player right away:\n" +
+                this.describe(plan).join("\n") + (extra ? "\n\n" + extra : "") + "\n\nThis cannot be undone."
+        });
+        if (!ok || !AdminCtl.allowed()) return;
+        this.busy = true;
+        try {
+            await this.apply(plan);
+            Audit.log("config", "Backup imported: " + this.describe(plan).map((l) => l.replace("\u2022 ", "")).join("; "));
+            Notify.success("Data successfully imported and synced");
+            if (extra) Notify.warning(extra);
+        } catch (e) {
+            Notify.error("Import failed and nothing was changed. Check your connection and the database rules.");
+        } finally { this.busy = false; }
+    }
+};
+/* BACKUP:END */
 
 /* =========================================================================
    20. ADMINISTRATOR PANEL (Host-only)
@@ -524,47 +970,9 @@ const Admin = {
         }).catch(() => Notify.error("Could not delete that player."));
     },
 
-    /** Downloads the room's player data as data.json (same format importData() accepts). */
-    exportData() {
-        const payload = {
-            exportedAt: new Date().toISOString(),
-            roomCode: State.roomCode,
-            players: Room.playersCache
-        };
-        const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = "data.json";
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-        URL.revokeObjectURL(url);
-        Notify.success("data.json downloaded.");
-    },
-
-    importData(event) {
-        const file = event.target.files[0];
-        if (!file) return;
-
-        const reader = new FileReader();
-        reader.onload = () => {
-            try {
-                const parsed = JSON.parse(String(reader.result));
-                const incoming = parsed.players && typeof parsed.players === "object" ? parsed.players : parsed;
-                if (!incoming || typeof incoming !== "object") throw new Error("Invalid format");
-
-                Room.importPlayers(incoming).then(() => {
-                    this.renderTable();
-                    Notify.success("Backup imported successfully.");
-                });
-            } catch (err) {
-                Notify.error("That file doesn't have a valid format.");
-            }
-        };
-        reader.readAsText(file);
-        event.target.value = "";
-    },
+    /** Export / import live in the Backup module (section 19f): every module of the room in one data.json. */
+    exportData() { return Backup.exportData(); },
+    importData(event) { return Backup.importData(event); },
 
     async resetAll() {
         const confirmed = await Dialog.confirm({
