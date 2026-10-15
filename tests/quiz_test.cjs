@@ -105,3 +105,79 @@ test('quiz: failed writes remain uncommitted; leaving and rejoining removes list
     const second = database(); context.Room.db = second; context.Room.code = 'OTHER'; q.start();
     assert.deepEqual(copy(q.data), {}); assert.equal(second.listeners.size, 1);
 });
+
+// ---------------------------------------------------------------------------
+// Previous / Next navigation: the on-air position is shared through Firebase
+// ---------------------------------------------------------------------------
+async function seedThree(q) {
+    await q.write((data) => {
+        // Mixed bank: one legacy record (no `order`) followed by two ordered ones, ids that do NOT sort alphabetically.
+        data.questions = {
+            legacy: { ...copy(question), prompt: 'Legacy?' },
+            zeta: { ...copy(question), prompt: 'Second?', order: 0 },
+            alpha: { ...copy(question), prompt: 'Third?', order: 1 }
+        };
+        return data;
+    });
+}
+
+test('quiz navigation: bank order = legacy records first, then `order`; ids never decide', async () => {
+    const { q } = client(database(), true);
+    await seedThree(q);
+    assert.deepEqual(copy(q.sortedEntries(q.data.questions).map(([id]) => id)), ['legacy', 'zeta', 'alpha']);
+    assert.equal(q.nextOrder(q.data.questions), 2);
+    assert.equal(q.nextOrder({}), 0);
+});
+
+test('quiz navigation: Start / Next / Previous move one question for every client', async () => {
+    const db = database(), { q: host } = client(db, true), { q: guest } = client(db);
+    await seedThree(host);
+    assert.deepEqual(copy(host.position()), { at: -1, total: 3, hasPrev: false, hasNext: true }, 'nothing on air: Next starts the quiz');
+
+    assert.equal(await host.navigate(-1), false, 'Previous does nothing before the quiz starts');
+    assert.equal(await host.navigate(1), true);
+    assert.equal(guest.data.live.question.prompt, 'Legacy?');
+    assert.equal(guest.data.live.index, 0); assert.equal(guest.data.live.total, 3);
+    assert.equal(guest.data.live.optionsVisible, false);
+    assert.ok(!('order' in guest.data.live.question), 'the audience snapshot never carries bank internals');
+
+    await host.toggleOptions(); await host.toggleAnswer();
+    assert.equal(guest.data.live.answerVisible, true);
+    assert.equal(await host.navigate(1), true);
+    assert.equal(guest.data.live.question.prompt, 'Second?'); assert.equal(guest.data.live.index, 1);
+    assert.equal(guest.data.live.optionsVisible, false, 'each new question starts with options hidden');
+    assert.equal(guest.data.live.answerVisible, false);
+    assert.deepEqual(copy(guest.position()), { at: 1, total: 3, hasPrev: true, hasNext: true });
+
+    assert.equal(await host.navigate(1), true);
+    assert.equal(guest.data.live.question.prompt, 'Third?');
+    assert.equal(host.position().hasNext, false);
+    assert.equal(await host.navigate(1), false, 'cannot go past the last question');
+    assert.equal(await host.navigate(-1), true); assert.equal(await host.navigate(-1), true);
+    assert.equal(guest.data.live.question.prompt, 'Legacy?');
+    assert.equal(await host.navigate(-1), false, 'cannot go before the first question');
+});
+
+test('quiz navigation: stays correct when the bank changes, and players cannot navigate', async () => {
+    const db = database(), { q: host } = client(db, true), { q: guest } = client(db);
+    await seedThree(host); await host.present('zeta');
+    assert.equal(host.data.live.index, 1);
+    // Host adds a question at the end and deletes the first one while "Second?" is on air.
+    await host.write((data) => { data.questions.added = { ...copy(question), prompt: 'Added?', order: host.nextOrder(data.questions) }; delete data.questions.legacy; return data; });
+    assert.deepEqual(copy(host.position()), { at: 0, total: 3, hasPrev: false, hasNext: true }, 'position is recomputed from the bank, not from the stale snapshot');
+    await host.navigate(1);
+    assert.equal(host.data.live.question.prompt, 'Third?');
+    await host.navigate(1);
+    assert.equal(host.data.live.question.prompt, 'Added?'); assert.equal(host.data.live.index, 2);
+    assert.equal(await guest.navigate(-1), false, 'only the unlocked Host may navigate');
+    assert.equal(host.data.live.question.prompt, 'Added?');
+});
+
+test('quiz navigation: a control drawn for an older screen cannot jump the room', async () => {
+    const db = database(), { q: host } = client(db, true);
+    await seedThree(host); await host.present('legacy');
+    // Another Host device changes the screen between the first run of the transaction and its commit (Firebase retries).
+    db.beforeCommit = (value) => { value.live = { ...value.live, id: 'someone-else' }; };
+    assert.equal(await host.navigate(1), false);
+    assert.equal(db.read().live.id, 'someone-else', 'the other Host\'s screen is left untouched');
+});

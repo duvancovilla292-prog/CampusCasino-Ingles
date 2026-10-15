@@ -279,7 +279,8 @@ const GamesAdmin = {
                                              // as the repository seed (Arcade.loadSeed reads `games`)
        modules: {
          casualGames: { custom, games[] },   // title, icon/emoji, iframe src, thumbnail, size, enabled
-         quiz:        { questions[], live },  // prompt, options A/B/C/D..., correctIndex + "question on air" state
+         quiz:        { questions[], live },  // questions in navigation order (Previous / Next) + "question on air" state
+                                             // (live.questionId / index / optionsVisible / answerVisible)
          store:       { items[], hidden[] },  // host-added items (prices, SVG, icons) + items removed from sale
          room:        { cfg, visibility, settings, limits, bank },
          players:     { <username>: {...} }
@@ -354,12 +355,13 @@ const Backup = {
     build(raw) {
         const games = (raw.games || []).map((g) => ({ ...g }));
 
-        const questions = Object.entries((raw.quiz && raw.quiz.questions) || {})
-            .filter(([, q]) => this.isObj(q))
+        // Same order Previous / Next use (Quiz.sortedEntries); the array position IS the order in the file.
+        const questions = Quiz.sortedEntries(raw.quiz && raw.quiz.questions)
             .map(([id, q]) => ({ id, prompt: q.prompt, options: this.toList(q.options), correctIndex: q.correctIndex }));
         const lv = raw.quiz && raw.quiz.live;
         const live = lv && this.isObj(lv.question) ? {
             questionId: lv.questionId || null,
+            index: Number.isInteger(lv.index) ? lv.index : null,   // position synced to the room (Previous / Next)
             optionsVisible: !!lv.optionsVisible,                 // "On air": options A/B/C/D hidden until revealed
             answerVisible: !!lv.answerVisible,
             question: { prompt: lv.question.prompt, options: this.toList(lv.question.options), correctIndex: lv.question.correctIndex }
@@ -474,9 +476,12 @@ const Backup = {
         if (mods.quiz !== undefined) {
             const qz = mods.quiz;
             if (!this.isObj(qz)) throw new Error("The quiz section is not valid.");
+            // Arrays keep their file order; id -> question maps are sorted like the app does (legacy records first).
+            const rawMap = this.isObj(qz.questions) ? qz.questions : {};
             const entries = Array.isArray(qz.questions)
                 ? qz.questions.map((q) => [this.isObj(q) ? q.id : null, q])
-                : Object.entries(this.isObj(qz.questions) ? qz.questions : {});
+                : Quiz.sortedEntries(rawMap);
+            if (!Array.isArray(qz.questions)) skipped.questions += Object.keys(rawMap).length - entries.length;
             const questions = {}, idMap = {};
             let count = 0;
             entries.forEach(([oldId, q]) => {
@@ -485,7 +490,7 @@ const Backup = {
                     const clean = Quiz.question(q.prompt, this.toList(q.options), Number(q.correctIndex)); // same rules as the editor
                     let id = String(oldId == null ? "" : oldId);
                     if (!/^[A-Za-z0-9_-]{1,40}$/.test(id) || questions[id]) id = this.newKey();
-                    questions[id] = clean;
+                    questions[id] = { ...clean, order: count };     // contiguous 0..n-1: Previous / Next follow the file order
                     if (oldId != null) idMap[String(oldId)] = id;
                     count++;
                 } catch (e) { skipped.questions++; }
@@ -505,7 +510,7 @@ const Backup = {
                         optionsVisible: lv.optionsVisible === true,
                         answerVisible: lv.optionsVisible === true && lv.answerVisible === true
                     };
-                    if (mapped) live.questionId = mapped;
+                    if (mapped) { live.questionId = mapped; live.index = questions[mapped].order; live.total = count; }
                 }
             }
             if (count || !skipped.questions) plan.quiz = { questions, live };

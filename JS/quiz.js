@@ -9,8 +9,15 @@
  *  - Every write is a Firebase transaction, so bank edits, presentations and
  *    deletions are serialized and stale controls can never hit a newer question.
  *
+ * Bank order: each question may carry a numeric `order` (assigned on save / import). Records without it
+ * (created by older versions) come first, in creation order; ordered ones follow. Previous / Next walk this
+ * order, so the sequence is identical for every device and survives export -> import of data.json.
+ *
  * Live state shape:
- *   live = { id, questionId, question, optionsVisible, answerVisible }
+ *   live = { id, questionId, question, index, total, optionsVisible, answerVisible }
+ *   - index / total = position of the on-air question in the bank (0-based) and the bank size at the time it
+ *     was put on air. They are synced through Firebase, so every player sees "Question 3 of 10" and follows
+ *     the host's Previous / Next navigation in real time.
  *   - optionsVisible=false -> audience sees the prompt only (options A, B, C...
  *     are masked and their text is never rendered into the DOM).
  *   - answerVisible=true   -> the correct option is highlighted.
@@ -65,6 +72,54 @@ const Quiz = {
     /** Option texts as a plain array (Firebase may hand back arrays as objects). */
     optionList(question) { return Object.values((question && question.options) || {}); },
 
+    /**
+     * Bank entries [id, question] in navigation order: legacy records without `order` first (by key, i.e.
+     * creation time), then ordered ones by `order` (ties broken by key). Invalid records are ignored.
+     */
+    sortedEntries(map) {
+        const byKey = (a, b) => (a < b ? -1 : a > b ? 1 : 0);
+        const ord = (q) => (Number.isFinite(q.order) ? q.order : null);
+        return Object.entries(map || {})
+            .filter(([, q]) => q && typeof q === "object")
+            .sort(([ka, a], [kb, b]) => {
+                const oa = ord(a), ob = ord(b);
+                if (oa === null && ob === null) return byKey(ka, kb);
+                if (oa === null) return -1;
+                if (ob === null) return 1;
+                return oa - ob || byKey(ka, kb);
+            });
+    },
+
+    /** `order` for a question appended to the end of the bank. */
+    nextOrder(map) {
+        return 1 + Math.max(-1, ...Object.values(map || {}).map((q) => (q && Number.isFinite(q.order) ? q.order : -1)));
+    },
+
+    /** Live record for bank question `id` (position and total are snapshots); null when it is not in the bank. */
+    liveFor(data, id, token) {
+        const entries = this.sortedEntries(data.questions), at = entries.findIndex(([key]) => key === id);
+        if (at < 0) return null;
+        const q = entries[at][1];
+        return {
+            id: token, questionId: id,
+            question: { prompt: q.prompt, options: this.optionList(q), correctIndex: q.correctIndex }, // never the `order` field
+            index: at, total: entries.length, optionsVisible: false, answerVisible: false
+        };
+    },
+
+    /**
+     * Where the on-air question sits in the bank, from the shared state:
+     * { at, total, hasPrev, hasNext }. With nothing on air, "Next" means "start with question 1".
+     */
+    position() {
+        const total = this.sortedEntries(this.data.questions).length, live = this.data.live;
+        if (!total) return { at: -1, total, hasPrev: false, hasNext: false };
+        if (!live || !live.question) return { at: -1, total, hasPrev: false, hasNext: true };
+        let at = this.sortedEntries(this.data.questions).findIndex(([key]) => key === live.questionId);
+        if (at < 0) at = Number.isInteger(live.index) ? live.index : -1; // question imported without a bank entry
+        return { at, total, hasPrev: at > 0, hasNext: at < total - 1 };
+    },
+
     /* ------------------------------ lifecycle ------------------------------ */
 
     init() {
@@ -86,6 +141,22 @@ const Quiz = {
                 document.exitFullscreen().catch(() => {});
             }
         });
+        // Host shortcuts while projecting: Left / Right arrows (or PageUp / PageDown) = Previous / Next.
+        document.addEventListener("keydown", (event) => this.onKey(event));
+    },
+
+    /** Arrow-key navigation; ignored while typing, with dialogs / the admin panel open, or outside the Quiz screen. */
+    onKey(event) {
+        const step = { ArrowRight: 1, PageDown: 1, ArrowLeft: -1, PageUp: -1 }[event.key];
+        if (!step || event.altKey || event.ctrlKey || event.metaKey) return;
+        if (!this.allowed() || Router.currentGameKey !== "quiz") return;
+        const target = event.target;
+        if (target && (/^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName) || target.isContentEditable)) return;
+        if (document.querySelector(".ui-dialog-overlay, #admin-modal:not([hidden]), .px-modal:not([hidden])")) return;
+        const p = this.position();
+        if (step > 0 ? !p.hasNext : !p.hasPrev) return;
+        event.preventDefault();
+        this.navigate(step);
     },
 
     /** Subscribes to the room's quiz node (called when the room connection starts). */
@@ -143,9 +214,9 @@ const Quiz = {
     async present(id) {
         const token = this.ref?.push().key;
         return this.write((data) => {
-            const question = data.questions?.[id];
-            if (!question) return;
-            data.live = { id: token, questionId: id, question, optionsVisible: false, answerVisible: false };
+            const live = this.liveFor(data, id, token);
+            if (!live) return; // deleted elsewhere
+            data.live = live;
             return data;
         });
     },
@@ -171,6 +242,46 @@ const Quiz = {
         return this.write((data) => { if (data.live?.id !== id) return; delete data.live; return data; });
     },
 
+    /**
+     * PREVIOUS (-1) / NEXT (+1): puts the adjacent bank question on air for the whole room.
+     * Runs in a transaction against the freshest bank, so edits, deletions and a second Host device cannot
+     * make it jump to a stale question; the new live record gets a fresh token and starts with options hidden.
+     * With nothing on air, only Next is meaningful and it starts at the first question.
+     */
+    navigate(step) {
+        const token = this.ref?.push().key, current = this.data.live?.id || null;
+        return this.write((data) => {
+            if ((data.live?.id || null) !== current) return; // the screen changed since the control was drawn
+            const entries = this.sortedEntries(data.questions);
+            if (!entries.length) return;
+            let at;
+            if (!data.live) at = step > 0 ? 0 : -1;
+            else {
+                const now = entries.findIndex(([key]) => key === data.live.questionId);
+                const base = now >= 0 ? now : (Number.isInteger(data.live.index) ? data.live.index : (step > 0 ? -1 : entries.length));
+                at = base + step;
+            }
+            if (at < 0 || at >= entries.length) return;
+            data.live = this.liveFor(data, entries[at][0], token);
+            return data;
+        });
+    },
+
+    /** "Previous  3 / 10  Next" group shared by the projection dock and the admin panel. */
+    navControls() {
+        const p = this.position(), live = this.data.live, onAir = !!(live && live.question), h = this.h.bind(this);
+        const group = h("div", "qz-nav");
+        group.setAttribute("role", "group"); group.setAttribute("aria-label", "Question navigation");
+        const prev = this.button("\u25C0 Previous", () => this.navigate(-1), !p.hasPrev, "secondary");
+        prev.setAttribute("aria-label", "Previous question");
+        const count = h("span", "qz-nav-count", onAir ? (p.at >= 0 ? `${p.at + 1} / ${p.total}` : "On air") : `${p.total} in bank`);
+        count.setAttribute("aria-live", "polite");
+        const next = this.button(onAir ? "Next \u25B6" : "\u25B6 Start", () => this.navigate(1), !p.hasNext, "primary");
+        next.setAttribute("aria-label", onAir ? "Next question" : "Start with the first question");
+        group.append(prev, count, next);
+        return group;
+    },
+
     /* ------------------------------ audience stage ------------------------------ */
 
     render() {
@@ -193,6 +304,7 @@ const Quiz = {
             const head = h("div", "quiz-head");
             head.append(
                 h("span", "quiz-live-badge", "LIVE"),
+                ...(Number.isInteger(live.index) && live.total > 0 ? [h("span", "quiz-phase", `Question ${live.index + 1} of ${live.total}`)] : []),
                 h("span", `quiz-phase${live.optionsVisible ? " is-open" : ""}`, live.optionsVisible ? "Choose your answer" : "Question on air")
             );
             stage.append(head, h("h3", "quiz-prompt", q.prompt));
@@ -239,13 +351,14 @@ const Quiz = {
         if (!this.allowed()) return;
         const live = this.data.live;
         const manage = this.button("\u2699 Manage questions", () => Admin.open(), false, "ghost");
-        if (!live?.question) { root.append(manage); return; }
+        const nav = this.position().total ? [this.navControls()] : [];
+        if (!live?.question) { root.append(...nav, manage); return; }
         const toggle = this.button(live.optionsVisible ? "\uD83D\uDE48 Hide options" : "\uD83D\uDC41 Reveal options", () => this.toggleOptions(), false, live.optionsVisible ? "secondary" : "primary");
         toggle.setAttribute("aria-pressed", String(live.optionsVisible));
         const answer = this.button(live.answerVisible ? "Hide correct answer" : "\u2713 Reveal correct answer", () => this.toggleAnswer(), !live.optionsVisible, "secondary");
         answer.setAttribute("aria-pressed", String(live.answerVisible));
         const end = this.button("\u25A0 End question", () => this.endQuestion(), false, "danger");
-        root.append(toggle, answer, end, manage);
+        root.append(...nav, toggle, answer, end, manage);
     },
 
     /* ------------------------------ admin panel ------------------------------ */
@@ -255,7 +368,8 @@ const Quiz = {
         const root = $z("quiz-live-admin"), live = this.data.live, h = this.h.bind(this);
         root.textContent = "";
         if (!live?.question) {
-            root.append(h("p", "qz-live-empty", "Nothing on air. Press Present on any question below."));
+            root.append(h("p", "qz-live-empty", "Nothing on air. Press Start, or Present on any question below."));
+            if (this.position().total) root.append(this.navControls());
             return;
         }
         const top = h("div", "qz-live-top");
@@ -279,7 +393,7 @@ const Quiz = {
             this.liveChange((value) => { value.question.correctIndex = index; value.answerVisible = false; });
         });
         label.append(select);
-        root.append(top, controls, label);
+        root.append(top, this.navControls(), controls, label);
     },
 
     /** Hides and empties every Host-only element (logout, leaving the room, failed PIN...). */
@@ -326,7 +440,7 @@ const Quiz = {
             });
         }
         const bank = $z("quiz-bank"), h = this.h.bind(this); bank.textContent = "";
-        const entries = Object.entries(this.data.questions || {});
+        const entries = this.sortedEntries(this.data.questions); // same order Previous / Next use
         $z("quiz-count").textContent = String(entries.length);
         // Tab badge in the Administrator Panel: bank size, with a live dot while a question is on air.
         const tabBadge = $z("badge-quiz");
@@ -433,7 +547,14 @@ const Quiz = {
         const ref = this.ref, editing = this.editing, id = editing || ref.push().key;
         const saved = await this.write((data) => {
             if (editing && !data.questions?.[id]) return; // deleted elsewhere while editing
-            data.questions = data.questions || {}; data.questions[id] = question; return data;
+            data.questions = data.questions || {};
+            const previous = data.questions[id];
+            // New questions go to the end of the bank; edits keep their place (legacy records stay unordered).
+            const saved = { ...question };
+            if (!previous) saved.order = this.nextOrder(data.questions);
+            else if (Number.isFinite(previous.order)) saved.order = previous.order;
+            data.questions[id] = saved;
+            return data;
         });
         if (saved && this.ref === ref) {
             this.editing = null; $z("quiz-form").hidden = true; Notify.success("Question saved.");

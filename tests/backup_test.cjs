@@ -177,3 +177,41 @@ test('summary text lists every module and skipped counts', () => {
     assert.equal(b.skippedText({ players: 0, games: 2, questions: 1, items: 0 }), 'Skipped invalid entries: 2 games, 1 question.');
     assert.equal(b.skippedText({ players: 0, games: 0, questions: 0, items: 0 }), '');
 });
+
+test('quiz order and the on-air position survive export -> import (Previous / Next keep working)', () => {
+    const b = load();
+    // Legacy record first, then ordered ones; ids deliberately do not sort in the same order.
+    const raw = sample();
+    raw.quiz = {
+        questions: {
+            zeta: { prompt: 'Second?', options: ['a', 'b'], correctIndex: 0, order: 0 },
+            legacy: { prompt: 'First?', options: ['a', 'b'], correctIndex: 1 },
+            alpha: { prompt: 'Third?', options: ['a', 'b'], correctIndex: 0, order: 1 }
+        },
+        live: { id: 'tok', questionId: 'zeta', index: 1, total: 3, optionsVisible: true, answerVisible: false, question: { prompt: 'Second?', options: ['a', 'b'], correctIndex: 0 } }
+    };
+    const file = JSON.parse(JSON.stringify(b.build(raw)));
+    same(file.modules.quiz.questions.map((q) => q.prompt), ['First?', 'Second?', 'Third?']);
+    assert.equal(file.modules.quiz.live.index, 1);
+
+    const { plan } = b.validate(file);
+    const stored = Object.entries(plan.quiz.questions).sort((x, y) => x[1].order - y[1].order);
+    same(stored.map(([, q]) => q.prompt), ['First?', 'Second?', 'Third?']);
+    same(stored.map(([, q]) => q.order), [0, 1, 2]);
+    assert.equal(plan.quiz.live.index, 1);
+    assert.equal(plan.quiz.live.total, 3);
+    assert.equal(plan.quiz.live.question.prompt, 'Second?');
+    assert.ok(!('order' in plan.quiz.live.question));
+    assert.equal(plan.quiz.questions[plan.quiz.live.questionId].prompt, 'Second?');
+
+    // Skipped (invalid) questions do not leave gaps in the order.
+    file.modules.quiz.questions.splice(1, 1, { id: 'bad', prompt: '', options: ['a', 'b'], correctIndex: 0 });
+    const gap = b.validate(file);
+    same(Object.values(gap.plan.quiz.questions).map((q) => q.order).sort(), [0, 1]);
+    assert.equal(gap.skipped.questions, 1);
+
+    // id -> question maps (no array) are accepted and sorted like the app sorts them.
+    const mapFile = { modules: { quiz: { questions: raw.quiz.questions } } };
+    const fromMap = b.validate(mapFile).plan.quiz.questions;
+    same(Object.values(fromMap).sort((x, y) => x.order - y.order).map((q) => q.prompt), ['First?', 'Second?', 'Third?']);
+});

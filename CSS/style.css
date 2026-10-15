@@ -9426,3 +9426,13 @@ details.mx-det>summary::-webkit-details-marker {
     #admin-modal .admin-modal, #admin-modal.admin-overlay, #px-admin, #px-admin .px-card, .ui-dialog, .ui-dialog-overlay, .admin-pane, .toast::after { animation: none !important; }
     .gv-switch input[type="checkbox"], .gv-switch input[type="checkbox"]::after, #px-admin input[type="checkbox"], #px-admin input[type="checkbox"]::after { transition: none; }
 }
+
+/* =========================================================================
+   QUIZ NAVIGATION — Previous / progress / Next group (projection dock + admin card)
+   ========================================================================= */
+.qz-nav { display: flex; align-items: center; justify-content: center; gap: .5rem; flex: 1 1 100%; }
+.qz-nav .btn { flex: 1 1 0; min-width: 0; min-height: 46px; justify-content: center; white-space: nowrap; }
+.qz-nav-count { flex: 0 0 auto; min-width: 5.5rem; padding: .35rem .8rem; border-radius: 999px; text-align: center; font-weight: 800; font-size: .85rem; letter-spacing: .04em; font-variant-numeric: tabular-nums; color: var(--color-gold-strong); background: rgba(244, 196, 48, .14); border: 1px solid rgba(244, 196, 48, .35); }
+.quiz-host .qz-nav { flex-basis: 100%; max-width: 34rem; }
+.qz-live-card .qz-nav { justify-content: stretch; }
+@media (min-width: 651px) { .quiz-host .qz-nav { flex-basis: auto; } }
