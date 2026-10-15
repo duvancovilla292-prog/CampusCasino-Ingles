@@ -56,13 +56,15 @@ data/
   data.json          Lista por defecto de juegos del Arcade (reemplázala con la que descargues del panel)
 JS/
   firebase-sync.js   (1) Firebase, Room, State, mesas compartidas (Tables), Banco, listeners por sala
+  game-catalog.js    Catálogo de herramientas y juegos, navegación y visibilidad
   ui-audio.js        (2) DOM, audio, UI, router, tienda, chat, jackpot, misiones, logros, Lucky Spin
   casino-games.js    (3) Juegos de casino tradicionales
   casual-games.js    (4) Juegos casuales y de fiesta, sorteos y torneos
+  quiz.js           Quiz de presentación: banco de preguntas y estado compartido
   admin-panel.js     (5) Panel de admin, ajustes del Host, límites, auditoría y arranque
 ```
 
-Los cinco scripts son **scripts clásicos** (no módulos ES) y se cargan en ese orden con `defer`. Comparten las declaraciones de nivel superior a través del ámbito global, por eso el orden importa: `admin-panel.js` va el último porque necesita a todos los demás y contiene el arranque en `DOMContentLoaded`.
+Los scripts listados son **scripts clásicos** (no módulos ES) y se cargan en ese orden con `defer`. Comparten las declaraciones de nivel superior a través del ámbito global, por eso el orden importa: `admin-panel.js` va el último porque necesita a todos los demás y contiene el arranque en `DOMContentLoaded`.
 
 ---
 
@@ -463,7 +465,7 @@ Proyecto con fines **educativos y de entretenimiento**. Las fichas no tienen val
 ## Menú y partidas de deducción
 
 La entrada activa es `index.html`: carga los módulos `firebase-sync`, `game-catalog`,
-`ui-audio`, `casino-games`, `casual-games` y `admin-panel`. `JS/app.js` es la versión
+`ui-audio`, `casino-games`, `casual-games`, `quiz` y `admin-panel`. `JS/app.js` es la versión
 monolítica antigua y no se carga en la página.
 
 - **Host Settings → Room → Games & sections** permite activar cada juego o toda
@@ -499,3 +501,45 @@ Sin dependencias adicionales: `node --test tests/deduction.test.cjs` ejecuta pru
 sobre los motores utilizados por la aplicación: turnos, configuración, pistas,
 validación del PIN, Word Master y política de visibilidad de categorías.
 Sirve la carpeta con `python3 -m http.server 8080` para inspeccionar la interfaz.
+
+
+## Quiz / Preguntas Interactivas
+
+Herramienta de presentación grupal en **Tools → Quiz / Preguntas Interactivas**.
+Todos deben entrar a la misma sala y abrir esa herramienta. La navegación de cada
+usuario sigue siendo independiente; la pregunta, las opciones y la revelación son compartidas.
+
+1. El Host abre **Administrator Panel**, introduce el PIN y busca **Quiz / Preguntas Interactivas**.
+2. Pulsa **Nueva pregunta**, escribe el enunciado, agrega o quita opciones y marca
+   la respuesta correcta. Se requieren al menos dos opciones; las letras se generan
+   automáticamente (A…Z, AA…). Guarda y repite para crear el banco de la sala.
+3. **Editar** modifica el banco; **Eliminar** borra la pregunta y, si está al aire,
+   retira también la presentación. **Presentar** publica una copia de la pregunta
+   con todas las opciones ocultas, sin alterar las preguntas restantes.
+4. En la herramienta, **Mostrar respuestas / Ocultar respuestas** revela u oculta
+   tanto las letras como los textos. **Revelar correcta** destaca la solución con
+   texto y color. Ocultar las opciones también vuelve a ocultar la solución.
+5. La respuesta correcta de la pregunta al aire puede ajustarse desde el panel
+   de administrador; el cambio oculta de nuevo la solución hasta revelarla.
+   El selector de solución está en el panel para no mostrarla en el proyector.
+6. Usa **Pantalla completa** para proyectar y **Terminar pregunta** para dejar
+   la pantalla en espera. El editor del banco no debe proyectarse al grupo.
+
+`JS/quiz.js` se carga como script clásico antes de `admin-panel.js`. Escucha
+`rooms/{code}/quiz` mientras la sesión está activa y retira su listener al salir.
+El nodo contiene `questions/{pushId}: {prompt, options, correctIndex}` y
+`live: {id, questionId, question, optionsVisible, answerVisible}`. `question` es la
+copia publicada; guardar cambios en el banco no modifica esa copia hasta volver
+a presentar. Las escrituras usan transacciones sin eventos locales especulativos;
+la publicación, el borrado y los cambios de visibilidad se reciben juntos.
+Los dispositivos que se conectan después reciben el estado actual. Un identificador
+por publicación impide aplicar un control atrasado a una pregunta nueva.
+
+El banco persiste en Firebase por sala, sin build ni backend propio, compatible con
+GitHub Pages. Las opciones ocultas no se insertan en la vista pública; siguen
+estando en los datos recibidos. Como los controles existentes, el PIN y el dispositivo
+Host protegen la interfaz: exigir permisos contra escrituras externas requiere
+Firebase Authentication y reglas de seguridad del servidor (ver alcance de permisos).
+
+Verificación local: `node --test tests/*.test.cjs`. Las pruebas del quiz usan un
+adaptador de Realtime Database en memoria; no escriben en las salas de Firebase.
