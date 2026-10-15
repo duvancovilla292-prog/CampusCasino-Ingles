@@ -85,17 +85,17 @@ const Admin = {
             const row = document.createElement("tr");
 
             const nameCell = document.createElement("td");
-            nameCell.textContent = player.username;
+            nameCell.textContent = player.username; nameCell.dataset.label = "Player";
 
             const balanceCell = document.createElement("td");
-            balanceCell.textContent = (player.balance || 0).toLocaleString("en-US");
+            balanceCell.textContent = (player.balance || 0).toLocaleString("en-US"); balanceCell.dataset.label = "Balance";
 
             const roundsCell = document.createElement("td");
-            roundsCell.textContent = String(player.stats?.gamesPlayed || 0);
+            roundsCell.textContent = String(player.stats?.gamesPlayed || 0); roundsCell.dataset.label = "Rounds";
 
             const netCell = document.createElement("td");
             const net = player.stats?.netProfit || 0;
-            netCell.textContent = `${net >= 0 ? "+" : ""}${net.toLocaleString("en-US")}`;
+            netCell.textContent = `${net >= 0 ? "+" : ""}${net.toLocaleString("en-US")}`; netCell.dataset.label = "Net profit";
             netCell.classList.add(net >= 0 ? "net-positive" : "net-negative");
 
             const actionsCell = document.createElement("td");

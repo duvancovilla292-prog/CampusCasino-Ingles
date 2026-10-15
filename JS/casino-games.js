@@ -113,8 +113,8 @@ const GameResolver = {
     LABELS: {
         blackjack: "Blackjack", baccarat: "Baccarat", roulette: "Roulette", slots: "Slots", hilo: "Hi-Lo",
         craps: "Craps", crash: "Crash", moneywheel: "Money Wheel", pokerdice: "Poker Dice", keno: "VIP Keno",
-        blackwidow: "Black Widow Poker", uno: "UNO", parques: "Parqués", dominoes: "Dominoes", chess: "Chess",
-        checkers: "Chinese Checkers", mastermind: "Color Code Breaker", bullscows: "Picas y Fijas", wheel: "Player Wheel"
+        blackwidow: "Black Widow Poker", uno: "UNO", parques: "Colombian Ludo", dominoes: "Dominoes", chess: "Chess",
+        checkers: "Chinese Checkers", mastermind: "Color Code Breaker", bullscows: "Bulls & Cows", wheel: "Player Wheel"
     },
 
     label(gameId) {

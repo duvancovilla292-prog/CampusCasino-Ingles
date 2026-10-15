@@ -490,7 +490,7 @@ const AuthScreen = {
     searchTerm: "",
     searchRaf: 0,
 
-    /** Lowercase + strip accents so "andres" matches "Andrés", "penaloza" matches "PEÑALOZA". */
+    /** Lowercase + strip accents so "andres" matches "Andrés" and "penaloza" matches "PEÑALOZA". */
     normalize(value) {
         return String(value == null ? "" : value)
             .normalize("NFD")

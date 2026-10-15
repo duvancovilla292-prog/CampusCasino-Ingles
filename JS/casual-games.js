@@ -1,6 +1,6 @@
 /* =========================================================================
    CASINO CAMPUS — CASUAL & PARTY GAMES
-   UNO, Parqués, Dominoes, Chess, Chinese Checkers, Connect Four, Battleship, Color Code Breaker, Picas y Fijas (all with
+   UNO, Colombian Ludo, Dominoes, Chess, Chinese Checkers, Connect Four, Battleship, Color Code Breaker, Bulls & Cows (all with
    the shared Party table flow and single-player Casino Bot fallback), multiplayer Hangman, Marble Gravity Race,
    Lucky Draw, Player Wheel and knockout Tournaments.
    Load order: 4 of 5 — needs firebase-sync.js, ui-audio.js and casino-games.js.
@@ -1072,7 +1072,7 @@ UNO.init();
 { const s0 = Social.start, s1 = Social.stop; Social.start = function () { s0.call(Social); UNO.start(); }; Social.stop = function () { s1.call(Social); UNO.stop(); }; }
 
 /* =========================================================================
-   PARQUÉS & DOMINOES (Casual & Party Games) — real-time multiplayer at rooms/<code>/parques and rooms/<code>/dominoes
+   COLOMBIAN LUDO (PARQUÉS) & DOMINOES (Casual & Party Games) — real-time multiplayer at rooms/<code>/parques and rooms/<code>/dominoes
    Both reuse the UNO table flow: shared lobby (host picks an optional stake, starts) -> match -> winner takes the pot.
    The rules engines mutate the Firebase transaction value `g`; clients only render shared state and animate `fx` records.
    Stake is charged to every seated player when the match starts (persisted per match, so a reload never double-charges).
@@ -1206,7 +1206,7 @@ const Party = (o) => {
 };
 
 /* =========================================================================
-   PARQUÉS — 4 tokens each, 68-square ring (an 18x18 grid perimeter), 7-square home lane, centre target.
+   COLOMBIAN LUDO (PARQUÉS) — 4 tokens each, 68-square ring (an 18x18 grid perimeter), 7-square home lane, centre target.
    Progress per token: -1 base | 0..67 ring (0 = own entry square) | 68..74 home lane | 75 centre (exact roll needed).
    Rules: a 6 brings a token out (capturing a lone rival on the entry square); 6 / capture / reaching the centre = roll again;
           three sixes in a row lose the turn; landing on a lone rival off a safe square (entries + corners) sends it to base;
@@ -1303,7 +1303,7 @@ const PQ = (() => {
     };
     /*E-END*/
 
-    const P = Object.assign(Party({ key: "parques", p: "pq", node: "parques", label: "Parqu\u00E9s", max: 4, E }), {
+    const P = Object.assign(Party({ key: "parques", p: "pq", node: "parques", label: "Colombian Ludo", max: 4, E }), {
         onNew() { /* no pending local UI state */ },
         setup() {
             const b = pt$("pq-board"), add = (cls, x, y) => { const d = ptMk("div", cls); place(d, x, y); b.appendChild(d); };
@@ -1542,7 +1542,7 @@ PQ.init(); DM.init();
 { const s0 = Social.start, s1 = Social.stop; Social.start = function () { s0.call(Social); PQ.start(); DM.start(); }; Social.stop = function () { s1.call(Social); PQ.stop(); DM.stop(); }; }
 
 /* =========================================================================
-   STRATEGY DUELS (Casual & Party Games) — Chess, Chinese Checkers, Color Code Breaker, Picas y Fijas
+   STRATEGY DUELS (Casual & Party Games) — Chess, Chinese Checkers, Color Code Breaker, Bulls & Cows
    Real-time multiplayer at rooms/<code>/{chess,checkers,mastermind,bullscows} through the shared Party table flow
    (lobby -> optional stake -> match -> winner takes the pot), plus single-player matches against the Casino Bot:
    the bot sits at a LocalRef table that implements the Firebase transaction interface, so solo and online games run
@@ -1733,7 +1733,7 @@ PQ.init(); DM.init();
         return E;
     })();
 
-    /* ----------------- CODE BREAKERS: Color Code (Mastermind) + Picas y Fijas (Bulls & Cows) ----------------- */
+    /* ----------------- CODE BREAKERS: Color Code (Mastermind) + Bulls & Cows ----------------- */
     const CDE = (cfg) => {
         const fb = (sec, gu) => {
             let ex = 0; const cs = {}, cg = {};
@@ -2107,7 +2107,7 @@ PQ.init(); DM.init();
         }
     });
 
-    /* --------------- CODE BREAKERS (shared UI): Color Code Breaker + Picas y Fijas --------------- */
+    /* --------------- CODE BREAKERS (shared UI): Color Code Breaker + Bulls & Cows --------------- */
     const codeUI = (G, cfg) => Object.assign(G, {
         cur: [],
         onNew() { this.cur = []; this.entryTurn = null; },
@@ -2157,7 +2157,7 @@ PQ.init(); DM.init();
         }
     });
     const MM = codeUI(Duel({ key: "mastermind", p: "mm", node: "mastermind", label: "Color Code Breaker", max: 2, E: MME, delay: 1100 }), { p: "mm", kind: "col", len: 4, sym: 6, dup: true, tries: 10, names: ["Ruby", "Gold", "Emerald", "Sapphire", "Amethyst", "Silver"], hint: "Your turn \u2014 build a 4-colour code. Gold pin = right colour & place, silver pin = right colour, wrong place." });
-    const BC = codeUI(Duel({ key: "bullscows", p: "bc", node: "bullscows", label: "Picas y Fijas", max: 2, E: BCE, delay: 1100 }), { p: "bc", kind: "num", len: 4, sym: 10, dup: false, tries: 10, hint: "Your turn \u2014 enter 4 different digits. Fija = right digit, right place. Pica = right digit, wrong place." });
+    const BC = codeUI(Duel({ key: "bullscows", p: "bc", node: "bullscows", label: "Bulls & Cows", max: 2, E: BCE, delay: 1100 }), { p: "bc", kind: "num", len: 4, sym: 10, dup: false, tries: 10, hint: "Your turn \u2014 enter 4 different digits. Fija = right digit, right place. Pica = right digit, wrong place." });
 
 
     /* ---------------------------------- CONNECT FOUR (UI) ---------------------------------- */
@@ -3112,7 +3112,7 @@ Object.assign(LuckyDraw.IDLE, { marble: ["\u{1F52E}", "Every player drops as a m
 /* ---------- Knockout tournaments (host builds + reports; everyone watches live) ---------- */
 const Tour = {
     d: null, pick: new Set(), game: "uno", prize: 0,
-    GAMES: [["uno", "UNO"], ["parques", "Parqu\u00E9s"], ["dominoes", "Dominoes"], ["chess", "Chess"], ["checkers", "Chinese Checkers"], ["mastermind", "Color Code Breaker"], ["bullscows", "Picas y Fijas"], ["dice", "Quick Dice"]],
+    GAMES: [["uno", "UNO"], ["parques", "Colombian Ludo"], ["dominoes", "Dominoes"], ["chess", "Chess"], ["checkers", "Chinese Checkers"], ["mastermind", "Color Code Breaker"], ["bullscows", "Picas y Fijas"], ["dice", "Quick Dice"]],
     rounds() { try { return JSON.parse(this.d.b); } catch (e) { return []; } },
     create() {
         const ents = [...this.pick].filter((u) => Room.exists(u)); if (ents.length < 2) return Notify.error("Pick at least 2 players.");
