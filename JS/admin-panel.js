@@ -491,20 +491,36 @@ const Plus = (() => {
 
         const fillRoom = () => {
             const box = $("pxa-room"); if (!box) return;
-            const ns = names(), games = [...document.querySelectorAll(".nav-menu-item[data-game]")].map((b) => b.dataset.game).filter((g, i, a) => a.indexOf(g) === i);
+            const ns = names();
             box.innerHTML = `
                <h3>Room</h3><div class="px-row"><span>Name</span><span><input type="text" id="pxa-name" value="${esc(cfg.roomName)}" maxlength="30" placeholder="Campus VIP Table"></span></div>
                <div class="px-row"><span>Daily bonus multiplier</span><span><input type="number" id="pxa-mult" min="0" max="10" step="0.5" value="${cfg.bonusMult}"></span></div>
                <div class="px-row"><span>Daily missions (master switch)</span><span></span><input type="checkbox" id="pxa-miss" ${cfg.missionsOn ? "checked" : ""}></div>
-               <h3>Games</h3>${games.map((g) => `<div class="px-row"><span>${esc(g)}</span><span></span><input type="checkbox" data-game="${esc(g)}" ${cfg.disabled[g] ? "" : "checked"}></div>`).join("")}
+               <h3>Games &amp; sections</h3><p class="form-help">Switches sync immediately. Turning a section back on preserves each game's setting.</p>
+               ${GameCatalog.categories.map((cat) => `<fieldset class="game-visibility"><legend>${cat.label}</legend>
+                 <label class="px-row section-switch"><span>Enable entire section</span><input type="checkbox" role="switch" data-visibility="sectionsDisabled" data-key="${cat.id}" ${cfg.sectionsDisabled[cat.id] ? "" : "checked"}></label>
+                 ${cat.games.map((g) => `<label class="px-row"><span>${esc(GameCatalog.label(g))}</span><input type="checkbox" role="switch" data-visibility="disabled" data-key="${g}" ${cfg.disabled[g] ? "" : "checked"}></label>`).join("")}
+               </fieldset>`).join("")}
                <h3>Secret winner (all random tools)</h3>
                <div class="px-row"><span>Enabled</span><span><select id="pxa-rt"><option value="">\u2014</option>${ns.map((n) => `<option ${n === Rig.target ? "selected" : ""}>${esc(n)}</option>`).join("")}</select></span><input type="checkbox" id="pxa-rig" ${Rig.on ? "checked" : ""}></div>
                <h3>Display names</h3>${ns.map((n) => `<div class="px-row"><span>${esc(n)}</span><span><input type="text" data-dn="${esc(n)}" value="${esc(cfg.names[n] || "")}" placeholder="${esc(n)}" maxlength="24"></span></div>`).join("")}
                <button type="button" class="btn btn-primary btn-block" id="pxa-save" style="margin-top:1rem">Save &amp; sync</button>`;
         };
+        mAdm.addEventListener("change", async (event) => {
+            const input = event.target.closest("[data-visibility]");
+            if (!input) return;
+            if (!State.isHost || !Room.db || !Room.code) { input.checked = !input.checked; return; }
+            const { visibility, key } = input.dataset;
+            input.disabled = true;
+            try {
+                await Room.db.ref(`rooms/${Room.code}/cfg/${visibility}/${key}`).set(!input.checked);
+            } catch (error) {
+                input.checked = !input.checked;
+                Notify.error("Could not save visibility. Please try again.");
+            } finally { input.disabled = false; }
+        });
         const saveRoom = () => {
             cfg.roomName = $("pxa-name").value.trim(); cfg.bonusMult = Math.max(0, +$("pxa-mult").value || 1); cfg.missionsOn = $("pxa-miss").checked;
-            cfg.disabled = {}; document.querySelectorAll("#pxa-room [data-game]").forEach((c) => { if (!c.checked) cfg.disabled[c.dataset.game] = true; });
             cfg.names = {}; document.querySelectorAll("#pxa-room [data-dn]").forEach((i) => { if (i.value.trim()) cfg.names[i.dataset.dn] = i.value.trim(); });
             Rig.on = $("pxa-rig").checked && !!$("pxa-rt").value; Rig.target = $("pxa-rt").value;
             pushCfg().then(() => { Notify.success("Room settings saved."); Fx.closeModal(mAdm); });

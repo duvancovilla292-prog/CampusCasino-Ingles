@@ -342,7 +342,7 @@ const Router = {
         DOM.btnOpenAdminLobby.hidden = !State.isHost;
         HUD.update();
         Social.start();
-        this.selectGame("blackjack");
+        this.selectGame(GameCatalog.first(Missions.cfg));
     },
 
     currentGameKey: null,
@@ -1355,7 +1355,7 @@ const NavMenu = {
     open() {
         this.root.classList.add("is-open");
         this.trigger.setAttribute("aria-expanded", "true");
-        const start = this.panel.querySelector('[aria-current="true"]') || this.items[0];
+        const start = this.panel.querySelector('[aria-current="true"]:not([hidden])') || this.items.find((el) => !el.hidden);
         requestAnimationFrame(() => start && start.focus({ preventScroll: true }));
     },
     close(refocus) {
@@ -1366,6 +1366,7 @@ const NavMenu = {
     },
     pick(el) {
         const game = el.dataset.game, mode = el.dataset.drawMode;
+        if (!GameCatalog.available(game, Missions.cfg)) return;
         Router.selectGame(game);
         if (game === "draw" && mode) {
             const b = document.querySelector('.draw-mode-btn[data-draw-mode="' + mode + '"]');
@@ -1379,10 +1380,12 @@ const NavMenu = {
         if (!["ArrowDown", "ArrowUp", "Home", "End"].includes(e.key)) return;
         if (!this.isOpen) { if (e.target === this.trigger && e.key !== "Home" && e.key !== "End") { e.preventDefault(); this.open(); } return; }
         e.preventDefault();
-        const i = this.items.indexOf(document.activeElement);
-        let n = e.key === "ArrowDown" ? i + 1 : e.key === "ArrowUp" ? i - 1 : e.key === "Home" ? 0 : this.items.length - 1;
-        n = (n + this.items.length) % this.items.length;
-        this.items[n].focus();
+        const items = this.items.filter((el) => !el.hidden);
+        if (!items.length) return;
+        const i = items.indexOf(document.activeElement);
+        let n = e.key === "ArrowDown" ? i + 1 : e.key === "ArrowUp" ? i - 1 : e.key === "Home" ? 0 : items.length - 1;
+        n = (n + items.length) % items.length;
+        items[n].focus();
     },
     sync() {
         const game = Router.currentGameKey;
@@ -1497,7 +1500,7 @@ const Missions = (() => {
             { id: "bigbet", cat: "wins", icon: "\u{1F40B}", text: "Place a single bet of 200+ chips", goal: 1, reward: 150, metric: "bigbet", min: 200 },
             { id: "wager1000", cat: "wins", icon: "\u{1F4C8}", text: "Wager 1,000 chips in total", goal: 1000, reward: 300, metric: "wager" }
         ];
-        const cfg = { roomName: "", bonusMult: 1, missionsOn: true, disabled: {}, names: {}, mDisabled: {} };
+        const cfg = { roomName: "", bonusMult: 1, missionsOn: true, disabled: {}, sectionsDisabled: {}, names: {}, mDisabled: {} };
         const day = () => { const d = new Date(); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); };  // local calendar day
         const $ = (id) => document.getElementById(id);
         const qRef = () => Room.playersRef.child(State.username + "/quests/" + day());
@@ -1528,12 +1531,14 @@ const Missions = (() => {
         const pushCfg = () => Room.db && Room.code && Room.db.ref(`rooms/${Room.code}/cfg`).set({ ...cfg, rig: { on: Rig.on, t: Rig.target } });
         const applyCfg = (v) => {
             v = v || {};
-            Object.assign(cfg, { roomName: v.roomName || "", bonusMult: v.bonusMult || 1, missionsOn: v.missionsOn !== false, disabled: v.disabled || {}, names: v.names || {}, mDisabled: v.mDisabled || {} });
+            Object.assign(cfg, { roomName: v.roomName || "", bonusMult: v.bonusMult || 1, missionsOn: v.missionsOn !== false, disabled: v.disabled || {}, sectionsDisabled: v.sectionsDisabled || {}, names: v.names || {}, mDisabled: v.mDisabled || {} });
             Rig.on = !!(v.rig && v.rig.on); Rig.target = (v.rig && v.rig.t) || "";
-            document.querySelectorAll(".nav-menu-item[data-game]").forEach((b) => { b.hidden = !!cfg.disabled[b.dataset.game]; });
+            GameCatalog.apply(cfg);
+            document.querySelectorAll("[data-visibility]").forEach((input) => {
+                input.checked = !cfg[input.dataset.visibility]?.[input.dataset.key];
+            });
             $("btn-missions").hidden = !cfg.missionsOn;
             if (cfg.roomName) document.title = cfg.roomName + " \u2014 Casino Campus";
-            if (cfg.disabled[Router.currentGameKey]) Router.selectGame("blackjack");
             renderQuests(); adminRefresh();
         };
         const origAttach = Room.attachListeners.bind(Room);
@@ -1545,7 +1550,7 @@ const Missions = (() => {
         };
         const origSelect = Router.selectGame.bind(Router);
         Router.selectGame = function (k) {
-            if (cfg.disabled[k] && !State.isHost) { Notify.warning("This game is disabled by the host."); return; }
+            if (k !== null && !GameCatalog.available(k, cfg)) k = GameCatalog.first(cfg);
             origSelect(k);
         };
 

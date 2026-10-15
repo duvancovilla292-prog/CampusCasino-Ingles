@@ -1143,7 +1143,7 @@ const Party = (o) => {
         act(type, p, who) {
             const me = State.username, u = who || me, g0 = this.g; if (!this.ref || !me || g0.phase !== "play" || (g0.order || [])[g0.turn] !== u) return;
             this.ref.transaction((v) => {
-                if (!v || v.phase !== "play" || v.order[v.turn] !== u) return; v.idle = v.idle || {};
+                if (!v || v.phase !== "play" || v.order[v.turn] !== u || v.hid !== g0.hid || v.turnAt !== g0.turnAt) return; v.idle = v.idle || {};
                 if (who && Date.now() - (v.turnAt || 0) < this.IDLE) return;
                 const id = Date.now() + "-" + Math.floor(Math.random() * 1e6); let note;
                 if (type === "auto") {
@@ -1152,7 +1152,7 @@ const Party = (o) => {
                     else note = o.E.auto(v, u, id) || `${u} timed out`;
                 } else { note = o.E.act(v, u, type, p, id); if (!note) return; }
                 if (!who) v.idle[u] = 0; v.last = note; return v;
-            }).catch(() => { });
+            }).catch(() => Notify.error("Could not send your move. Please try again."));
         },
         kick() {
             const g = this.g, u = g.order && g.order[g.turn]; if (g.phase !== "play" || !u || u === State.username) return;
@@ -1747,12 +1747,25 @@ PQ.init(); DM.init();
         const E = {
             fb, valid,
             ai(g, u) {
-                const h = g.gs[u] || [], cands = all.filter((c) => h.every((x) => { const r = fb(c, x.c); return r[0] === x.e && r[1] === x.p; }));
+                if (g.sp === "set") return { type: "secret", p: { c: secret() } };
+                const h = (g.gs || {})[u] || [], cands = all.filter((c) => h.every((x) => { const r = fb(c, x.c); return r[0] === x.e && r[1] === x.p; }));
                 const pick = h.length || !cfg.first ? cands[rnd(cands.length)] : cfg.first;
                 return { type: "guess", p: { c: pick || all[0] } };
             },
             act(g, u, type, p, id) {
-                if (type !== "guess" || !p || !valid(p.c)) return null;
+                if (g.phase !== "play" || g.order[g.turn] !== u || !p || !valid(p.c)) return null;
+                if (g.sp === "set") {
+                    if (type !== "secret") return null;
+                    const opponent = g.order.find((name) => name !== u);
+                    if (!opponent) return null;
+                    g.sec = g.sec || {};
+                    if (g.sec[opponent]) return null;
+                    g.sec[opponent] = p.c.slice();
+                    g.turn = (g.turn + 1) % g.order.length; g.turnAt = Date.now();
+                    if (g.order.every((name) => valid(g.sec[name]))) { g.sp = "guess"; g.turn = 0; }
+                    return `${u} locked a secret code`;
+                }
+                if (type !== "guess" || !valid((g.sec || {})[u])) return null;
                 g.gs = g.gs || {}; g.sv = g.sv || {}; const h = (g.gs[u] = g.gs[u] || []); if (h.length >= cfg.tries) return null;
                 const [ex, co] = fb(g.sec[u], p.c); h.push({ c: p.c.map(Number), e: ex, p: co });
                 g.fx = { id, at: Date.now(), u, n: h.length - 1, ex }; if (ex === cfg.len) g.sv[u] = h.length;
@@ -1766,7 +1779,7 @@ PQ.init(); DM.init();
                 return note;
             },
             leave: duelLeave,
-            deal(v) { return mkGame(v, 2, (order) => { const sec = {}; order.forEach((u) => { sec[u] = secret(); }); return { sec, gs: {}, sv: {} }; }); }
+            deal(v) { return mkGame(v, 2, () => ({ sp: "set", sec: {}, gs: {}, sv: {} })); }
         };
         E.auto = autoOf(E);
         return E;
@@ -2097,18 +2110,21 @@ PQ.init(); DM.init();
     /* --------------- CODE BREAKERS (shared UI): Color Code Breaker + Picas y Fijas --------------- */
     const codeUI = (G, cfg) => Object.assign(G, {
         cur: [],
-        onNew() { this.cur = []; },
+        onNew() { this.cur = []; this.entryTurn = null; },
         setup() {
             const pal = $(cfg.p + "-pal");
             for (let v = 0; v < cfg.sym; v++) { const b = mk("button", cfg.kind === "col" ? `cd-peg c${v}` : "cd-key", cfg.kind === "col" ? "" : String(v)); b.type = "button"; b.dataset.v = v; b.setAttribute("aria-label", cfg.kind === "col" ? cfg.names[v] : "Digit " + v); b.addEventListener("click", () => this.push(v)); pal.appendChild(b); }
-            $(cfg.p + "-back").addEventListener("click", () => { this.cur.pop(); this.cursor(); }); $(cfg.p + "-submit").addEventListener("click", () => { const c = this.cur.slice(); this.cur = []; this.act("guess", { c }); });
+            $(cfg.p + "-back").addEventListener("click", () => { this.cur.pop(); this.cursor(); }); $(cfg.p + "-submit").addEventListener("click", () => { const c = this.cur.slice(); this.cur = []; this.act(this.g.sp === "set" ? "secret" : "guess", { c }); this.cursor(); });
         },
         push(v) { const { my } = turnInfo(this.g); if (!my || this.cur.length >= cfg.len || (!cfg.dup && this.cur.includes(v))) return; this.cur.push(v); this.cursor(); },
         peg(v, cls) { return cfg.kind === "col" ? mk("span", `cd-peg sm c${v} ${cls || ""}`) : mk("span", "cd-dig " + (cls || ""), String(v)); },
         cursor() {
+            const token = `${this.g.hid}:${this.g.sp}:${this.g.turn}:${this.g.turnAt}`;
+            if (this.entryTurn !== token) { this.cur = []; this.entryTurn = token; }
             const { my } = turnInfo(this.g), c = $(cfg.p + "-cur"); c.textContent = "";
             for (let i = 0; i < cfg.len; i++) { const s = this.cur[i] != null ? this.peg(this.cur[i], "fill") : mk("span", "cd-empty"); c.appendChild(s); }
             $(cfg.p + "-pal").querySelectorAll("button").forEach((b) => { b.disabled = !my || (!cfg.dup && this.cur.includes(+b.dataset.v)) || this.cur.length >= cfg.len; });
+            $(cfg.p + "-submit").textContent = this.g.sp === "set" ? "Lock secret for opponent" : "Submit guess";
             $(cfg.p + "-submit").disabled = !my || this.cur.length !== cfg.len; $(cfg.p + "-back").disabled = !my || !this.cur.length; $(cfg.p + "-entry").hidden = !my;
         },
         view() {
@@ -2117,7 +2133,7 @@ PQ.init(); DM.init();
             (order.includes(me) ? [me].concat(order.filter((u) => u !== me)) : order).forEach((u) => {
                 const box = mk("div", "cd-board" + (u === me ? " mine" : "")), h = (g.gs && g.gs[u]) || [];
                 box.appendChild(mk("div", "bw-name", u === me ? "Your code attempts" : `${u}'s attempts`));
-                if (done && g.sec) { const r = mk("div", "cd-row secret"); r.appendChild(mk("span", "cd-n", "\u2605")); const s = mk("span", "cd-slots"); g.sec[u].forEach((v) => s.appendChild(this.peg(v, "fill"))); r.appendChild(s); r.appendChild(mk("span", "cd-fb", "secret")); box.appendChild(r); }
+                if (done && g.sec && g.sec[u]) { const r = mk("div", "cd-row secret"); r.appendChild(mk("span", "cd-n", "\u2605")); const s = mk("span", "cd-slots"); g.sec[u].forEach((v) => s.appendChild(this.peg(v, "fill"))); r.appendChild(s); r.appendChild(mk("span", "cd-fb", "secret")); box.appendChild(r); }
                 for (let i = 0; i < cfg.tries; i++) {
                     const x = h[i], row = mk("div", "cd-row" + (x ? " done" : "") + (fx && fx.u === u && fx.n === i ? " new" : "") + (x && x.e === cfg.len ? " cracked" : "")); row.appendChild(mk("span", "cd-n", String(i + 1)));
                     const s = mk("span", "cd-slots"); for (let k = 0; k < cfg.len; k++) s.appendChild(x ? this.peg(x.c[k], "fill") : mk("span", "cd-empty")); row.appendChild(s);
@@ -2131,7 +2147,7 @@ PQ.init(); DM.init();
         },
         controls() {
             const g = this.g, { who, my, live } = turnInfo(g); let m = "";
-            if (g.phase === "done" && g.res) m = resText(g, "cracked the code"); else if (my) m = cfg.hint; else if (live) m = `${who} is thinking\u2026`;
+            if (g.phase === "done" && g.res) m = resText(g, "cracked the code"); else if (g.sp === "set") m = my ? "Choose a secret code for your opponent. It stays hidden until the match ends." : `${who} is choosing a secret code…`; else if (my) m = cfg.hint; else if (live) m = `${who} is thinking\u2026`;
             $(cfg.p + "-status").textContent = m; $(cfg.p + "-log").textContent = g.last || ""; this.common(my); this.cursor();
         },
         playFx() {
@@ -2460,19 +2476,21 @@ PQ.init(); DM.init();
         },
         /* --- lobby configuration (table driver only; stored at rooms/<code>/hangman/cfg) --- */
         setCfg(patch) {
-            const me = State.username; if (!this.ref || !me) return;
-            this.ref.transaction((v) => {
+            const me = State.username; if (!this.ref || !me) return Promise.resolve(null);
+            return this.ref.transaction((v) => {
                 if (!Tables.isOpen(v) || v.phase !== "lobby" || !Tables.canDrive(v, me)) return;
                 const c = Object.assign({}, v.cfg || {});
                 Object.keys(patch).forEach((k) => { if (patch[k] === null || patch[k] === "" || patch[k] === undefined) delete c[k]; else c[k] = patch[k]; });
                 v.cfg = c; return v;
-            }).catch(() => { });
+            }).catch(() => { Notify.error("Could not save Hangman settings. Please try again."); return null; });
         },
-        lock() {
+        async lock() {
             const w = clean($("hm-secret").value);
             if (!wordOk(w)) return Notify.warning("Use 3\u201324 letters (A\u2013Z, up to 4 words) for the secret word.");
-            this.setCfg({ mode: "master", sec: enc(w), master: State.username, n: w.replace(/ /g, "").length });
-            $("hm-secret").value = ""; Notify.success("Secret word locked in \u2014 you will be the Word Master.");
+            const result = await this.setCfg({ mode: "master", sec: enc(w), master: State.username, n: w.replace(/ /g, "").length });
+            if (!result?.committed) return Notify.warning("The word was not locked. Check that you still control the table.");
+            $("hm-secret").value = ""; $("hm-secret").type = "password"; $("hm-reveal").textContent = "Show";
+            Notify.success("Secret word locked in — you will be the Word Master.");
         },
         deal() {
             const c = this.g.cfg || {};

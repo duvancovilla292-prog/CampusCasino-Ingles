@@ -9045,3 +9045,21 @@ details.mx-det>summary::-webkit-details-marker {
     font-size: 0.85rem;
     opacity: 0.8;
 }
+
+/* Visibility must override component display:flex/grid declarations. */
+[hidden] { display: none !important; }
+.nav-menu-panel { grid-template-columns: repeat(3, minmax(0, 1fr)); width: min(960px, calc(100vw - 2rem)); }
+.nav-menu-group { padding: .35rem; }
+.game-visibility { border: 1px solid var(--color-border); border-radius: 12px; margin: 1rem 0; padding: .6rem; min-width: 0; }
+.game-visibility legend { color: var(--color-gold); padding: 0 .4rem; }
+.game-visibility .px-row { justify-content: space-between; min-height: 44px; }
+.game-visibility input { width: 22px; height: 22px; accent-color: var(--color-gold); flex-shrink: 0; }
+.section-switch { background: rgba(233,196,106,.1); font-weight: 600; }
+@media (max-width: 760px) { .nav-menu-panel { grid-template-columns: 1fr; } }
+@media (max-width: 480px) {
+    .top-panel-actions { flex-wrap: wrap; justify-content: center; max-width: 100%; gap: .4rem; }
+    .top-panel-actions .btn { padding-inline: .65rem; }
+}
+#px-admin .mx-tabs { flex-wrap: wrap; }
+#pxa-room .px-row > span { min-width: 0; }
+#pxa-room input[type="text"], #pxa-room input[type="number"], #pxa-room select { width: 100%; min-width: 0; box-sizing: border-box; }
