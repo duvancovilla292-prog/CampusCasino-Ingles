@@ -232,7 +232,7 @@
                 turns</small></h3>
             <button type="button" class="nav-menu-item" role="menuitem" data-game="draw"><span class="nav-menu-icon"
                 aria-hidden="true">&#127873;</span><span>Lucky Draw</span></button>
-            <button type="button" class="nav-menu-item" role="menuitem" data-game="quiz"><span class="nav-menu-icon" aria-hidden="true">❓</span><span>Quiz / Preguntas Interactivas</span></button>
+            <button type="button" class="nav-menu-item" role="menuitem" data-game="quiz"><span class="nav-menu-icon" aria-hidden="true">❓</span><span>Quiz / Live Questions</span></button>
             <div class="nav-menu-chips" role="group" aria-label="Lucky Draw visual modes"><button type="button"
                 class="nav-menu-chip" role="menuitem" data-game="draw" data-draw-mode="slots">Slot Reels</button><button
                 type="button" class="nav-menu-chip" role="menuitem" data-game="draw" data-draw-mode="bingo">Bingo
@@ -258,7 +258,7 @@
             <button type="button" class="nav-menu-item" role="menuitem" data-game="uno"><span class="nav-menu-icon"
                 aria-hidden="true">&#127924;</span><span>UNO</span></button>
             <button type="button" class="nav-menu-item" role="menuitem" data-game="parques"><span class="nav-menu-icon"
-                aria-hidden="true">&#127922;</span><span>Parqu&eacute;s</span></button>
+                aria-hidden="true">&#127922;</span><span>Colombian Ludo</span></button>
             <button type="button" class="nav-menu-item" role="menuitem" data-game="dominoes"><span class="nav-menu-icon"
                 aria-hidden="true">&#127074;</span><span>Dominoes</span></button>
             <button type="button" class="nav-menu-item" role="menuitem" data-game="chess"><span class="nav-menu-icon"
@@ -272,7 +272,7 @@
             <button type="button" class="nav-menu-item" role="menuitem" data-game="mastermind"><span
                 class="nav-menu-icon" aria-hidden="true">&#127912;</span><span>Color Code Breaker</span></button>
             <button type="button" class="nav-menu-item" role="menuitem" data-game="bullscows"><span
-                class="nav-menu-icon" aria-hidden="true">&#128290;</span><span>Picas y Fijas</span></button>
+                class="nav-menu-icon" aria-hidden="true">&#128290;</span><span>Bulls &amp; Cows</span></button>
             <button type="button" class="nav-menu-item" role="menuitem" data-game="hangman"><span
                 class="nav-menu-icon" aria-hidden="true">&#128292;</span><span>Hangman</span></button>
             <button type="button" class="nav-menu-item" role="menuitem" data-game="arcade"><span
@@ -493,12 +493,14 @@
     </section>
 
     <!-- GAME SECTION: CLASSROOM QUIZ -->
-    <section id="game-quiz" class="game-section" data-game-section="quiz" hidden aria-labelledby="quiz-heading" lang="es">
+    <section id="game-quiz" class="game-section" data-game-section="quiz" hidden aria-labelledby="quiz-heading">
       <div class="quiz-toolbar">
-        <h2 id="quiz-heading">❓ Quiz / Preguntas Interactivas</h2>
-        <button type="button" id="quiz-fullscreen" class="btn btn-secondary">Pantalla completa</button>
+        <div class="quiz-title">
+          <h2 id="quiz-heading">❓ Quiz / Live Questions</h2>
+          <p id="quiz-connection" class="qz-status" role="status" data-state="connecting">Connecting to the quiz…</p>
+        </div>
+        <button type="button" id="quiz-fullscreen" class="btn btn-secondary">Fullscreen</button>
       </div>
-      <p id="quiz-connection" class="form-help" role="status">Conectando el quiz…</p>
       <div id="quiz-stage" class="quiz-stage" aria-live="polite" aria-atomic="true"></div>
       <div id="quiz-host" class="quiz-host" hidden></div>
     </section>
@@ -917,7 +919,7 @@
     </section>
 
     <section id="game-parques" class="game-section" data-game-section="parques" hidden aria-labelledby="pq-heading">
-      <h2 id="pq-heading">Parqu&eacute;s<span class="bw-title-sub">Casual &amp; Party Games</span></h2>
+      <h2 id="pq-heading">Colombian Ludo<span class="bw-title-sub">Casual &amp; Party Games</span></h2>
       <p class="bw-info">2&ndash;4 players &middot; roll a 6 to leave base &middot; land on a rival to send it home
         (&#10022; squares are safe) &middot; two tokens form a blockade &middot; exact roll to reach the centre &middot;
         optional stake, first home takes the pot</p>
@@ -925,7 +927,7 @@
       <div id="pq-live" hidden>
         <div class="bw-table pq-table">
           <div class="pq-players" id="pq-players"></div>
-          <div class="pq-board" id="pq-board" role="group" aria-label="Parqu&eacute;s board"></div>
+          <div class="pq-board" id="pq-board" role="group" aria-label="Colombian Ludo board"></div>
           <div class="pq-bar">
             <div class="pq-die" id="pq-die" role="button" aria-label="Dice"></div>
             <div id="pq-pot"></div>
@@ -1115,7 +1117,7 @@
     </section>
 
     <section id="game-bullscows" class="game-section" data-game-section="bullscows" hidden aria-labelledby="bc-heading">
-      <h2 id="bc-heading">Picas y Fijas<span class="bw-title-sub">Casual &amp; Party Games</span></h2>
+      <h2 id="bc-heading">Bulls &amp; Cows<span class="bw-title-sub">Casual &amp; Party Games</span></h2>
       <p class="bw-info">2 players choose a secret 4-digit PIN for each other (no repeats), then race to solve it in 10 tries &middot; Fija = right
         digit &amp; place, Pica = right digit, wrong place &middot; optional stake &middot; solo vs AI available</p>
       <div class="tl" id="bc-lobby" hidden></div>
@@ -1349,8 +1351,7 @@
         <input type="password" id="input-admin-code" class="input-field" placeholder="Access PIN" autocomplete="off">
         <span id="admin-lock-error" class="form-error" role="alert"></span>
         <button type="button" id="btn-admin-unlock" class="btn btn-primary btn-block">Unlock</button>
-        <small class="form-help">Default PIN: <code>admin123</code> (editable in CONFIG.ADMIN_CODE). Only this room's
-          Host device can open this panel.</small>
+        <small class="form-help">Only this room's Host device can open this panel.</small>
       </div>
 
       <div id="admin-content" class="admin-content" hidden>
@@ -1386,7 +1387,7 @@
 
         <!-- Host-only controls: built by AdminCtl (admin-panel.js) only after the PIN is accepted -->
         <div id="admin-controls" class="admin-controls" hidden></div>
-        <section id="quiz-admin" class="ac-section" lang="es" hidden></section>
+        <section id="quiz-admin" class="ac-section" hidden></section>
 
         <div class="admin-actions">
           <button type="button" id="btn-admin-export" class="btn btn-secondary">&#8681; Export Backup (.json)</button>
@@ -1436,7 +1437,7 @@
   <script defer src="JS/game-catalog.js"></script>
   <script defer src="JS/ui-audio.js"></script>        <!-- 2. DOM, sound, HUD, router, screens, shop, chat, missions -->
   <script defer src="JS/casino-games.js"></script>    <!-- 3. GameResolver + Blackjack, Roulette, Slots, Hi-Lo, Viuda Negra... -->
-  <script defer src="JS/casual-games.js"></script>    <!-- 4. UNO, Parqués, Dominoes, duels, Marble Race, Lucky Draw... -->
+  <script defer src="JS/casual-games.js"></script>    <!-- 4. UNO, Colombian Ludo, Dominoes, duels, Marble Race, Lucky Draw... -->
   <script defer src="JS/quiz.js"></script>
   <script defer src="JS/admin-panel.js"></script>     <!-- 5. Admin panel, Host Settings, rig, bet limits, audit, bootstrap -->
   
