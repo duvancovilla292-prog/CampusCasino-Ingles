@@ -1341,13 +1341,18 @@
   <!-- ============================= -->
   <!-- MODAL: ADMINISTRATOR PANEL    -->
   <!-- ============================= -->
-  <div id="admin-modal" class="modal-overlay" hidden>
-    <div class="modal admin-modal" role="dialog" aria-labelledby="admin-title">
-      <button type="button" class="modal-close" id="btn-admin-close" aria-label="Close">&#10005;</button>
-      <h2 id="admin-title">&#9881; Administrator Panel</h2>
+  <div id="admin-modal" class="modal-overlay admin-overlay" hidden>
+    <!-- Desktop: centered dialog. Phones (<= 720px): bottom sheet (see "ADMIN v3" in style.css). -->
+    <div class="modal admin-modal" role="dialog" aria-modal="true" aria-labelledby="admin-title">
+      <div class="sheet-grabber" aria-hidden="true"></div>
+      <header class="sheet-head">
+        <h2 id="admin-title">&#9881; Administrator Panel</h2>
+        <button type="button" class="sheet-close" id="btn-admin-close" aria-label="Close administrator panel">&#10005;</button>
+      </header>
 
+      <!-- PIN gate: nothing below it exists for players (content is built only after unlock) -->
       <div id="admin-lock" class="admin-lock">
-        <p>Enter the access PIN to manage this room's players.</p>
+        <p>Enter the access PIN to manage this room.</p>
         <input type="password" id="input-admin-code" class="input-field" placeholder="Access PIN" autocomplete="off">
         <span id="admin-lock-error" class="form-error" role="alert"></span>
         <button type="button" id="btn-admin-unlock" class="btn btn-primary btn-block">Unlock</button>
@@ -1355,48 +1360,84 @@
       </div>
 
       <div id="admin-content" class="admin-content" hidden>
-        <div class="admin-summary">
-          <div class="admin-stat">
-            <span id="admin-total-players" class="admin-stat-value">0</span>
-            <label>Players</label>
-          </div>
-          <div class="admin-stat">
-            <span id="admin-total-chips" class="admin-stat-value">0</span>
-            <label>Chips in circulation</label>
-          </div>
-          <div class="admin-stat">
-            <span id="admin-total-rounds" class="admin-stat-value">0</span>
-            <label>Rounds played</label>
-          </div>
-        </div>
+        <!-- Tab bar: switching is handled by Admin.setTab() in admin-panel.js -->
+        <nav class="admin-tabs" role="tablist" aria-label="Administrator sections">
+          <button type="button" role="tab" class="admin-tab" id="admin-tab-players" data-admin-tab="players" aria-controls="admin-pane-players" aria-selected="true">
+            <span class="tab-ic" aria-hidden="true">&#128101;</span><span class="tab-label">Players</span><span class="tab-badge" id="badge-players">0</span>
+          </button>
+          <button type="button" role="tab" class="admin-tab" id="admin-tab-games" data-admin-tab="games" aria-controls="admin-pane-games" aria-selected="false" tabindex="-1">
+            <span class="tab-ic" aria-hidden="true">&#127918;</span><span class="tab-label">Casual Games</span><span class="tab-badge" id="badge-games">0</span>
+          </button>
+          <button type="button" role="tab" class="admin-tab" id="admin-tab-quiz" data-admin-tab="quiz" aria-controls="admin-pane-quiz" aria-selected="false" tabindex="-1">
+            <span class="tab-ic" aria-hidden="true">&#128202;</span><span class="tab-label">Quiz &amp; Tools</span><span class="tab-badge" id="badge-quiz">0</span>
+          </button>
+          <button type="button" role="tab" class="admin-tab" id="admin-tab-room" data-admin-tab="room" aria-controls="admin-pane-room" aria-selected="false" tabindex="-1">
+            <span class="tab-ic" aria-hidden="true">&#9881;</span><span class="tab-label">Room Settings</span>
+          </button>
+        </nav>
 
-        <div class="admin-table-wrapper">
-          <table class="admin-table">
-            <thead>
-              <tr>
-                <th>Player</th>
-                <th>Balance</th>
-                <th>Rounds</th>
-                <th>Net profit</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody id="admin-table-body"></tbody>
-          </table>
-        </div>
+        <!-- TAB 1: PLAYERS -->
+        <section id="admin-pane-players" class="admin-pane" role="tabpanel" aria-labelledby="admin-tab-players" data-admin-pane="players">
+          <div class="admin-summary">
+            <div class="admin-stat"><span id="admin-total-players" class="admin-stat-value">0</span><label>Players</label></div>
+            <div class="admin-stat is-online"><span id="admin-total-online" class="admin-stat-value">0</span><label>Online now</label></div>
+            <div class="admin-stat"><span id="admin-total-chips" class="admin-stat-value">0</span><label>Chips in circulation</label></div>
+            <div class="admin-stat"><span id="admin-total-rounds" class="admin-stat-value">0</span><label>Rounds played</label></div>
+          </div>
+          <input type="search" id="admin-player-search" class="input-field admin-search" placeholder="Search players&hellip;" aria-label="Search players" autocomplete="off">
+          <div class="admin-table-wrapper">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Player</th>
+                  <th>Balance</th>
+                  <th>Rounds</th>
+                  <th>Net profit</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="admin-table-body"></tbody>
+            </table>
+          </div>
+          <p id="admin-table-empty" class="qz-empty" hidden>No players match.</p>
+        </section>
 
-        <!-- Host-only controls: built by AdminCtl (admin-panel.js) only after the PIN is accepted -->
-        <div id="admin-controls" class="admin-controls" hidden></div>
-        <section id="quiz-admin" class="ac-section" hidden></section>
+        <!-- TAB 2: CASUAL GAMES (visibility switches are built by GamesAdmin) -->
+        <section id="admin-pane-games" class="admin-pane" role="tabpanel" aria-labelledby="admin-tab-games" data-admin-pane="games" hidden>
+          <p class="mx-hint">Turn a whole category on or off, or hide individual games. Changes sync to every player instantly and each game keeps its own setting when its section is switched back on.</p>
+          <div id="admin-games" class="gv-grid"></div>
+        </section>
 
-        <div class="admin-actions">
-          <button type="button" id="btn-admin-export" class="btn btn-secondary">&#8681; Export Backup (.json)</button>
-          <label class="btn btn-secondary btn-file">
-            &#8679; Import Backup
-            <input type="file" id="input-admin-import" accept="application/json" hidden>
-          </label>
-          <button type="button" id="btn-admin-reset-all" class="btn btn-danger">&#128465; Delete All Players</button>
-        </div>
+        <!-- TAB 3: QUIZ & TOOLS (built by Quiz.syncAdmin) -->
+        <section id="admin-pane-quiz" class="admin-pane" role="tabpanel" aria-labelledby="admin-tab-quiz" data-admin-pane="quiz" hidden>
+          <section id="quiz-admin" class="ac-section" hidden></section>
+        </section>
+
+        <!-- TAB 4: ROOM SETTINGS -->
+        <section id="admin-pane-room" class="admin-pane" role="tabpanel" aria-labelledby="admin-tab-room" data-admin-pane="room" hidden>
+          <!-- Force start, manual scores, live settings: built by AdminCtl only after the PIN is accepted -->
+          <div id="admin-controls" class="admin-controls" hidden></div>
+          <div class="admin-controls">
+            <section class="ac-section">
+              <h3><span class="ac-ic" aria-hidden="true">&#128190;</span>Backup &amp; data</h3>
+              <p class="mx-hint">Download the room's player data as <code>data.json</code>, or restore it from a previous file.</p>
+              <div class="ac-stack">
+                <button type="button" id="btn-admin-export" class="btn btn-primary btn-block">&#8681; Download data.json</button>
+                <label class="btn btn-secondary btn-block btn-file">&#8679; Import data.json<input type="file" id="input-admin-import" accept="application/json" hidden></label>
+              </div>
+            </section>
+            <section class="ac-section">
+              <h3><span class="ac-ic" aria-hidden="true">&#128722;</span>Shop, missions &amp; limits</h3>
+              <p class="mx-hint">Manage the item shop, daily missions, bet limits, the central bank and the audit log.</p>
+              <button type="button" id="btn-admin-host-tools" class="btn btn-secondary btn-block">Open Host Settings</button>
+            </section>
+            <section class="ac-section ac-danger">
+              <h3><span class="ac-ic" aria-hidden="true">&#9888;</span>Danger zone</h3>
+              <p class="mx-hint">Removes every saved player profile in this room. This cannot be undone.</p>
+              <button type="button" id="btn-admin-reset-all" class="btn btn-danger btn-block">&#128465; Delete all players</button>
+            </section>
+          </div>
+        </section>
       </div>
     </div>
   </div>

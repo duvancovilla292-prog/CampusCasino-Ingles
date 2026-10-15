@@ -286,6 +286,8 @@ const Quiz = {
     clearAdmin() {
         const root = $z("quiz-admin"); root.textContent = ""; root.hidden = true;
         $z("quiz-host").textContent = ""; $z("quiz-host").hidden = true; this.editing = null;
+        const tabBadge = $z("badge-quiz");
+        if (tabBadge) { tabBadge.textContent = "0"; if (tabBadge.classList) tabBadge.classList.remove("is-live"); }
     },
 
     /** Builds the admin shell once, then refreshes the bank / live card on every sync. */
@@ -326,6 +328,9 @@ const Quiz = {
         const bank = $z("quiz-bank"), h = this.h.bind(this); bank.textContent = "";
         const entries = Object.entries(this.data.questions || {});
         $z("quiz-count").textContent = String(entries.length);
+        // Tab badge in the Administrator Panel: bank size, with a live dot while a question is on air.
+        const tabBadge = $z("badge-quiz");
+        if (tabBadge) { tabBadge.textContent = String(entries.length); if (tabBadge.classList) tabBadge.classList.toggle("is-live", !!this.data.live?.question); }
         if (!entries.length) bank.append(h("p", "qz-empty", this.ready ? "No questions yet. Create the first one." : "Loading questions\u2026"));
         entries.forEach(([id, question], position) => {
             const onAir = this.data.live?.questionId === id;
@@ -348,7 +353,11 @@ const Quiz = {
                 }, false, "primary"),
                 this.button("Edit", () => this.edit(id)),
                 this.button("Delete", async () => {
-                    if (!window.confirm("Delete this question? If it is on air, it will also be removed from the screen.")) return;
+                    const ok = await Dialog.confirm({
+                        title: "Delete question", tone: "danger", confirmLabel: "Delete",
+                        message: "Delete this question? If it is on air, it will also be removed from the screen."
+                    });
+                    if (!ok) return;
                     const removed = await this.write((data) => {
                         if (!data.questions?.[id]) return;
                         delete data.questions[id];

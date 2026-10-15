@@ -3736,10 +3736,13 @@ const Arcade = {
         g.enabled = !g.enabled;
         this.persist(list, (g.enabled ? "Showed " : "Hid ") + g.title).catch(() => {});
     },
-    removeGame(id) {
+    async removeGame(id) {
         if (!this.adminAllowed()) return;
         const list = this.copyList(), g = list.find((x) => x.id === id);
-        if (!g || !window.confirm(`Delete "${g.title}" from the list?`)) return;
+        if (!g) return;
+        // Dialog (admin-panel.js) replaces window.confirm: bottom sheet on phones.
+        const ok = await Dialog.confirm({ title: "Delete game", tone: "danger", confirmLabel: "Delete", message: `Delete "${g.title}" from the list?` });
+        if (!ok || !this.adminAllowed()) return;
         if (this.editingId === id) this.resetForm();
         this.persist(list.filter((x) => x.id !== id), "Deleted " + g.title).catch(() => {});
     },
@@ -3761,21 +3764,23 @@ const Arcade = {
         if (!file || !this.adminAllowed()) return;
         if (file.size > 512 * 1024) return Notify.error("File too large (max 512 KB).");
         const reader = new FileReader();
-        reader.onload = () => {
+        reader.onload = async () => {
             let json;
             try { json = JSON.parse(String(reader.result)); } catch (e) { return Notify.error("That file is not valid JSON."); }
             const { list, skipped } = this.normalizeList(Array.isArray(json) ? json : json && json.games);
             if (!list.length) return Notify.error("No valid games found in that file.");
             const extra = skipped ? ` (${skipped} invalid skipped)` : "";
-            if (!window.confirm(`Replace the current list with ${list.length} game(s)${extra}?`)) return;
+            const ok = await Dialog.confirm({ title: "Import games", confirmLabel: "Replace list", message: `Replace the current list with ${list.length} game(s)${extra}?` });
+            if (!ok || !this.adminAllowed()) return;
             this.persist(list, "Imported " + list.length + " games").catch(() => {});
         };
         reader.readAsText(file);
     },
     /** Replaces the room's custom list with the one stored in the repository's data/data.json. */
-    resetFromRepo() {
+    async resetFromRepo() {
         if (!this.adminAllowed()) return;
-        if (!window.confirm("Replace the room's list with the repository's data/data.json?")) return;
+        const ok = await Dialog.confirm({ title: "Reset from data.json", tone: "danger", confirmLabel: "Replace list", message: "Replace the room's list with the repository's data/data.json?" });
+        if (!ok || !this.adminAllowed()) return;
         this.loadSeed(true).then((list) => this.persist(list, "Reset from data.json").catch(() => {}));
     }
 };

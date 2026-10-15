@@ -11,10 +11,266 @@
 "use strict";
 
 /* =========================================================================
+   19c. DIALOG — promise-based replacement for window.confirm / window.prompt
+   Renders a centered dialog on desktop and a bottom sheet on phones (style.css, "ADMIN v3").
+     Dialog.confirm({ title, message, confirmLabel, cancelLabel, tone: "danger" })  -> Promise<boolean>
+     Dialog.prompt({ title, message, value, inputType, placeholder, confirmLabel }) -> Promise<string | null>
+   Only one dialog is open at a time; Escape / backdrop tap cancels; focus is trapped and restored.
+   ========================================================================= */
+const Dialog = (() => {
+    let layer = null, settle = null, opener = null;
+
+    const el = (tag, cls, text) => {
+        const node = document.createElement(tag);
+        if (cls) node.className = cls;
+        if (text != null) node.textContent = text;
+        return node;
+    };
+
+    /** Closes the open dialog (if any) and resolves its promise with `value`. */
+    function finish(value) {
+        if (!layer) return;
+        const node = layer, done = settle;
+        layer = settle = null;
+        document.removeEventListener("keydown", onKey, true);
+        node.classList.add("is-closing");
+        window.setTimeout(() => node.remove(), 180);
+        if (opener && opener.isConnected) opener.focus({ preventScroll: true });
+        opener = null;
+        done(value);
+    }
+
+    /** Capture-phase key handler: Escape cancels, Tab stays inside the dialog. */
+    function onKey(event) {
+        if (!layer) return;
+        const cancelValue = layer.dataset.mode === "prompt" ? null : false;
+        if (event.key === "Escape") {
+            event.preventDefault(); event.stopPropagation();
+            finish(cancelValue);
+        } else if (event.key === "Tab") {
+            const items = [...layer.querySelectorAll("button, input")].filter((n) => !n.disabled);
+            if (!items.length) return;
+            const first = items[0], last = items[items.length - 1];
+            if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+            else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+        }
+    }
+
+    function open(o) {
+        if (layer) finish(o.mode === "prompt" ? null : false); // never stack dialogs
+        return new Promise((resolve) => {
+            settle = resolve; opener = document.activeElement;
+            const prompt = o.mode === "prompt", cancelValue = prompt ? null : false;
+            layer = el("div", "ui-dialog-overlay"); layer.dataset.mode = o.mode;
+            const box = el("div", "ui-dialog");
+            box.setAttribute("role", prompt ? "dialog" : "alertdialog"); box.setAttribute("aria-modal", "true");
+            const title = el("h3", "ui-dialog-title", o.title || (prompt ? "Enter a value" : "Please confirm"));
+            title.id = "ui-dialog-title"; box.setAttribute("aria-labelledby", title.id);
+            const grab = el("div", "sheet-grabber"); grab.setAttribute("aria-hidden", "true");
+            box.append(grab, title);
+            if (o.message) box.append(el("p", "ui-dialog-message", o.message));
+
+            let input = null;
+            if (prompt) {
+                input = el("input", "input-field"); input.type = o.inputType || "text";
+                if (input.type === "number") { input.min = "0"; input.inputMode = "numeric"; }
+                input.value = o.value == null ? "" : String(o.value);
+                if (o.placeholder) input.placeholder = o.placeholder;
+                input.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); finish(input.value); } });
+                box.append(input);
+            }
+            const cancel = el("button", "btn btn-ghost", o.cancelLabel || "Cancel"); cancel.type = "button";
+            cancel.addEventListener("click", () => finish(cancelValue));
+            const ok = el("button", `btn ${o.tone === "danger" ? "btn-danger" : "btn-primary"}`, o.confirmLabel || "OK"); ok.type = "button";
+            ok.addEventListener("click", () => finish(prompt ? input.value : true));
+            const actions = el("div", "ui-dialog-actions"); actions.append(cancel, ok);
+            box.append(actions); layer.append(box);
+            layer.addEventListener("click", (e) => { if (e.target === layer) finish(cancelValue); });
+
+            document.body.appendChild(layer);
+            document.addEventListener("keydown", onKey, true);
+            // Destructive confirmations focus "Cancel" first so a stray Enter cannot delete anything.
+            const focusTarget = input || (o.tone === "danger" ? cancel : ok);
+            focusTarget.focus({ preventScroll: true });
+            if (input) input.select();
+        });
+    }
+
+    return {
+        confirm: (options) => open({ mode: "confirm", ...options }),
+        prompt: (options) => open({ mode: "prompt", ...options })
+    };
+})();
+
+/* =========================================================================
+   19d. PRESENCE — who is online right now (rooms/<code>/presence/<username>)
+   Each device writes its own node and asks the server to delete it on disconnect, so the
+   count is real-time and self-healing. If database rules refuse it, `supported` stays false
+   and the UI simply hides the online indicators.
+   ========================================================================= */
+const Presence = {
+    users: {}, supported: false, broken: false,
+    ref: null, listener: null, mine: null, connRef: null, connListener: null,
+
+    /** Firebase keys cannot contain . $ # [ ] / */
+    key(name) { return String(name).replace(/[.$#\[\]\/]/g, "_"); },
+    isOnline(name) { return this.supported && !!this.users[this.key(name)]; },
+
+    start() {
+        this.stop();
+        if (!Room.db || !Room.code) return;
+        const base = Room.db.ref(`rooms/${Room.code}/presence`);
+        this.ref = base;
+        this.listener = (snapshot) => {
+            if (this.ref !== base) return; // stale event from a previous room
+            this.users = snapshot.val() || {};
+            this.supported = !this.broken;
+            PubSub.emit("presence-updated");
+        };
+        base.on("value", this.listener, () => {
+            if (this.ref !== base) return;
+            this.supported = false; this.users = {};
+            PubSub.emit("presence-updated");
+        });
+        if (!State.username) return;
+        const mine = base.child(this.key(State.username));
+        this.mine = mine;
+        this.connRef = Room.db.ref(".info/connected");
+        this.connListener = (snapshot) => {
+            if (snapshot.val() !== true || this.mine !== mine) return;
+            // Register the cleanup first, then announce: a crash in between can never leave a ghost.
+            mine.onDisconnect().remove()
+                .then(() => mine.set({ ts: TS() }))
+                .catch(() => { this.broken = true; this.supported = false; PubSub.emit("presence-updated"); });
+        };
+        this.connRef.on("value", this.connListener);
+    },
+
+    stop() {
+        if (this.ref && this.listener) this.ref.off("value", this.listener);
+        if (this.connRef && this.connListener) this.connRef.off("value", this.connListener);
+        if (this.mine) { this.mine.onDisconnect().cancel().catch(() => {}); this.mine.remove().catch(() => {}); }
+        this.ref = this.listener = this.mine = this.connRef = this.connListener = null;
+        this.users = {}; this.supported = false; this.broken = false;
+    }
+};
+
+/* =========================================================================
+   19e. GAMES ADMIN (tab "Casual Games") — category + per-game visibility switches
+   Writes rooms/<code>/cfg/{sectionsDisabled|disabled}/<key> (same nodes the game menu reads via
+   Missions.cfg / GameCatalog.apply). The inputs carry data-visibility so applyCfg() in
+   ui-audio.js keeps them in sync with Firebase automatically; refresh() updates counters.
+   ========================================================================= */
+const GamesAdmin = {
+    ICONS: { casino: "\uD83C\uDFB0", tools: "\uD83E\uDDF0", casual: "\uD83C\uDFB2" },
+    built: false,
+
+    root() { return $z("admin-games"); },
+
+    /** How many games of a category players can currently see. */
+    stats(cat) {
+        const cfg = Missions.cfg, sectionOn = !cfg.sectionsDisabled?.[cat.id];
+        const on = sectionOn ? cat.games.filter((key) => !cfg.disabled?.[key]).length : 0;
+        return { total: cat.games.length, on, sectionOn };
+    },
+
+    /** One iOS-style switch row. `master` styles the whole-section switch. */
+    switchRow(text, visibility, key, aria, master) {
+        const label = AdminCtl.el("label", `gv-switch${master ? " gv-master" : ""}`);
+        const input = document.createElement("input");
+        input.type = "checkbox"; input.setAttribute("role", "switch");
+        input.dataset.visibility = visibility; input.dataset.key = key; input.setAttribute("aria-label", aria);
+        label.append(AdminCtl.el("span", "gv-name", text), input);
+        return label;
+    },
+
+    build() {
+        const root = this.root();
+        if (!root) return;
+        const el = AdminCtl.el.bind(AdminCtl);
+        root.textContent = "";
+        GameCatalog.categories.forEach((cat) => {
+            const card = el("section", "gv-card"); card.dataset.cat = cat.id;
+            const head = el("header", "gv-head"), title = el("div", "gv-title"), h3 = el("h3");
+            const icon = el("span", "gv-ic", this.ICONS[cat.id] || "\uD83C\uDFAE"); icon.setAttribute("aria-hidden", "true");
+            h3.append(icon, document.createTextNode(cat.label));
+            title.append(h3, el("span", "gv-count badge", ""));
+            head.append(title, this.switchRow("Whole section", "sectionsDisabled", cat.id, `Show the ${cat.label} section to players`, true));
+            const list = el("ul", "gv-list");
+            cat.games.forEach((key) => {
+                const label = GameCatalog.label(key), item = el("li", "gv-row");
+                item.append(this.switchRow(label, "disabled", key, `Show ${label} to players`, false));
+                list.append(item);
+            });
+            card.append(head, list); root.append(card);
+        });
+        this.built = true;
+    },
+
+    /** Builds on first use (Host only) and refreshes counters. */
+    render() {
+        if (!AdminCtl.allowed()) { this.clear(); return; }
+        if (!this.built) this.build();
+        this.refresh();
+    },
+
+    /** Syncs switch positions, per-category badges and the tab counter with the live room config. */
+    refresh() {
+        const root = this.root();
+        if (!this.built || !root || !AdminCtl.allowed()) return;
+        const cfg = Missions.cfg;
+        let active = 0;
+        GameCatalog.categories.forEach((cat) => {
+            const card = root.querySelector(`[data-cat="${cat.id}"]`);
+            if (!card) return;
+            const { total, on, sectionOn } = this.stats(cat);
+            active += on;
+            card.classList.toggle("is-off", !sectionOn);
+            card.querySelectorAll("[data-visibility]").forEach((input) => {
+                input.checked = !cfg[input.dataset.visibility]?.[input.dataset.key];
+            });
+            const badge = card.querySelector(".gv-count");
+            badge.textContent = sectionOn ? `${on}/${total} active` : "Section off";
+            badge.className = `gv-count badge ${!sectionOn || on === 0 ? "badge-off" : on === total ? "badge-ok" : "badge-warn"}`;
+        });
+        $z("badge-games").textContent = String(active);
+    },
+
+    clear() {
+        const root = this.root();
+        if (root) root.textContent = "";
+        this.built = false;
+        $z("badge-games").textContent = "0";
+    },
+
+    /** Delegated change handler (bound once in Admin.init). */
+    async onChange(event) {
+        const input = event.target.closest("[data-visibility]");
+        if (!input) return;
+        if (!AdminCtl.allowed() || !Room.db || !Room.code) { input.checked = !input.checked; return; }
+        const { visibility, key } = input.dataset;
+        const cat = GameCatalog.categories.find((c) => c.id === key);
+        const name = visibility === "sectionsDisabled" ? (cat ? cat.label : key) : GameCatalog.label(key);
+        input.disabled = true;
+        try {
+            await Room.db.ref(`rooms/${Room.code}/cfg/${visibility}/${key}`).set(!input.checked);
+            Notify.success(`${name} ${input.checked ? "enabled" : "disabled"}.`);
+        } catch (error) {
+            input.checked = !input.checked;
+            Notify.error("Could not save visibility. Please try again.");
+        } finally {
+            input.disabled = false;
+        }
+    }
+};
+
+/* =========================================================================
    20. ADMINISTRATOR PANEL (Host-only)
    ========================================================================= */
 const Admin = {
     unlocked: false,
+    tab: "players",      // last tab shown (restored when the panel is reopened)
+    closeTimer: 0,
 
     init() {
         DOM.btnOpenAdmin.addEventListener("click", () => this.open());
@@ -30,9 +286,57 @@ const Admin = {
         DOM.btnAdminExport.addEventListener("click", () => this.exportData());
         DOM.inputAdminImport.addEventListener("change", (event) => this.importData(event));
         DOM.btnAdminResetAll.addEventListener("click", () => this.resetAll());
+
+        // ---- Tabs: click + keyboard (Left / Right / Home / End), WAI-ARIA tablist pattern ----
+        const tabs = DOM.adminModal.querySelector(".admin-tabs");
+        tabs.addEventListener("click", (event) => {
+            const button = event.target.closest("[data-admin-tab]");
+            if (button) this.setTab(button.dataset.adminTab);
+        });
+        tabs.addEventListener("keydown", (event) => {
+            const list = [...tabs.querySelectorAll("[data-admin-tab]")];
+            const at = list.indexOf(document.activeElement);
+            if (at < 0) return;
+            const target = { ArrowRight: list[(at + 1) % list.length], ArrowLeft: list[(at - 1 + list.length) % list.length], Home: list[0], End: list[list.length - 1] }[event.key];
+            if (!target) return;
+            event.preventDefault(); this.setTab(target.dataset.adminTab); target.focus();
+        });
+
+        // ---- Per-tab widgets ----
+        $z("admin-player-search").addEventListener("input", () => this.renderTable());
+        $z("admin-games").addEventListener("change", (event) => GamesAdmin.onChange(event));
+        $z("btn-admin-host-tools").addEventListener("click", () => {
+            this.close();
+            const settings = document.getElementById("btn-host-settings");
+            if (settings) settings.click();
+        });
+        // Escape closes the panel unless a dialog / popup sits on top of it.
+        document.addEventListener("keydown", (event) => {
+            if (event.key !== "Escape" || DOM.adminModal.hidden) return;
+            if (document.querySelector(".ui-dialog-overlay, .cx-pop-layer")) return;
+            this.close();
+        });
+
         PubSub.on("players-updated", () => {
             if (this.unlocked && !DOM.adminModal.hidden) this.renderTable();
         });
+        PubSub.on("presence-updated", () => {
+            if (this.unlocked && !DOM.adminModal.hidden) this.renderTable();
+        });
+    },
+
+    /** Shows one tab panel and hides the others. Unknown names fall back to "players". */
+    setTab(name) {
+        const tabs = [...DOM.adminModal.querySelectorAll("[data-admin-tab]")];
+        if (!tabs.some((tab) => tab.dataset.adminTab === name)) name = "players";
+        this.tab = name;
+        tabs.forEach((tab) => {
+            const on = tab.dataset.adminTab === name;
+            tab.setAttribute("aria-selected", String(on));
+            tab.tabIndex = on ? 0 : -1;
+        });
+        DOM.adminModal.querySelectorAll("[data-admin-pane]").forEach((pane) => { pane.hidden = pane.dataset.adminPane !== name; });
+        if (DOM.adminContent) DOM.adminContent.scrollTop = 0;
     },
 
     open() {
@@ -42,12 +346,15 @@ const Admin = {
             Notify.error("Only this room's Host device can open the Administrator Panel.");
             return;
         }
+        window.clearTimeout(this.closeTimer);
+        DOM.adminModal.classList.remove("is-closing");
         DOM.adminModal.hidden = false;
         DOM.inputAdminCode.value = "";
         DOM.adminLockError.textContent = "";
         if (this.unlocked) {
             DOM.adminLock.hidden = true;
             DOM.adminContent.hidden = false;
+            this.setTab(this.tab);
             this.renderTable();
         } else {
             DOM.adminLock.hidden = false;
@@ -56,8 +363,14 @@ const Admin = {
         }
     },
 
+    /** Closes with a short slide-down (bottom sheet) / fade (desktop) animation. */
     close() {
-        DOM.adminModal.hidden = true;
+        if (DOM.adminModal.hidden) return;
+        const finish = () => { DOM.adminModal.hidden = true; DOM.adminModal.classList.remove("is-closing"); };
+        if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) { finish(); return; }
+        DOM.adminModal.classList.add("is-closing");
+        window.clearTimeout(this.closeTimer);
+        this.closeTimer = window.setTimeout(finish, 220);
     },
 
     tryUnlock() {
@@ -65,68 +378,77 @@ const Admin = {
             this.unlocked = true;
             DOM.adminLock.hidden = true;
             DOM.adminContent.hidden = false;
+            this.setTab(this.tab);
             this.renderTable();
         } else {
             DOM.adminLockError.textContent = "Incorrect PIN.";
         }
     },
 
+    /** Players tab: summary counters + searchable table (cards on phones). */
     renderTable() {
-        const players = Room.list().sort((a, b) => (b.balance || 0) - (a.balance || 0));
-        let totalChips = 0;
-        let totalRounds = 0;
-
-        DOM.adminTableBody.innerHTML = "";
-
-        players.forEach((player) => {
+        const el = AdminCtl.el.bind(AdminCtl);
+        const everyone = Room.list().sort((a, b) => (b.balance || 0) - (a.balance || 0));
+        const query = $z("admin-player-search").value.trim().toLowerCase();
+        let totalChips = 0, totalRounds = 0, online = 0;
+        everyone.forEach((player) => {
             totalChips += player.balance || 0;
             totalRounds += player.stats?.gamesPlayed || 0;
+            if (Presence.isOnline(player.username)) online++;
+        });
+        const players = query ? everyone.filter((p) => String(p.username).toLowerCase().includes(query)) : everyone;
 
+        DOM.adminTableBody.textContent = "";
+        players.forEach((player) => {
+            const isOnline = Presence.isOnline(player.username);
             const row = document.createElement("tr");
 
+            // Name + status badges
             const nameCell = document.createElement("td");
-            nameCell.textContent = player.username; nameCell.dataset.label = "Player";
+            nameCell.dataset.label = "Player";
+            const wrap = el("div", "pl-name");
+            if (Presence.supported) wrap.append(el("span", `presence-dot${isOnline ? " is-on" : ""}`));
+            wrap.append(el("span", "pl-text", player.username));
+            if (player.username === State.username) wrap.append(el("span", "badge badge-gold", "You"));
+            if (Presence.supported) wrap.append(el("span", `badge ${isOnline ? "badge-ok" : "badge-off"}`, isOnline ? "Online" : "Offline"));
+            nameCell.append(wrap);
 
-            const balanceCell = document.createElement("td");
-            balanceCell.textContent = (player.balance || 0).toLocaleString("en-US"); balanceCell.dataset.label = "Balance";
-
-            const roundsCell = document.createElement("td");
-            roundsCell.textContent = String(player.stats?.gamesPlayed || 0); roundsCell.dataset.label = "Rounds";
-
-            const netCell = document.createElement("td");
+            const balanceCell = el("td", "", (player.balance || 0).toLocaleString("en-US"));
+            balanceCell.dataset.label = "Balance";
+            const roundsCell = el("td", "", String(player.stats?.gamesPlayed || 0));
+            roundsCell.dataset.label = "Rounds";
             const net = player.stats?.netProfit || 0;
-            netCell.textContent = `${net >= 0 ? "+" : ""}${net.toLocaleString("en-US")}`; netCell.dataset.label = "Net profit";
-            netCell.classList.add(net >= 0 ? "net-positive" : "net-negative");
+            const netCell = el("td", net >= 0 ? "net-positive" : "net-negative", `${net >= 0 ? "+" : ""}${net.toLocaleString("en-US")}`);
+            netCell.dataset.label = "Net profit";
 
+            // Actions: neutral (Reset chips) < warning (Kick) < destructive (Delete)
             const actionsCell = document.createElement("td");
-            const resetBtn = document.createElement("button");
+            const resetBtn = el("button", "btn btn-small btn-secondary", "Reset chips");
             resetBtn.type = "button";
-            resetBtn.className = "btn btn-small btn-secondary";
-            resetBtn.textContent = "Reset chips";
             resetBtn.addEventListener("click", () => this.resetPlayerBalance(player.username));
-
-            const deleteBtn = document.createElement("button");
-            deleteBtn.type = "button";
-            deleteBtn.className = "btn btn-small btn-danger";
-            deleteBtn.textContent = "Delete";
-            deleteBtn.addEventListener("click", () => this.deletePlayer(player.username));
-
-            // KICK: sends the player back to the start screen (disabled for the Host's own profile).
-            const kickBtn = document.createElement("button");
+            const kickBtn = el("button", "btn btn-small btn-warn btn-kick", "Kick");
             kickBtn.type = "button";
-            kickBtn.className = "btn btn-small btn-secondary btn-kick";
-            kickBtn.textContent = "Kick";
-            kickBtn.disabled = player.username === State.username;
+            kickBtn.disabled = player.username === State.username; // the Host cannot kick themselves
             kickBtn.addEventListener("click", () => this.kickPlayer(player.username));
-
+            const deleteBtn = el("button", "btn btn-small btn-danger", "Delete");
+            deleteBtn.type = "button";
+            deleteBtn.addEventListener("click", () => this.deletePlayer(player.username));
             actionsCell.append(resetBtn, kickBtn, deleteBtn);
+
             row.append(nameCell, balanceCell, roundsCell, netCell, actionsCell);
             DOM.adminTableBody.appendChild(row);
         });
+        $z("admin-table-empty").hidden = players.length > 0;
 
-        DOM.adminTotalPlayers.textContent = String(players.length);
+        DOM.adminTotalPlayers.textContent = String(everyone.length);
         DOM.adminTotalChips.textContent = totalChips.toLocaleString("en-US");
         DOM.adminTotalRounds.textContent = String(totalRounds);
+        $z("admin-total-online").textContent = Presence.supported ? String(online) : "\u2014";
+        const badge = $z("badge-players");
+        badge.textContent = Presence.supported ? `${online}/${everyone.length}` : String(everyone.length);
+        badge.classList.toggle("is-live", Presence.supported && online > 0);
+
+        GamesAdmin.render();
         AdminCtl.render(); // host-only controls (re)build here, only while the panel is unlocked
     },
 
@@ -135,10 +457,13 @@ const Admin = {
      * to the start screen), (2) free any table seat they hold while no hand is in progress,
      * (3) delete their player node so they disappear from the room.
      */
-    kickPlayer(username) {
-        if (!State.isHost || !Admin.unlocked) return;
+    async kickPlayer(username) {
         if (username === State.username) return Notify.error("You can't kick yourself.");
-        if (!window.confirm(`Kick "${username}" from the room?`)) return;
+        const confirmed = await Dialog.confirm({
+            title: "Kick player", tone: "danger", confirmLabel: "Kick",
+            message: `Remove "${username}" from the room? They will be sent back to the start screen.`
+        });
+        if (!confirmed) return;
         const NODES = ["bj", "bw", "uno", "parques", "dominoes", "hangman", "chess", "checkers", "mastermind", "bullscows", "connect4", "battleship"];
         const SAFE = ["lobby", "bet", "done"];
         zref("kicks/" + username).set({ ts: TS(), by: State.username || "host" })
@@ -153,16 +478,19 @@ const Admin = {
             .then(() => Room.deletePlayer(username))
             .then(() => {
                 Audit.log("kick", `Kicked ${username}`);
-                Notify.warning(`"${username}" was kicked.`);
+                Notify.success(`Player kicked: ${username}.`);
                 this.renderTable();
             })
             .catch(() => Notify.error("Could not kick that player."));
     },
 
-    resetPlayerBalance(username) {
+    async resetPlayerBalance(username) {
         const player = Room.get(username);
         if (!player) return;
-        const amount = window.prompt(`New chip balance for "${username}":`, "1000");
+        const amount = await Dialog.prompt({
+            title: "Reset chips", message: `New chip balance for "${username}":`,
+            value: "1000", inputType: "number", confirmLabel: "Save"
+        });
         if (amount === null) return;
         const parsed = Number.parseInt(amount, 10);
         if (Number.isNaN(parsed) || parsed < 0) {
@@ -178,21 +506,25 @@ const Admin = {
             }
             this.renderTable();
             Notify.success(`Balance for "${username}" updated.`);
-        });
+        }).catch(() => Notify.error("Could not update that balance."));
     },
 
-    deletePlayer(username) {
-        const confirmed = window.confirm(`Permanently delete "${username}"?`);
+    async deletePlayer(username) {
+        const confirmed = await Dialog.confirm({
+            title: "Delete player", tone: "danger", confirmLabel: "Delete",
+            message: `Permanently delete "${username}"? Their chips and stats will be lost.`
+        });
         if (!confirmed) return;
         Room.deletePlayer(username).then(() => {
             if (State.username === username) {
                 handleLogout();
             }
             this.renderTable();
-            Notify.warning(`Player "${username}" deleted.`);
-        });
+            Notify.success(`Player deleted: ${username}.`);
+        }).catch(() => Notify.error("Could not delete that player."));
     },
 
+    /** Downloads the room's player data as data.json (same format importData() accepts). */
     exportData() {
         const payload = {
             exportedAt: new Date().toISOString(),
@@ -203,12 +535,12 @@ const Admin = {
         const url = URL.createObjectURL(blob);
         const link = document.createElement("a");
         link.href = url;
-        link.download = `casino-campus-backup-${Date.now()}.json`;
+        link.download = "data.json";
         document.body.appendChild(link);
         link.click();
         link.remove();
         URL.revokeObjectURL(url);
-        Notify.success("Backup exported.");
+        Notify.success("data.json downloaded.");
     },
 
     importData(event) {
@@ -234,14 +566,17 @@ const Admin = {
         event.target.value = "";
     },
 
-    resetAll() {
-        const confirmed = window.confirm("This will delete ALL players saved in this room. Continue?");
+    async resetAll() {
+        const confirmed = await Dialog.confirm({
+            title: "Delete all players", tone: "danger", confirmLabel: "Delete everything",
+            message: "This will delete ALL players saved in this room. This cannot be undone."
+        });
         if (!confirmed) return;
         Room.deleteAllPlayers().then(() => {
             this.renderTable();
-            Notify.warning("All players were deleted.");
+            Notify.success("All players were deleted.");
             handleLogout();
-        });
+        }).catch(() => Notify.error("Could not delete the players."));
     }
 };
 
@@ -264,6 +599,7 @@ const AdminCtl = {
         this.built = false;
         Arcade.teardownAdmin(); // remove the Arcade editor too
         Quiz.clearAdmin();
+        GamesAdmin.clear();
     },
 
     render() {
@@ -291,11 +627,13 @@ const AdminCtl = {
         const field = (label, input) => { const l = el("label", "ac-field"); l.append(el("span", "", label), input); return l; };
         const num = (id, min, max) => { const i = el("input", "input-field"); i.type = "number"; i.id = id; i.min = min; i.max = max; i.inputMode = "numeric"; return i; };
         const opts = (sel, list) => list.forEach(([v, t]) => { const o = el("option", "", t); o.value = v; sel.appendChild(o); });
+        // Card heading with a decorative icon (screen readers read only the title).
+        const head = (icon, text) => { const h = el("h3"); const i = el("span", "ac-ic", icon); i.setAttribute("aria-hidden", "true"); h.append(i, document.createTextNode(text)); return h; };
         root.textContent = "";
 
         // ---- 1) Force start ----
         const s1 = el("section", "ac-section");
-        s1.append(el("h3", "", "Match control"),
+        s1.append(head("\u26A1", "Match control"),
             el("p", "mx-hint", "Starts the table of the game open behind this panel, even with fewer players than normal. You must be seated at that table while it is in its lobby."));
         const force = el("button", "btn btn-primary btn-block", "\u26A1 Force start current table");
         force.type = "button";
@@ -304,7 +642,7 @@ const AdminCtl = {
 
         // ---- 2) Manual scores ----
         const s2 = el("section", "ac-section");
-        s2.appendChild(el("h3", "", "Edit scores manually"));
+        s2.appendChild(head("\u270F\uFE0F", "Edit scores manually"));
         const player = el("select", "input-field"); player.id = "ac-player";
         const mode = el("select", "input-field"); mode.id = "ac-mode";
         opts(mode, [["add", "Add (+)"], ["sub", "Subtract (\u2212)"], ["set", "Set to"]]);
@@ -317,7 +655,7 @@ const AdminCtl = {
 
         // ---- 3) Live settings ----
         const s3 = el("section", "ac-section");
-        s3.append(el("h3", "", "Live room settings"),
+        s3.append(head("\u23F1\uFE0F", "Live room settings"),
             el("p", "mx-hint", "Saved to Firebase: every connected player receives them instantly. Turn time is applied to the turn limit of all table games; rounds and difficulty are shared room values (RoomCfg.get(\"rounds\" | \"difficulty\")) that games can read."));
         const turn = num("ac-turn", 5, 600), rounds = num("ac-rounds", 1, 20);
         const diff = el("select", "input-field"); diff.id = "ac-diff";
@@ -497,30 +835,14 @@ const Plus = (() => {
             box.innerHTML = `
                <h3>Room</h3><div class="px-row"><span>Name</span><span><input type="text" id="pxa-name" value="${esc(cfg.roomName)}" maxlength="30" placeholder="Campus VIP Table"></span></div>
                <div class="px-row"><span>Daily bonus multiplier</span><span><input type="number" id="pxa-mult" min="0" max="10" step="0.5" value="${cfg.bonusMult}"></span></div>
-               <div class="px-row"><span>Daily missions (master switch)</span><span></span><input type="checkbox" id="pxa-miss" ${cfg.missionsOn ? "checked" : ""}></div>
-               <h3>Games &amp; sections</h3><p class="form-help">Switches sync immediately. Turning a section back on preserves each game's setting.</p>
-               ${GameCatalog.categories.map((cat) => `<fieldset class="game-visibility"><legend>${cat.label}</legend>
-                 <label class="px-row section-switch"><span>Enable entire section</span><input type="checkbox" role="switch" data-visibility="sectionsDisabled" data-key="${cat.id}" ${cfg.sectionsDisabled[cat.id] ? "" : "checked"}></label>
-                 ${cat.games.map((g) => `<label class="px-row"><span>${esc(GameCatalog.label(g))}</span><input type="checkbox" role="switch" data-visibility="disabled" data-key="${g}" ${cfg.disabled[g] ? "" : "checked"}></label>`).join("")}
-               </fieldset>`).join("")}
+               <div class="px-row"><span>Daily missions (master switch)</span><span></span><input type="checkbox" role="switch" id="pxa-miss" ${cfg.missionsOn ? "checked" : ""}></div>
+               <h3>Games &amp; sections</h3><p class="form-help">Game and section visibility now lives in Administrator Panel &rsaquo; Casual Games.</p>
                <h3>Secret winner (all random tools)</h3>
-               <div class="px-row"><span>Enabled</span><span><select id="pxa-rt"><option value="">\u2014</option>${ns.map((n) => `<option ${n === Rig.target ? "selected" : ""}>${esc(n)}</option>`).join("")}</select></span><input type="checkbox" id="pxa-rig" ${Rig.on ? "checked" : ""}></div>
+               <div class="px-row"><span>Enabled</span><span><select id="pxa-rt"><option value="">\u2014</option>${ns.map((n) => `<option ${n === Rig.target ? "selected" : ""}>${esc(n)}</option>`).join("")}</select></span><input type="checkbox" role="switch" id="pxa-rig" ${Rig.on ? "checked" : ""}></div>
                <h3>Display names</h3>${ns.map((n) => `<div class="px-row"><span>${esc(n)}</span><span><input type="text" data-dn="${esc(n)}" value="${esc(cfg.names[n] || "")}" placeholder="${esc(n)}" maxlength="24"></span></div>`).join("")}
                <button type="button" class="btn btn-primary btn-block" id="pxa-save" style="margin-top:1rem">Save &amp; sync</button>`;
         };
-        mAdm.addEventListener("change", async (event) => {
-            const input = event.target.closest("[data-visibility]");
-            if (!input) return;
-            if (!State.isHost || !Room.db || !Room.code) { input.checked = !input.checked; return; }
-            const { visibility, key } = input.dataset;
-            input.disabled = true;
-            try {
-                await Room.db.ref(`rooms/${Room.code}/cfg/${visibility}/${key}`).set(!input.checked);
-            } catch (error) {
-                input.checked = !input.checked;
-                Notify.error("Could not save visibility. Please try again.");
-            } finally { input.disabled = false; }
-        });
+        // (Game / section visibility switches moved to GamesAdmin, Administrator Panel > Casual Games.)
         const saveRoom = () => {
             cfg.roomName = $("pxa-name").value.trim(); cfg.bonusMult = Math.max(0, +$("pxa-mult").value || 1); cfg.missionsOn = $("pxa-miss").checked;
             cfg.names = {}; document.querySelectorAll("#pxa-room [data-dn]").forEach((i) => { if (i.value.trim()) cfg.names[i.dataset.dn] = i.value.trim(); });
@@ -600,8 +922,12 @@ const Plus = (() => {
             if (act === "hide") ref.child("hidden/" + key).set(true).then(() => Notify.success("Removed from sale. Players who already own it keep it."));
             else if (act === "show") ref.child("hidden/" + key).remove().then(() => Notify.success("Back on sale."));
             else if (act === "purge") {
-                if (!window.confirm(`Permanently delete "${it ? it.name : key}"?\nPlayers who own it will lose its look. Use Remove instead to keep their copies.`)) return;
-                ref.update({ ["items/" + key]: null, ["hidden/" + key]: null }).then(() => Notify.success("Item deleted."));
+                Dialog.confirm({
+                    title: "Delete shop item", tone: "danger", confirmLabel: "Delete",
+                    message: `Permanently delete "${it ? it.name : key}"?\nPlayers who own it will lose its look. Use Remove instead to keep their copies.`
+                }).then((ok) => {
+                    if (ok) ref.update({ ["items/" + key]: null, ["hidden/" + key]: null }).then(() => Notify.success("Item deleted."));
+                });
             }
         };
 
@@ -617,13 +943,17 @@ const Plus = (() => {
         };
         const setDisabled = (id, off) => Room.db && Room.code && Room.db.ref(`rooms/${Room.code}/cfg/mDisabled/${id}`).set(off ? true : null);
         const bulk = (off) => { const o = {}; if (off) QUESTS.forEach((q) => { o[q.id] = true; }); return Room.db.ref(`rooms/${Room.code}/cfg/mDisabled`).set(off ? o : null); };
-        const doReset = () => {
+        const doReset = async () => {
             if (!Room.playersRef) return;
             const users = resetScope === "all" ? names() : [...resetSel].filter((u) => Room.exists(u));
             if (!users.length) { Notify.warning("Select at least one player."); return; }
             const id = $("mx-mission").value, m = id === "*" ? null : Q(id), d = day(), whole = id === "*" && $("mx-hist").checked;
             const who = resetScope === "all" ? `ALL ${users.length} players` : `${users.length} selected player${users.length > 1 ? "s" : ""}`;
-            if (!window.confirm(`Reset ${m ? `"${m.text}"` : whole ? "ALL missions and history" : "ALL of today's missions"} for ${who}?`)) return;
+            const ok = await Dialog.confirm({
+                title: "Reset missions", tone: "danger", confirmLabel: "Reset",
+                message: `Reset ${m ? `"${m.text}"` : whole ? "ALL missions and history" : "ALL of today's missions"} for ${who}?`
+            });
+            if (!ok) return;
             const upd = {};
             users.forEach((u) => {
                 if (!m) upd[whole ? `${u}/quests` : `${u}/quests/${d}`] = null;
@@ -633,6 +963,7 @@ const Plus = (() => {
         };
 
         const adminRefresh = () => {
+            GamesAdmin.refresh(); // Administrator Panel > Casual Games counters
             if (mAdm.hidden || !$("px-adm").firstElementChild) return;
             const room = $("pxa-room"); if (room && !room.contains(document.activeElement)) fillRoom();
             fillShopList(); fillMissions();
@@ -846,7 +1177,7 @@ const ZAdmin = {
         const t = e.target;
         if (t.id === "zl-save") this.saveLimits(false); else if (t.id === "zl-reset") this.saveLimits(true); else if (t.id === "zb-save") this.saveBank();
         else if (t.dataset.ap) Bank.approve(t.dataset.ap); else if (t.dataset.dn) Bank.deny(t.dataset.dn);
-        else if (t.id === "za-clear" && window.confirm("Clear the whole audit log?")) zref("audit").remove();
+        else if (t.id === "za-clear") Dialog.confirm({ title: "Clear audit log", message: "Clear the whole audit log?", confirmLabel: "Clear log", tone: "danger" }).then((ok) => { if (ok) zref("audit").remove(); });
     }
 };
 
@@ -854,9 +1185,9 @@ window.__zAdmin = () => { const a = $z("px-adm"); if (!a.dataset.z) { a.dataset.
 
 const soc0 = { start: Social.start.bind(Social), stop: Social.stop.bind(Social) };
 
-Social.start = function () { soc0.start(); Z.start(); Quiz.start(); };
+Social.start = function () { soc0.start(); Z.start(); Quiz.start(); Presence.start(); };
 
-Social.stop = function () { soc0.stop(); Z.stop(); Quiz.stop(); AdminCtl.clear(); };
+Social.stop = function () { soc0.stop(); Z.stop(); Quiz.stop(); Presence.stop(); AdminCtl.clear(); };
 
 /* =========================================================================
    APP BOOTSTRAP — must register LAST (this is the last script of the page).

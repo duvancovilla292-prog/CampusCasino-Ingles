@@ -248,18 +248,46 @@ const Effects = {
    ========================================================================= */
 const Notify = {
     TYPES: { SUCCESS: "toast-success", ERROR: "toast-error", WARNING: "toast-warning" },
-    AUTO_DISMISS_MS: 3500,
+    AUTO_DISMISS_MS: 3500,   // success / warning toasts
+    ERROR_DISMISS_MS: 6000,  // errors stay a little longer so they can be read
+    MAX_VISIBLE: 4,          // older toasts are dismissed beyond this
+    ICONS: { "toast-success": "\u2713", "toast-error": "!", "toast-warning": "i" },
 
+    /**
+     * Floating toast (replaces alert()): icon + text, auto-dismisses, tap to close,
+     * pauses while hovered. Success/warning use role="status", errors role="alert".
+     */
     show(message, type = Notify.TYPES.WARNING) {
+        const list = DOM.notificationList;
         const item = document.createElement("li");
         item.className = `toast ${type}`;
-        item.textContent = message;
-        DOM.notificationList.appendChild(item);
+        item.setAttribute("role", type === Notify.TYPES.ERROR ? "alert" : "status");
+        const icon = document.createElement("span");
+        icon.className = "toast-icon"; icon.setAttribute("aria-hidden", "true"); icon.textContent = Notify.ICONS[type] || "i";
+        const text = document.createElement("span");
+        text.className = "toast-text"; text.textContent = message;
+        item.append(icon, text);
 
-        window.setTimeout(() => {
+        const life = type === Notify.TYPES.ERROR ? Notify.ERROR_DISMISS_MS : Notify.AUTO_DISMISS_MS;
+        item.style.setProperty("--toast-life", `${life}ms`); // drives the countdown bar in CSS
+        let timer = 0, gone = false;
+        const dismiss = () => {
+            if (gone) return;
+            gone = true; window.clearTimeout(timer);
             item.classList.add("toast-exit");
-            item.addEventListener("animationend", () => item.remove(), { once: true });
-        }, Notify.AUTO_DISMISS_MS);
+            const remove = () => item.remove();
+            item.addEventListener("animationend", remove, { once: true });
+            window.setTimeout(remove, 400); // fallback when animations are disabled
+        };
+        item.addEventListener("click", dismiss);
+        item.addEventListener("pointerenter", () => { item.classList.add("is-paused"); window.clearTimeout(timer); });
+        item.addEventListener("pointerleave", () => { item.classList.remove("is-paused"); timer = window.setTimeout(dismiss, 1200); });
+        timer = window.setTimeout(dismiss, life);
+        list.appendChild(item);
+
+        // Keep the stack short: dismiss the oldest toasts beyond MAX_VISIBLE.
+        const alive = [...list.children].filter((node) => !node.classList.contains("toast-exit"));
+        alive.slice(0, Math.max(0, alive.length - Notify.MAX_VISIBLE)).forEach((node) => node.click());
     },
 
     success(message) { this.show(message, this.TYPES.SUCCESS); },
@@ -1525,7 +1553,7 @@ const Missions = (() => {
 
         const modal = (id, inner) => { const m = mk(`<div class="px-modal" id="${id}" hidden><div class="px-card">${inner}</div></div>`); m.addEventListener("click", (e) => { if (e.target === m || e.target.dataset.close) Fx.closeModal(m); }); document.body.appendChild(m); return m; };
         const mMiss = modal("px-missions", `<h2>\u{1F3AF} Daily Missions</h2><div id="px-qhead"></div><div id="px-qlist"></div><button class="btn btn-ghost btn-block" data-close="1" style="margin-top:1rem">Close</button>`);
-        const mAdm = modal("px-admin", `<h2>\u2699 Host Settings</h2><div id="px-adm"></div><button class="btn btn-ghost btn-block" data-close="1" style="margin-top:1rem">Close</button>`);
+        const mAdm = modal("px-admin", `<div class="sheet-grabber" aria-hidden="true"></div><div class="sheet-head"><h2>\u2699 Host Settings</h2><button type="button" class="sheet-close" data-close="1" aria-label="Close Host Settings">\u2715</button></div><div id="px-adm"></div><button class="btn btn-ghost btn-block" data-close="1" style="margin-top:1rem">Close</button>`);
 
         /* ---------- Room config sync (Firebase: rooms/{code}/cfg) ---------- */
         const pushCfg = () => Room.db && Room.code && Room.db.ref(`rooms/${Room.code}/cfg`).set({ ...cfg, rig: { on: Rig.on, t: Rig.target } });

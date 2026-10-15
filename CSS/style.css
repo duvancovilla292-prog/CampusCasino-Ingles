@@ -9188,81 +9188,241 @@ details.mx-det>summary::-webkit-details-marker {
 }
 
 /* =========================================================================
-   ADMIN REDESIGN v2 — Administrator panel + Host settings
-   Scoped under #admin-modal / #px-admin so nothing else is affected.
+   ADMIN v3 — tabbed Administrator Panel, Host Settings, dialogs and toasts
+   Shared pieces: tabs, iOS-style switches, badges, button hierarchy, bottom sheets.
+   Everything is scoped to #admin-modal, #px-admin, .ui-dialog* or .toast* so the
+   rest of the app is unaffected. Desktop = centered dialog; <= 720px = bottom sheet.
    ========================================================================= */
+:root {
+    --adm-ok: #3ecf8e;          /* success / online */
+    --adm-warn: #f59e42;        /* soft orange: Kick, caution */
+    --adm-danger: #ef6a60;      /* soft red: Delete, destructive */
+    --adm-accent: var(--color-gold-strong);
+}
+
+/* ---------- Overlay + panel shell ---------- */
+#admin-modal.admin-overlay { animation: adm-fade .2s ease both; }
+#admin-modal.is-closing { animation: adm-fade-out .2s ease forwards; }
 #admin-modal .admin-modal {
     max-width: min(1040px, 100%); padding: 0; display: flex; flex-direction: column; overflow: hidden;
-    max-height: min(92vh, 980px); max-height: min(92dvh, 980px);
-    border: 1px solid rgba(244, 196, 48, .28); border-radius: 20px;
+    max-height: min(92vh, 940px); max-height: min(92dvh, 940px);
+    border: 1px solid rgba(244, 196, 48, .28); border-radius: 22px;
     background: linear-gradient(180deg, #18212b 0%, #121920 100%);
+    animation: adm-pop .24s cubic-bezier(.2, .9, .3, 1.1) both;
 }
-#admin-modal .admin-modal > h2 { margin: 0; padding: 1.1rem 4.5rem 1rem 1.5rem; font-size: 1.25rem; border-bottom: 1px solid var(--color-border); background: rgba(255, 255, 255, .02); }
-#admin-modal .modal-close { top: .85rem; right: .9rem; width: 44px; height: 44px; display: grid; place-items: center; border-radius: 12px; }
-#admin-modal .admin-lock { max-width: 26rem; margin: 0 auto; padding: 2.2rem 1.5rem 2.5rem; }
+.sheet-grabber { display: none; flex: none; width: 44px; height: 5px; margin: .55rem auto .1rem; border-radius: 3px; background: rgba(255, 255, 255, .28); }
+.sheet-head { display: flex; align-items: center; justify-content: space-between; gap: .75rem; flex: none; padding: 1rem 1rem 1rem 1.5rem; border-bottom: 1px solid var(--color-border); background: rgba(255, 255, 255, .02); }
+.sheet-head h2 { margin: 0; font-size: 1.2rem; color: var(--color-gold); }
+.sheet-close {
+    flex: none; display: grid; place-items: center; width: 44px; height: 44px; padding: 0; border-radius: 12px; cursor: pointer;
+    border: 1px solid var(--color-border); background: rgba(255, 255, 255, .05); color: var(--color-text); font-size: 1.15rem; line-height: 1;
+    transition: background .15s, border-color .15s, color .15s;
+}
+.sheet-close:hover { background: rgba(239, 106, 96, .16); border-color: rgba(239, 106, 96, .6); color: #ffb3ac; }
+.sheet-close:focus-visible, .admin-tab:focus-visible { outline: 3px solid var(--color-gold); outline-offset: 2px; }
+
+/* PIN gate */
+#admin-modal .admin-lock { display: grid; gap: .7rem; width: 100%; max-width: 26rem; margin: 0 auto; padding: 2rem 1.5rem 2.4rem; text-align: center; }
+#admin-modal .admin-lock[hidden] { display: none; }
+#admin-modal .admin-lock p { margin: 0; color: var(--color-text-muted); }
 #admin-modal .admin-lock .input-field { min-height: 48px; font-size: 16px; text-align: center; letter-spacing: .2em; }
-#admin-modal .admin-content { overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; padding: 1.25rem 1.5rem 1.75rem; }
 
-/* Summary cards */
-#admin-modal .admin-summary { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .8rem; margin-bottom: 1.25rem; }
-#admin-modal .admin-stat { min-width: 0; padding: 1rem .8rem; border-radius: 16px; background: linear-gradient(160deg, rgba(244, 196, 48, .12), rgba(244, 196, 48, .02)); border: 1px solid rgba(244, 196, 48, .25); }
-#admin-modal .admin-stat-value { font-size: clamp(1.25rem, 3vw, 1.9rem); line-height: 1.1; overflow-wrap: anywhere; }
-#admin-modal .admin-stat label { display: block; margin-top: .3rem; font-size: .68rem; }
+/* ---------- Tabs ---------- */
+#admin-modal .admin-content { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; padding: 0; overflow: hidden; }
+#admin-modal .admin-content[hidden] { display: none; }
+.admin-tabs { display: flex; gap: .35rem; flex: none; padding: .55rem .9rem; overflow-x: auto; scrollbar-width: none; border-bottom: 1px solid var(--color-border); background: rgba(0, 0, 0, .18); scroll-snap-type: x proximity; }
+.admin-tabs::-webkit-scrollbar { display: none; }
+.admin-tab {
+    flex: 0 0 auto; display: inline-flex; align-items: center; gap: .5rem; min-height: 44px; padding: .4rem .95rem;
+    border: 1px solid transparent; border-radius: 12px; background: transparent; color: var(--color-text-muted);
+    font: inherit; font-weight: 700; white-space: nowrap; cursor: pointer; scroll-snap-align: start;
+    transition: background .15s, color .15s;
+}
+.admin-tab:hover { background: rgba(255, 255, 255, .06); color: var(--color-text); }
+.admin-tab[aria-selected="true"] { background: linear-gradient(135deg, var(--color-gold-strong), var(--color-gold-dark)); color: var(--color-text-inverse); box-shadow: 0 4px 14px rgba(244, 196, 48, .25); }
+.tab-ic { font-size: 1.05rem; }
+.tab-badge { display: inline-grid; place-items: center; min-width: 1.45rem; height: 1.45rem; padding: 0 .45rem; border-radius: 999px; background: rgba(255, 255, 255, .12); font-size: .72rem; font-weight: 800; }
+.tab-badge:empty { display: none; }
+.admin-tab[aria-selected="true"] .tab-badge { background: rgba(0, 0, 0, .22); }
+.tab-badge.is-live { background: rgba(62, 207, 142, .22); color: #8cf0bd; box-shadow: 0 0 0 1px rgba(62, 207, 142, .5); }
+.admin-tab[aria-selected="true"] .tab-badge.is-live { background: #12372a; color: #8cf0bd; }
 
-/* Players table */
-#admin-modal .admin-table-wrapper { border: 1px solid var(--color-border); border-radius: 16px; max-height: 360px; overflow: auto; margin-bottom: 1.25rem; background: rgba(0, 0, 0, .12); }
-#admin-modal .admin-table { font-size: .88rem; }
-#admin-modal .admin-table thead th { position: sticky; top: 0; z-index: 1; background: #1a232d; padding: .75rem .8rem; }
-#admin-modal .admin-table td { padding: .6rem .8rem; }
+.admin-pane { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; padding: 1.1rem 1.5rem calc(1.75rem + env(safe-area-inset-bottom, 0px)); animation: adm-pane-in .18s ease both; }
+.admin-pane[hidden] { display: none; }
+
+/* ---------- Players tab ---------- */
+.admin-summary { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .7rem; margin-bottom: 1rem; }
+.admin-stat { min-width: 0; padding: .9rem .8rem; border-radius: 16px; border: 1px solid rgba(244, 196, 48, .25); background: linear-gradient(160deg, rgba(244, 196, 48, .12), rgba(244, 196, 48, .02)); }
+.admin-stat.is-online { border-color: rgba(62, 207, 142, .4); background: linear-gradient(160deg, rgba(62, 207, 142, .14), rgba(62, 207, 142, .02)); }
+.admin-stat-value { display: block; font-size: clamp(1.25rem, 3vw, 1.8rem); font-weight: 800; line-height: 1.1; overflow-wrap: anywhere; }
+.admin-stat.is-online .admin-stat-value { color: #8cf0bd; }
+.admin-stat label { display: block; margin-top: .3rem; font-size: .68rem; letter-spacing: .05em; text-transform: uppercase; color: var(--color-text-muted); }
+.admin-search { width: 100%; margin-bottom: .8rem; min-height: 46px; font-size: 16px; }
+#admin-modal .admin-table-wrapper { border: 1px solid var(--color-border); border-radius: 16px; overflow: auto; background: rgba(0, 0, 0, .12); }
+#admin-modal .admin-table { width: 100%; font-size: .88rem; border-collapse: collapse; }
+#admin-modal .admin-table thead th { position: sticky; top: 0; z-index: 1; padding: .75rem .8rem; text-align: left; background: #1a232d; font-size: .7rem; letter-spacing: .06em; text-transform: uppercase; color: var(--color-text-muted); }
+#admin-modal .admin-table td { padding: .6rem .8rem; border-top: 1px solid rgba(255, 255, 255, .05); vertical-align: middle; }
 #admin-modal .admin-table tbody tr:hover { background: rgba(255, 255, 255, .035); }
 #admin-modal .admin-table td:last-child { white-space: normal; }
-#admin-modal .admin-table td:last-child .btn { margin: .15rem .25rem .15rem 0; }
-#admin-modal .btn-small { min-height: 38px; padding: .4rem .8rem; font-size: .8rem; }
+#admin-modal .admin-table td:last-child .btn { margin: .15rem .3rem .15rem 0; }
+.pl-name { display: flex; align-items: center; flex-wrap: wrap; gap: .5rem; min-width: 0; }
+.pl-text { font-weight: 700; overflow-wrap: anywhere; }
+.presence-dot { flex: none; width: .65rem; height: .65rem; border-radius: 50%; background: #5b6572; }
+.presence-dot.is-on { background: var(--adm-ok); box-shadow: 0 0 0 3px rgba(62, 207, 142, .22); }
+.net-positive { color: #8cf0bd; font-weight: 700; }
+.net-negative { color: #ffa8a0; font-weight: 700; }
 
-/* Control cards */
-#admin-modal .admin-controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); gap: 1rem; margin-bottom: 1rem; }
-#admin-modal .admin-controls[hidden], #admin-modal #quiz-admin[hidden] { display: none; }
-#admin-modal .ac-section { min-width: 0; padding: 1.1rem; border-radius: 16px; border: 1px solid var(--color-border); background: var(--color-surface-alt); }
-#admin-modal .ac-section h3 { display: flex; align-items: center; gap: .55rem; margin: 0 0 .6rem; font-size: 1rem; }
-#admin-modal .ac-section h3::before { content: ""; width: 4px; height: 1.05em; border-radius: 2px; background: var(--color-gold-strong); }
-#admin-modal .ac-grid { grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: .75rem; }
-#admin-modal .ac-field { font-size: .75rem; color: var(--color-text-muted); letter-spacing: .02em; }
+/* ---------- Badges ---------- */
+.badge { display: inline-flex; align-items: center; padding: .12rem .55rem; border-radius: 999px; background: rgba(255, 255, 255, .1); color: var(--color-text-muted); font-size: .68rem; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; white-space: nowrap; }
+.badge-ok { background: rgba(62, 207, 142, .16); color: #8cf0bd; }
+.badge-off { background: rgba(255, 255, 255, .08); color: #98a4b1; }
+.badge-warn { background: rgba(245, 158, 66, .16); color: #ffc48a; }
+.badge-gold { background: rgba(244, 196, 48, .18); color: var(--color-gold-strong); }
+
+/* ---------- Button hierarchy: accent = main action, soft orange/red = destructive ---------- */
+.btn-small { min-height: 40px; padding: .4rem .85rem; font-size: .8rem; }
+.btn-warn { background: rgba(245, 158, 66, .13); border: 1px solid rgba(245, 158, 66, .55); color: #ffc48a; }
+.btn-warn:hover:not(:disabled) { background: rgba(245, 158, 66, .24); }
+#admin-modal .btn-danger, #px-admin .btn-danger, .ui-dialog .btn-danger, .quiz-bank-row .btn-danger {
+    background: rgba(239, 106, 96, .13); border: 1px solid rgba(239, 106, 96, .6); color: #ffb3ac; box-shadow: none;
+}
+#admin-modal .btn-danger:hover:not(:disabled), #px-admin .btn-danger:hover:not(:disabled), .ui-dialog .btn-danger:hover:not(:disabled) { background: rgba(239, 106, 96, .26); }
+#admin-modal .btn-primary, #px-admin .btn-primary, .ui-dialog .btn-primary { box-shadow: 0 6px 18px rgba(244, 196, 48, .22); }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+
+/* ---------- iOS-style switches (casual games + host settings checkboxes) ---------- */
+.gv-switch input[type="checkbox"], #px-admin input[type="checkbox"], input.ui-switch {
+    -webkit-appearance: none; appearance: none; position: relative; flex: none; width: 52px; height: 30px; margin: 0; padding: 0;
+    border: 0; border-radius: 999px; background: #3a4452; cursor: pointer; transition: background .2s ease; -webkit-tap-highlight-color: transparent;
+}
+.gv-switch input[type="checkbox"]::after, #px-admin input[type="checkbox"]::after, input.ui-switch::after {
+    content: ""; position: absolute; top: 3px; left: 3px; width: 24px; height: 24px; border-radius: 50%; background: #fff;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, .4); transition: transform .2s cubic-bezier(.3, .7, .4, 1);
+}
+.gv-switch input[type="checkbox"]:checked, #px-admin input[type="checkbox"]:checked, input.ui-switch:checked { background: #2fbf71; }
+.gv-switch input[type="checkbox"]:checked::after, #px-admin input[type="checkbox"]:checked::after, input.ui-switch:checked::after { transform: translateX(22px); }
+.gv-switch input[type="checkbox"]:focus-visible, #px-admin input[type="checkbox"]:focus-visible { outline: 3px solid var(--color-gold); outline-offset: 2px; }
+.gv-switch input[type="checkbox"]:disabled, #px-admin input[type="checkbox"]:disabled { opacity: .55; cursor: progress; }
+
+/* ---------- Casual Games tab ---------- */
+.gv-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 1rem; align-items: start; }
+.gv-card { overflow: hidden; border: 1px solid var(--color-border); border-radius: 16px; background: var(--color-surface-alt); }
+.gv-card.is-off .gv-list { opacity: .5; }
+.gv-head { display: grid; gap: .5rem; padding: 1rem 1rem .6rem; background: rgba(255, 255, 255, .03); border-bottom: 1px solid var(--color-border); }
+.gv-title { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: .5rem; }
+.gv-title h3 { display: flex; align-items: center; gap: .5rem; margin: 0; font-size: 1rem; }
+.gv-ic { font-size: 1.2rem; }
+.gv-list { list-style: none; margin: 0; padding: .25rem 0; }
+.gv-row + .gv-row { border-top: 1px solid rgba(255, 255, 255, .05); }
+.gv-switch { display: flex; align-items: center; justify-content: space-between; gap: 1rem; min-height: 50px; padding: .35rem 1rem; cursor: pointer; }
+.gv-switch.gv-master { padding: .2rem 0; font-weight: 700; }
+.gv-name { min-width: 0; overflow-wrap: anywhere; }
+
+/* ---------- Quiz tab + Room Settings tab ---------- */
+#admin-pane-quiz > .ac-section { padding: 0; border: 0; background: none; }
+.admin-controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); gap: 1rem; margin-bottom: 1rem; }
+.admin-controls[hidden] { display: none; }
+.ac-section { min-width: 0; padding: 1.1rem; border: 1px solid var(--color-border); border-radius: 16px; background: var(--color-surface-alt); }
+.ac-section h3 { display: flex; align-items: center; gap: .55rem; margin: 0 0 .6rem; font-size: 1rem; }
+.ac-ic { display: inline-grid; place-items: center; width: 1.9rem; height: 1.9rem; border-radius: 10px; background: rgba(244, 196, 48, .14); font-size: 1rem; }
+.ac-stack { display: grid; gap: .6rem; }
+.ac-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: .75rem; margin-bottom: .8rem; }
+.ac-field { display: grid; gap: .3rem; font-size: .75rem; color: var(--color-text-muted); }
+.ac-danger { border-color: rgba(239, 106, 96, .45); background: rgba(239, 106, 96, .06); }
+.ac-danger h3 .ac-ic { background: rgba(239, 106, 96, .18); }
 #admin-modal .input-field, #admin-modal .ac-field select, #admin-modal .ac-field input { min-height: 44px; font-size: 16px; }
-#admin-modal .mx-hint { margin: 0 0 .8rem; font-size: .8rem; color: var(--color-text-muted); line-height: 1.45; }
-#admin-modal #quiz-admin { margin-bottom: 1rem; }
-#admin-modal .admin-actions { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: .6rem; padding-top: 1rem; border-top: 1px solid var(--color-border); }
-#admin-modal .admin-actions .btn { min-height: 46px; justify-content: center; text-align: center; }
+#admin-modal .mx-hint { margin: 0 0 .8rem; font-size: .8rem; line-height: 1.45; color: var(--color-text-muted); }
+#admin-modal .btn-block { min-height: 46px; justify-content: center; text-align: center; }
+#admin-modal .btn-file { display: inline-flex; align-items: center; cursor: pointer; }
 
-/* Host settings (Room / Shop / Missions / Limits / Bank / Audit) */
-#px-admin .mx-tabs { gap: .35rem; padding: .3rem; border: 1px solid var(--color-border); border-radius: 16px; background: var(--color-bg-alt); }
-#px-admin .mx-tab { min-height: 42px; border: 0; border-radius: 12px; padding: .5rem 1rem; white-space: nowrap; transition: background .15s, color .15s; }
+/* ---------- Host Settings (#px-admin) as a tabbed sheet ---------- */
+#px-admin { animation: adm-fade .2s ease both; }
+#px-admin .px-card { display: flex; flex-direction: column; width: min(780px, 100%); max-height: min(90vh, 900px); max-height: min(90dvh, 900px); padding: 0; overflow: hidden; border-radius: 22px; animation: adm-pop .24s cubic-bezier(.2, .9, .3, 1.1) both; }
+#px-admin #px-adm { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 1rem 1.25rem; }
+#px-admin .px-card > .btn[data-close] { flex: none; margin: .4rem 1.25rem calc(1rem + env(safe-area-inset-bottom, 0px)) !important; }
+#px-admin .mx-tabs { display: flex; gap: .35rem; padding: .3rem; border: 1px solid var(--color-border); border-radius: 16px; background: var(--color-bg-alt); }
+#px-admin .mx-tab { min-height: 42px; padding: .5rem 1rem; border: 0; border-radius: 12px; white-space: nowrap; transition: background .15s, color .15s; }
 #px-admin .mx-tab:hover { background: rgba(255, 255, 255, .05); }
 #px-admin .mx-tab[aria-selected="true"] { background: linear-gradient(135deg, var(--color-gold-strong), var(--color-gold-dark)); color: var(--color-text-inverse); }
-#px-admin .px-row { min-height: 48px; padding: .5rem .2rem; border-bottom: 1px solid rgba(255, 255, 255, .06); }
-#px-admin input[type="text"], #px-admin input[type="number"], #px-admin select { min-height: 42px; font-size: 16px; }
-#px-admin input[type="checkbox"] { width: 22px; height: 22px; accent-color: var(--color-gold-strong); }
-#px-admin .mx-item { border-radius: 14px; }
+#px-admin .px-row { min-height: 48px; padding: .5rem .7rem; }
+#px-admin input[type="text"], #px-admin input[type="number"], #px-admin select { min-height: 44px; font-size: 16px; }
 
-/* Phones & touch: full-screen sheet; player table becomes cards */
+/* ---------- Dialog (replaces confirm / prompt) ---------- */
+.ui-dialog-overlay { position: fixed; inset: 0; z-index: 1200; display: flex; align-items: center; justify-content: center; padding: 1rem; background: rgba(4, 6, 8, .78); backdrop-filter: blur(3px); animation: adm-fade .15s ease both; }
+.ui-dialog-overlay.is-closing { animation: adm-fade-out .18s ease forwards; }
+.ui-dialog { width: min(420px, 100%); padding: 1.4rem; border: 1px solid var(--color-border); border-radius: 20px; background: linear-gradient(180deg, #1b2530, #131a21); box-shadow: 0 24px 60px rgba(0, 0, 0, .6); animation: adm-pop .2s cubic-bezier(.2, .9, .3, 1.1) both; }
+.ui-dialog-title { margin: 0 0 .4rem; font-size: 1.15rem; color: var(--color-text); }
+.ui-dialog-message { margin: .2rem 0 1.1rem; line-height: 1.5; color: var(--color-text-muted); overflow-wrap: anywhere; }
+.ui-dialog .input-field { width: 100%; min-height: 46px; margin-bottom: 1.1rem; font-size: 16px; }
+.ui-dialog-actions { display: flex; justify-content: flex-end; gap: .6rem; }
+.ui-dialog-actions .btn { min-height: 46px; min-width: 6.5rem; }
+
+/* ---------- Toasts (replace alert) ---------- */
+.notification-container { top: calc(.75rem + env(safe-area-inset-top, 0px)); right: .75rem; z-index: 1300; }
+.notification-list { width: min(380px, calc(100vw - 1.5rem)); max-width: none; }
+.toast {
+    --toast-c: var(--color-gold-strong);
+    position: relative; display: flex; align-items: flex-start; gap: .7rem; overflow: hidden; cursor: pointer;
+    padding: .8rem 1rem .9rem; border: 1px solid var(--color-border); border-left: 4px solid var(--toast-c); border-radius: 14px;
+    background: rgba(22, 29, 38, .96); backdrop-filter: blur(8px); box-shadow: 0 12px 32px rgba(0, 0, 0, .45); font-size: .88rem;
+}
+.toast.toast-success { --toast-c: var(--adm-ok); }
+.toast.toast-error { --toast-c: var(--adm-danger); }
+.toast.toast-warning { --toast-c: var(--color-gold-strong); }
+.toast-icon { flex: none; display: grid; place-items: center; width: 1.5rem; height: 1.5rem; border-radius: 50%; background: var(--toast-c); color: #10151a; font-size: .8rem; font-weight: 900; }
+.toast-text { flex: 1 1 auto; min-width: 0; line-height: 1.4; overflow-wrap: anywhere; }
+.toast::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 3px; background: var(--toast-c); transform-origin: left; animation: toast-life var(--toast-life, 3.5s) linear forwards; }
+.toast.is-paused::after { animation-play-state: paused; }
+@keyframes toast-life { to { transform: scaleX(0); } }
+
+/* ---------- Motion ---------- */
+@keyframes adm-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes adm-fade-out { to { opacity: 0; } }
+@keyframes adm-pop { from { opacity: 0; transform: translateY(14px) scale(.98); } to { opacity: 1; transform: none; } }
+@keyframes adm-pane-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+@keyframes adm-sheet-up { from { transform: translateY(100%); } to { transform: none; } }
+@keyframes adm-sheet-down { to { transform: translateY(100%); } }
+
+/* ---------- Phones: bottom sheets ---------- */
 @media (max-width: 720px) {
-    #admin-modal.modal-overlay { padding: 0; align-items: stretch; }
-    #admin-modal .admin-modal { max-width: 100%; max-height: 100vh; max-height: 100dvh; height: 100vh; height: 100dvh; border-radius: 0; border-left: 0; border-right: 0; }
-    #admin-modal .admin-modal > h2 { padding: .9rem 4rem .9rem 1rem; font-size: 1.1rem; }
-    #admin-modal .admin-content { padding: 1rem 1rem calc(1.5rem + env(safe-area-inset-bottom, 0px)); }
-    #admin-modal .admin-summary { gap: .5rem; }
-    #admin-modal .admin-stat { padding: .75rem .4rem; }
-    #admin-modal .admin-table-wrapper { max-height: none; border: 0; background: none; overflow: visible; }
+    #admin-modal.admin-overlay, #px-admin.px-modal, .ui-dialog-overlay { align-items: flex-end; padding: 0; }
+    #admin-modal .admin-modal, #px-admin .px-card, .ui-dialog {
+        width: 100%; max-width: 100%; border-radius: 22px 22px 0 0; border-bottom: 0;
+        animation: adm-sheet-up .28s cubic-bezier(.2, .9, .3, 1) both;
+    }
+    #admin-modal .admin-modal { height: min(94vh, 100%); height: min(94dvh, 100%); max-height: 94dvh; }
+    #admin-modal.is-closing .admin-modal { animation: adm-sheet-down .22s ease forwards; }
+    .ui-dialog-overlay.is-closing .ui-dialog { animation: adm-sheet-down .18s ease forwards; }
+    .ui-dialog { padding: .6rem 1.1rem calc(1.1rem + env(safe-area-inset-bottom, 0px)); }
+    #px-admin .px-card { max-height: 92dvh; }
+    .sheet-grabber { display: block; }
+    .sheet-head { padding: .5rem .75rem .6rem 1.1rem; }
+    .sheet-close { width: 48px; height: 48px; font-size: 1.25rem; }
+    .admin-tabs { padding: .5rem .6rem; }
+    .admin-tab { padding: .4rem .8rem; }
+    .admin-pane { padding: 1rem 1rem calc(1.5rem + env(safe-area-inset-bottom, 0px)); }
+    .admin-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .55rem; }
+    .ui-dialog-actions { flex-direction: column-reverse; }
+    .ui-dialog-actions .btn { width: 100%; }
+    .notification-container { left: .75rem; right: .75rem; }
+    .notification-list { width: 100%; }
+    #px-admin .mx-tabs { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+    #px-admin .mx-tabs::-webkit-scrollbar { display: none; }
+    /* Player table -> cards (cells carry data-label) */
+    #admin-modal .admin-table-wrapper { border: 0; background: none; overflow: visible; }
     #admin-modal .admin-table, #admin-modal .admin-table tbody { display: block; }
     #admin-modal .admin-table thead { display: none; }
     #admin-modal .admin-table tr { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .15rem .6rem; margin-bottom: .7rem; padding: .85rem; border: 1px solid var(--color-border); border-radius: 14px; background: var(--color-surface-alt); }
-    #admin-modal .admin-table td { padding: 0; border: 0; white-space: normal; }
+    #admin-modal .admin-table td { padding: 0; border: 0; }
     #admin-modal .admin-table td::before { content: attr(data-label); display: block; font-size: .65rem; letter-spacing: .05em; text-transform: uppercase; color: var(--color-text-muted); }
-    #admin-modal .admin-table td:first-child { grid-column: 1 / -1; margin-bottom: .4rem; font-weight: 800; font-size: 1rem; overflow-wrap: anywhere; }
-    #admin-modal .admin-table td:first-child::before { display: none; }
+    #admin-modal .admin-table td:first-child { grid-column: 1 / -1; margin-bottom: .4rem; }
+    #admin-modal .admin-table td:first-child::before, #admin-modal .admin-table td:last-child::before { display: none; }
     #admin-modal .admin-table td:last-child { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .6rem; }
-    #admin-modal .admin-table td:last-child::before { display: none; }
     #admin-modal .admin-table td:last-child .btn { flex: 1 1 90px; min-height: 44px; margin: 0; }
-    #admin-modal .admin-controls { grid-template-columns: 1fr; }
-    #px-admin .mx-tabs { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
-    #px-admin .mx-tabs::-webkit-scrollbar { display: none; }
+    .admin-controls { grid-template-columns: 1fr; }
+}
+@media (max-width: 380px) { .tab-label { font-size: .85rem; } }
+@media (prefers-reduced-motion: reduce) {
+    #admin-modal .admin-modal, #admin-modal.admin-overlay, #px-admin, #px-admin .px-card, .ui-dialog, .ui-dialog-overlay, .admin-pane, .toast::after { animation: none !important; }
+    .gv-switch input[type="checkbox"], .gv-switch input[type="checkbox"]::after, #px-admin input[type="checkbox"], #px-admin input[type="checkbox"]::after { transition: none; }
 }
