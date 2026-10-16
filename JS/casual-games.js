@@ -3280,7 +3280,7 @@ const Arcade = {
      * Set to "" to disable the sandbox completely (not recommended). Add tokens only when a game needs them
      * (allow-forms, allow-modals for alert()/confirm(), allow-orientation-lock for mobile landscape).
      */
-    SANDBOX: "allow-scripts allow-same-origin allow-pointer-lock",
+    SANDBOX: "allow-scripts allow-same-origin allow-pointer-lock allow-popups allow-popups-to-escape-sandbox allow-forms allow-modals allow-orientation-lock allow-presentation",
     /** Fallback when data/data.json cannot be fetched (e.g. page opened from file://). */
     DEFAULT_GAMES: [{
         id: "kick-the-buddy", title: "Kick The Buddy", icon: "\u{1F94A}",
