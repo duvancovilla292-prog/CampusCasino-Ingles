@@ -273,8 +273,8 @@ const PlayerWheel = {
 /* =========================================================================
    16b. LUCKY DRAW (pick 1-6 winners from the room's live player list)
    Four visual modes. Winners are chosen up-front with an unbiased shuffle
-   and the animation is then steered to them. Nothing here writes to the
-   database: a draw only reads Room.list().
+   and the animation is then steered to them. A draw only reads Room.list();
+   the only write is the Host's optional Audit entry from logDraw().
    ========================================================================= */
 const LuckyDraw = {
     count: 3,
@@ -444,6 +444,42 @@ const LuckyDraw = {
         return resolveGameOutcome("draw:" + this.mode, { roundId, winners, participants, prizePool });
     },
 
+    /** Rolling in-memory history of finished draws for this tab (never persisted). */
+    drawLog: [],
+    DRAW_LOG_MAX: 50,
+
+    /**
+     * Records a finished draw. Safe by design: it never throws and never blocks the draw flow.
+     * - Empty / invalid input (null, undefined, [], blank names) is ignored.
+     * - Every client keeps the local history and console entry.
+     * - Only the Host writes to the shared Audit trail, so spectators never duplicate the entry.
+     */
+    logDraw(winners) {
+        try {
+            const list = (Array.isArray(winners) ? winners : [winners])
+                .filter((w) => w !== null && w !== undefined && String(w).trim() !== "")
+                .map((w) => String(w).trim());
+            if (!list.length) return null;
+
+            const entry = { mode: this.mode || "unknown", winners: list, ts: Date.now() };
+            this.drawLog.push(entry);
+            if (this.drawLog.length > this.DRAW_LOG_MAX) this.drawLog.shift();
+            console.info(`[LuckyDraw] ${entry.mode}: ${list.join(", ")}`);
+
+            const isHost = typeof State !== "undefined" && !!State && State.isHost === true;
+            if (isHost && typeof Audit !== "undefined" && !!Audit && typeof Audit.log === "function") {
+                const pending = Audit.log("draw", `Draw (${entry.mode}): ${list.join(", ")}`);
+                if (pending && typeof pending.catch === "function") {
+                    pending.catch((err) => console.warn("[LuckyDraw] Audit write failed:", err));
+                }
+            }
+            return entry;
+        } catch (err) {
+            console.warn("[LuckyDraw] Could not log the draw:", err);
+            return null;
+        }
+    },
+
     async start() {
         if (this.running) return;
         if (this.mode === "marble") { MarbleRace.hostStart(); return; }
@@ -463,8 +499,9 @@ const LuckyDraw = {
         const prize = this.mode === "roles" ? 0 : GameResolver.readPrize("draw-prize", Rig.on && names.includes(Rig.target));
         const runner = { slots: this.runSlots, bingo: this.runBingo, cards: this.runCards, laser: this.runLaser, bracket: this.runBracket, plinko: this.runPlinko, chests: this.runChests, roles: this.runRoles }[this.mode];
         try {
+            if (typeof runner !== "function") throw new Error(`No draw runner is defined for mode "${this.mode}".`);
             await runner.call(this, names, winners, id);
-            //this.logDraw(winners);
+            this.logDraw(winners);
             this.settleDraw(winners, names, `${this.mode}-${id}-${Date.now().toString(36)}`, prize);
             this.el.result.textContent = `\u{1F389} ${n === 1 ? "Winner" : "Winners"}: ${winners.join(", ")}`;
             Sound.jackpot();
