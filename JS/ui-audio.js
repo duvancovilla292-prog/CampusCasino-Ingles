@@ -1363,10 +1363,14 @@ const Social = {
  */
 const NavMenu = {
     DRAW_EXTRA: ["bracket", "plinko", "marble", "chests", "roles"],
+    MAX_COLS: 3,       // one column per visible category, never more than this
+    lastHeight: 0,     // panel height before the latest content change (start value for the height tween)
+    frame: 0,          // pending requestAnimationFrame id (debounces bursts of visibility changes)
     init() {
         this.root = DOM.gameSelector;
         this.trigger = document.getElementById("nav-menu-trigger");
         this.panel = document.getElementById("nav-menu-panel");
+        this.empty = document.getElementById("nav-menu-empty");
         this.items = Array.from(this.panel.querySelectorAll("[data-game]"));
 
         this.trigger.addEventListener("click", () => this.toggle());
@@ -1376,7 +1380,72 @@ const NavMenu = {
         this.root.addEventListener("keydown", (e) => this.onKey(e));
         document.addEventListener("game-changed", () => this.sync());
         document.querySelectorAll(".draw-mode-btn").forEach((b) => b.addEventListener("click", () => setTimeout(() => this.sync(), 0)));
+        // Every way of showing / hiding a game or a whole category (admin switches, room config, paused games)
+        // only toggles the `hidden` attribute, so watching it keeps the panel's size in step with no extra hooks.
+        new MutationObserver(() => this.schedule()).observe(this.panel, { subtree: true, attributes: true, attributeFilter: ["hidden"] });
+        window.addEventListener("resize", () => { if (!this.panel.classList.contains("is-resizing")) this.lastHeight = this.panel.offsetHeight; });
+        this.applyLayout();
+        this.lastHeight = this.panel.offsetHeight;
         this.sync();
+    },
+
+    /* ---------- content-based sizing ---------- */
+
+    /** Coalesces many `hidden` flips (e.g. one room-config update) into a single refresh per frame. */
+    schedule() {
+        if (this.frame) return;
+        this.frame = requestAnimationFrame(() => { this.frame = 0; this.refresh(); });
+    },
+
+    /**
+     * Sizes the panel to what is really visible: one column per visible category (1 to MAX_COLS), exposed to the
+     * stylesheet as --nav-cols, plus a notice when nothing at all is enabled. Width and height themselves are
+     * `auto` in CSS, so hidden items leave no gaps. Writes only when a value changes (the observer watches `hidden`).
+     */
+    applyLayout() {
+        const visible = Array.from(this.panel.querySelectorAll(".nav-menu-group")).filter((g) => !g.hidden).length;
+        this.panel.style.setProperty("--nav-cols", String(Math.min(this.MAX_COLS, Math.max(1, visible))));
+        const showNotice = visible === 0;
+        if (this.empty && this.empty.hidden === showNotice) this.empty.hidden = !showNotice;
+    },
+
+    reducedMotion() { return !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches); },
+
+    /**
+     * Re-lays out after a visibility change. While the menu is open the height glides from the old value to the new
+     * natural one (CSS `height` transition); closed, it just records the new height for the next opening.
+     */
+    refresh() {
+        const panel = this.panel;
+        // A running tween holds an explicit height, so its current value is the real start; otherwise use the last stable one.
+        const from = panel.classList.contains("is-resizing") ? panel.offsetHeight : this.lastHeight;
+        this.applyLayout();
+        if (!this.isOpen) { this.lastHeight = panel.offsetHeight; return; }
+        panel.style.transition = "none";
+        panel.style.height = "";                       // measure the natural height of the new content
+        const to = panel.offsetHeight;
+        if (!(from > 0) || Math.abs(to - from) < 1 || this.reducedMotion()) {
+            panel.style.transition = "";
+            panel.classList.remove("is-resizing");
+            this.lastHeight = to;
+            return;
+        }
+        panel.classList.add("is-resizing");            // hides the scrollbar while the height changes
+        panel.style.height = from + "px";
+        void panel.offsetHeight;                       // commit the start height before transitioning
+        panel.style.transition = "";                   // back to the stylesheet transition (includes `height`)
+        panel.style.height = to + "px";
+        this.lastHeight = to;
+        let timer = 0;
+        const finish = (event) => {
+            if (event && (event.target !== panel || event.propertyName !== "height")) return;
+            panel.removeEventListener("transitionend", finish);
+            clearTimeout(timer);
+            panel.style.height = "";                   // hand control back to `auto`
+            panel.classList.remove("is-resizing");
+        };
+        panel.addEventListener("transitionend", finish);
+        timer = setTimeout(finish, 500);               // safety net if the transition never fires
     },
     get isOpen() { return this.root.classList.contains("is-open"); },
     toggle() { this.isOpen ? this.close() : this.open(); },

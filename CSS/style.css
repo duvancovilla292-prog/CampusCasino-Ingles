@@ -9436,3 +9436,48 @@ details.mx-det>summary::-webkit-details-marker {
 .quiz-host .qz-nav { flex-basis: 100%; max-width: 34rem; }
 .qz-live-card .qz-nav { justify-content: stretch; }
 @media (min-width: 651px) { .quiz-host .qz-nav { flex-basis: auto; } }
+
+/* =========================================================================
+   NAV MENU v2 — the dropdown fits exactly what is visible
+   -------------------------------------------------------------------------
+   - Height is `auto`: hidden games / categories (the [hidden] attribute) leave no gaps.
+   - Width follows --nav-cols, which NavMenu.applyLayout() sets to the number of visible
+     categories (1 to 3), so a single category is a compact one-column card instead of a
+     960px panel with empty columns. auto-fit wraps columns on narrow screens.
+   - Opening / closing is a curtain reveal (clip-path); when the number of visible items
+     changes while the menu is open, NavMenu.refresh() tweens `height` (class .is-resizing).
+   - The ID selector deliberately outranks the older .nav-menu-panel rules above.
+   ========================================================================= */
+#game-selector .nav-menu-panel {
+    --nav-cols: 3;               /* fallback until JS runs; overwritten inline by NavMenu */
+    --nav-col-width: 18rem;      /* comfortable width of one category column */
+    --nav-col-min: 15.5rem;      /* below this, auto-fit wraps a column to the next row */
+    --nav-gap: 1.1rem;
+    --nav-ease: cubic-bezier(.2, .8, .2, 1);
+    height: auto;
+    width: min(calc(var(--nav-cols) * var(--nav-col-width) + (var(--nav-cols) - 1) * var(--nav-gap) + 2.2rem), calc(100vw - 2rem));
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--nav-col-min)), 1fr));
+    align-items: start;          /* columns keep their natural height instead of stretching */
+    align-content: start;
+    gap: var(--nav-gap);
+    overscroll-behavior: contain;
+    /* Closed: everything below the top edge is clipped away (negative insets keep the glow/shadow visible when open). */
+    clip-path: inset(-100px -100px 100% -100px);
+    transition: opacity .18s ease, transform .22s var(--nav-ease), clip-path .26s var(--nav-ease), height .28s var(--nav-ease), visibility 0s linear .26s;
+}
+#game-selector.is-open .nav-menu-panel {
+    clip-path: inset(-100px);
+    transition: opacity .18s ease, transform .22s var(--nav-ease), clip-path .26s var(--nav-ease), height .28s var(--nav-ease), visibility 0s;
+}
+#game-selector .nav-menu-panel.is-resizing { overflow: hidden; }   /* no scrollbar flicker while the height glides */
+#game-selector .nav-menu-group { padding: .35rem; }
+.nav-menu-empty { grid-column: 1 / -1; margin: 0; padding: .9rem .6rem; text-align: center; color: var(--color-text-muted); }
+.nav-menu-empty[hidden] { display: none; }
+
+/* Phones / small tablets: the panel spans the header and stacks the groups in one column. */
+@media (max-width: 800px) {
+    #game-selector .nav-menu-panel { width: auto; grid-template-columns: 1fr; }
+}
+@media (prefers-reduced-motion: reduce) {
+    #game-selector .nav-menu-panel, #game-selector.is-open .nav-menu-panel { transition: none; }
+}
