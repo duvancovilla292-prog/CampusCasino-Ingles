@@ -215,3 +215,58 @@ test('quiz order and the on-air position survive export -> import (Previous / Ne
     const fromMap = b.validate(mapFile).plan.quiz.questions;
     same(Object.values(fromMap).sort((x, y) => x.order - y.order).map((q) => q.prompt), ['First?', 'Second?', 'Third?']);
 });
+
+test('all question types and the quiz settings survive export -> import; running turns are never exported', () => {
+    const b = load();
+    const raw = sample();
+    raw.quiz = {
+        settings: { autoLaunch: true, answerBy: 'admin', seconds: 45, chain: 2 },
+        questions: {
+            a: { prompt: 'Pick B', options: ['a', 'b'], correctIndex: 1, order: 0 },
+            b: { type: 'order', prompt: 'Order it', fragments: ['I', 'have lived', 'here'], order: 1 },
+            c: { type: 'text', prompt: 'Blank ____', answers: ['went', 'has gone'], caseSensitive: true, order: 2 }
+        },
+        live: {
+            id: 'tok', questionId: 'b', index: 1, total: 3, optionsVisible: true, answerVisible: false,
+            question: { type: 'order', prompt: 'Order it', fragments: ['I', 'have lived', 'here'], shuffle: [2, 0, 1] },
+            turn: { queue: ['Ana', 'Ben'], at: 0, seconds: 45, deadline: 123, by: 'admin' }
+        }
+    };
+    const file = JSON.parse(JSON.stringify(b.build(raw)));
+    const qz = file.modules.quiz;
+    same(qz.questions.map((q) => q.type), ['choice', 'order', 'text']);
+    same(qz.questions[1].fragments, ['I', 'have lived', 'here']);
+    same(qz.questions[2].answers, ['went', 'has gone']); assert.equal(qz.questions[2].caseSensitive, true);
+    same(qz.settings, { autoLaunch: true, answerBy: 'admin', seconds: 45, chain: 2 });
+    assert.ok(!('turn' in qz.live) && !JSON.stringify(qz.live).includes('deadline'), 'a running turn is temporary');
+    assert.ok(!('shuffle' in qz.live.question), 'the shuffle is regenerated when restored');
+
+    const { plan, skipped } = b.validate(file);
+    assert.equal(skipped.questions, 0);
+    const stored = Object.values(plan.quiz.questions).sort((x, y) => x.order - y.order);
+    same(stored.map((q) => q.type), [undefined, 'order', 'text'].map((t) => t === undefined ? undefined : t));
+    same(stored[1].fragments, ['I', 'have lived', 'here']);
+    assert.equal(stored[2].caseSensitive, true);
+    same(plan.quiz.settings, { autoLaunch: true, answerBy: 'admin', seconds: 45, chain: 2 });
+    assert.equal(plan.quiz.live.question.type, 'order');
+    same([...plan.quiz.live.question.shuffle].sort(), [0, 1, 2]);
+    assert.equal(plan.quiz.live.index, 1);
+    assert.ok(!('turn' in plan.quiz.live));
+    const u = b.toUpdates(plan);
+    same(u['quiz/settings'], { autoLaunch: true, answerBy: 'admin', seconds: 45, chain: 2 });
+    assert.ok(b.describe(plan).join('\n').includes('quiz settings'));
+});
+
+test('quiz import: settings are optional, questions of unknown types are skipped, free-text live needs no options', () => {
+    const b = load();
+    const none = b.validate({ modules: { quiz: { questions: [{ prompt: 'Q?', options: ['a', 'b'], correctIndex: 0 }] } } });
+    assert.ok(!('settings' in none.plan.quiz), 'settings null/absent leave the room rules untouched');
+    assert.ok(!('quiz/settings' in b.toUpdates(none.plan)));
+    const mixed = b.validate({ modules: { quiz: { questions: [
+        { type: 'essay', prompt: 'x' }, { type: 'text', prompt: 'T', answers: ['a'] }
+    ], live: { questionId: null, optionsVisible: false, answerVisible: true, question: { type: 'text', prompt: 'T', answers: ['a'] } } } } });
+    assert.equal(mixed.skipped.questions, 1);
+    assert.equal(mixed.plan.quiz.live.answerVisible, true, 'free text has no options to reveal first');
+    const choice = b.validate({ modules: { quiz: { questions: [], live: { optionsVisible: false, answerVisible: true, question: { prompt: 'Q?', options: ['a', 'b'], correctIndex: 0 } } } } });
+    assert.equal(choice.plan.quiz.live.answerVisible, false, 'choice: answer only after the options');
+});

@@ -279,7 +279,8 @@ const GamesAdmin = {
                                              // as the repository seed (Arcade.loadSeed reads `games`)
        modules: {
          casualGames: { custom, games[] },   // title, icon/emoji, iframe src, thumbnail, size, enabled
-         quiz:        { questions[], live },  // questions in navigation order (Previous / Next) + "question on air" state
+         quiz:        { questions[], live, settings }, // questions of every type (choice / order / text) in navigation
+                                             // order + "question on air" state + turn / auto-launch settings
                                              // (live.questionId / index / optionsVisible / answerVisible)
          store:       { items[], hidden[] },  // host-added items (prices, SVG, icons) + items removed from sale
          room:        { cfg, visibility, settings, limits, bank },
@@ -289,7 +290,7 @@ const GamesAdmin = {
 
    - Export reads the server state once, so the file always matches what players see.
    - Import never trusts the file: every module is re-validated with the same normalizers the
-     admin forms use (Arcade.normalizeList, Quiz.question, Catalog.norm / Svg.clean), keys are
+     admin forms use (Arcade.normalizeList, Quiz.parseQuestion, Catalog.norm / Svg.clean), keys are
      checked against Firebase's key rules, sizes are capped, and invalid entries are skipped
      (and reported) instead of being written.
    - Everything is written with ONE multi-path update(): Firebase applies it atomically (all or
@@ -357,15 +358,16 @@ const Backup = {
 
         // Same order Previous / Next use (Quiz.sortedEntries); the array position IS the order in the file.
         const questions = Quiz.sortedEntries(raw.quiz && raw.quiz.questions)
-            .map(([id, q]) => ({ id, prompt: q.prompt, options: this.toList(q.options), correctIndex: q.correctIndex }));
+            .map(([id, q]) => ({ id, ...Quiz.exportQuestion(q) }));   // any type: choice / order / text
         const lv = raw.quiz && raw.quiz.live;
         const live = lv && this.isObj(lv.question) ? {
             questionId: lv.questionId || null,
             index: Number.isInteger(lv.index) ? lv.index : null,   // position synced to the room (Previous / Next)
             optionsVisible: !!lv.optionsVisible,                 // "On air": options A/B/C/D hidden until revealed
             answerVisible: !!lv.answerVisible,
-            question: { prompt: lv.question.prompt, options: this.toList(lv.question.options), correctIndex: lv.question.correctIndex }
-        } : null;
+            question: Quiz.exportQuestion(lv.question)
+        } : null;                                              // (running turns are temporary and are not exported)
+        const settings = raw.quiz && raw.quiz.settings ? Quiz.normalizeSettings(raw.quiz.settings) : null;
 
         const hiddenMap = (raw.shop && raw.shop.hidden) || {};
         const items = Object.values((raw.shop && raw.shop.items) || {}).filter((i) => this.isObj(i)).map((i) => {
@@ -386,7 +388,7 @@ const Backup = {
             games,
             modules: {
                 casualGames: { custom: !!raw.custom, games },
-                quiz: { questions, live },
+                quiz: { questions, live, settings },
                 store: { items, hidden: Object.keys(hiddenMap).filter((k) => hiddenMap[k]) },
                 room: {
                     cfg: {
@@ -487,7 +489,7 @@ const Backup = {
             entries.forEach(([oldId, q]) => {
                 if (count >= this.MAX.questions || !this.isObj(q)) { skipped.questions++; return; }
                 try {
-                    const clean = Quiz.question(q.prompt, this.toList(q.options), Number(q.correctIndex)); // same rules as the editor
+                    const clean = Quiz.parseQuestion(q);             // same rules as the editor, for every question type
                     let id = String(oldId == null ? "" : oldId);
                     if (!/^[A-Za-z0-9_-]{1,40}$/.test(id) || questions[id]) id = this.newKey();
                     questions[id] = { ...clean, order: count };     // contiguous 0..n-1: Previous / Next follow the file order
@@ -501,19 +503,22 @@ const Backup = {
                 const mapped = idMap[String(lv.questionId)];
                 let snapshot = mapped ? questions[mapped] : null;
                 if (!snapshot && this.isObj(lv.question)) {
-                    try { snapshot = Quiz.question(lv.question.prompt, this.toList(lv.question.options), Number(lv.question.correctIndex)); } catch (e) { snapshot = null; }
+                    try { snapshot = Quiz.parseQuestion(lv.question); } catch (e) { snapshot = null; }
                 }
                 if (snapshot) {
+                    // Choice / ordering: the answer can only be visible once the options are. Free text has no options to reveal.
+                    const open = lv.optionsVisible === true;
                     live = {
                         id: this.newKey(),                            // new token: stale controls can never hit the restored question
-                        question: { prompt: snapshot.prompt, options: [...snapshot.options], correctIndex: snapshot.correctIndex },
-                        optionsVisible: lv.optionsVisible === true,
-                        answerVisible: lv.optionsVisible === true && lv.answerVisible === true
+                        question: Quiz.snapshot(snapshot),            // ordering questions get a fresh shared shuffle
+                        optionsVisible: open,
+                        answerVisible: (open || !Quiz.hasOptions(snapshot)) && lv.answerVisible === true
                     };
                     if (mapped) { live.questionId = mapped; live.index = questions[mapped].order; live.total = count; }
                 }
             }
             if (count || !skipped.questions) plan.quiz = { questions, live };
+            if (plan.quiz && qz.settings != null) plan.quiz.settings = Quiz.normalizeSettings(qz.settings); // turns / auto-launch rules
         }
 
         /* ----- store (host-added items + items removed from sale) ----- */
@@ -600,7 +605,7 @@ const Backup = {
     describe(plan) {
         const n = (o) => Object.keys(o).length, lines = [];
         if (plan.casualGames) lines.push(`\u2022 Casual games: ${plan.casualGames.length}`);
-        if (plan.quiz) lines.push(`\u2022 Quiz: ${n(plan.quiz.questions)} question(s)${plan.quiz.live ? ", question on air restored" : ""}`);
+        if (plan.quiz) lines.push(`\u2022 Quiz: ${n(plan.quiz.questions)} question(s)${plan.quiz.live ? ", question on air restored" : ""}${plan.quiz.settings ? ", quiz settings" : ""}`);
         if (plan.store) lines.push(`\u2022 Store: ${n(plan.store.items)} custom item(s), ${n(plan.store.hidden)} removed from sale`);
         if (plan.room) {
             const r = plan.room, parts = [];
@@ -635,6 +640,7 @@ const Backup = {
         if (plan.quiz) {
             u["quiz/questions"] = this.orNull(plan.quiz.questions);
             u["quiz/live"] = plan.quiz.live;                                              // null clears the screen
+            if (plan.quiz.settings) u["quiz/settings"] = plan.quiz.settings;              // only when the file carries them
         }
         if (plan.store) {
             const items = {};

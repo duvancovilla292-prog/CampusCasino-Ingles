@@ -1,0 +1,41 @@
+{
+  "app": "casino-campus",
+  "schemaVersion": 2,
+  "help": {
+    "how_to_load": "Admin panel > Quiz & Tools > 'Add examples' (loads this file from the site) or 'Import JSON' (choose a copy of this file). Both ADD the questions to the end of your bank. The global 'Import data.json' button also accepts this file, but it REPLACES the whole quiz bank.",
+    "types": {
+      "choice": "Multiple choice. Fields: prompt, options (2 or more texts, shown as A, B, C, D...), correctIndex (0 = A, 1 = B, ...). 'type' may be omitted.",
+      "order": "Sentence ordering. Fields: prompt, fragments (3 to 12 pieces written in the CORRECT order; students see them shuffled). Instead of 'fragments' you can write 'sentence': \"I | have lived | here\" (pieces separated by |, or plain words).",
+      "text": "Free text / fill in the blank. Fields: prompt (use ____ for the blank), answers (every accepted answer; or a single 'answer'), caseSensitive (default false). Spaces, final punctuation and curly quotes are ignored when checking."
+    }
+  },
+  "modules": {
+    "quiz": {
+      "questions": [
+        {
+          "type": "choice",
+          "prompt": "Choose the correct form: She ____ to school every day.",
+          "options": ["go", "goes", "going", "gone"],
+          "correctIndex": 1
+        },
+        {
+          "type": "order",
+          "prompt": "Put the pieces in the correct order to make a sentence.",
+          "fragments": ["I", "have lived", "in this city", "since 2015"]
+        },
+        {
+          "type": "text",
+          "prompt": "Complete the sentence: Yesterday I ____ (go) to the market.",
+          "answers": ["went"],
+          "caseSensitive": false
+        },
+        {
+          "type": "text",
+          "prompt": "What is the past participle of the verb \"write\"?",
+          "answers": ["written"],
+          "caseSensitive": false
+        }
+      ]
+    }
+  }
+}

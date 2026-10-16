@@ -3279,7 +3279,7 @@ const ArcadeProgress = {
      * browser blocks it and the player stays inside the app. Set to "" to disable the sandbox completely
      * (not recommended).
      */
-    SANDBOX: "",
+    SANDBOX: "allow-scripts allow-same-origin allow-forms allow-pointer-lock allow-modals allow-orientation-lock allow-presentation",
     /** Fallback when data/data.json cannot be fetched (e.g. page opened from file://). */
     DEFAULT_GAMES: [{
         id: "kick-the-buddy", title: "Kick The Buddy", icon: "\u{1F94A}",

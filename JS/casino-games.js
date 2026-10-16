@@ -189,6 +189,18 @@ const GameResolver = {
         if (!gameId || !me || this.settled.has(key)) return Promise.resolve(null);
         this.settled.add(key);
 
+        // Random selector tools (Player Wheel, Lucky Draw) announce who was picked. The Quiz listens to this to
+        // send a random question to the picked player(s); a failing listener must never block the prize settlement.
+        if (gameId === "wheel" || String(gameId).startsWith("draw:")) {
+            try {
+                PubSub.emit("selection-made", {
+                    gameId,
+                    winners: Array.isArray(r.winners) ? r.winners.filter(Boolean) : [],
+                    participants: Array.isArray(r.participants) ? r.participants.filter(Boolean) : []
+                });
+            } catch (err) { console.error("selection-made listener failed", err); }
+        }
+
         const entries = this.normalize(r);
         const summary = { gameId, roundId, entries, ts: Date.now() };
         if (!entries.length) return Promise.resolve(summary);
