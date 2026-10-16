@@ -3265,18 +3265,38 @@ const Arcade = {
     ALLOWED_HOSTS: ["gamedistribution.com", "crazygames.com", "poki.com"],
     MAX_GAMES: 60,
     /**
+     * GameDistribution only serves a game on sites it knows. The embedding site is declared with the
+     * `gd_sdk_referrer_url` query parameter, which MUST be this exact GitHub Pages address; without it the
+     * game shows "is not available here". parseSrc() writes it into every GameDistribution link (data.json,
+     * Firebase, imports, the editor) and embedUrl() enforces it again at load time.
+     */
+    REFERRER_URL: "https://duvancovilla292-prog.github.io/CampusCasino-Ingles/",
+    GD_HOST: "html5.gamedistribution.com",
+    GD_PARAM: "gd_sdk_referrer_url",
+    /**
      * iframe sandbox. It deliberately OMITS allow-top-navigation (and allow-popups), so a game script can
      * never run `top.location = ...` / `window.parent.location = ...` or open other tabs: the browser
      * blocks it and the player stays inside the app. Add "allow-popups" if you want external links to open.
-     * Set to "" to disable the sandbox completely (not recommended).
+     * Set to "" to disable the sandbox completely (not recommended). Add tokens only when a game needs them
+     * (allow-forms, allow-modals for alert()/confirm(), allow-orientation-lock for mobile landscape).
      */
-    SANDBOX: "allow-scripts allow-same-origin allow-forms allow-pointer-lock allow-modals allow-orientation-lock allow-presentation",
+    SANDBOX: "allow-scripts allow-same-origin allow-pointer-lock",
     /** Fallback when data/data.json cannot be fetched (e.g. page opened from file://). */
     DEFAULT_GAMES: [{
         id: "kick-the-buddy", title: "Kick The Buddy", icon: "\u{1F94A}",
         description: "Relax-and-play ragdoll sandbox.",
-        src: "https://html5.gamedistribution.com/3785ca02d41845c389b09c5e1ff4ced7/",
+        src: "3785ca02d41845c389b09c5e1ff4ced7",   // a bare GameDistribution code is enough: parseSrc() builds the full URL
         width: 800, height: 600, enabled: true
+    }, {
+        // Titles are placeholders: rename them in the Arcade editor (or in data/data.json).
+        id: "gd-3ae409", title: "GD Game 1", icon: "\u{1F3AE}", description: "Rename me in the Arcade editor.",
+        src: "3ae409f702f64fab98743afbfdf211a1", width: 800, height: 600, enabled: true
+    }, {
+        id: "gd-0c89181", title: "GD Game 2", icon: "\u{1F3AE}", description: "Rename me in the Arcade editor.",
+        src: "0c89181b9cfe4897afa41b0f94385da9", width: 800, height: 600, enabled: true
+    }, {
+        id: "gd-57820e9", title: "GD Game 3", icon: "\u{1F3AE}", description: "Rename me in the Arcade editor.",
+        src: "57820e917cff42488d174341b8866760", width: 800, height: 600, enabled: true
     }],
 
     seed: null,          // list from data/data.json (or DEFAULT_GAMES)
@@ -3312,8 +3332,31 @@ const Arcade = {
         if (u.protocol !== "https:") return null;
         const h = u.hostname.toLowerCase();
         if (!this.ALLOWED_HOSTS.some((a) => h === a || h.endsWith("." + a))) return null;
-        u.searchParams.delete("gd_sdk_referrer_url"); // stored src stays clean; see embedUrl()
-        return u.href;
+        return h === this.GD_HOST ? this.withReferrer(u) : u.href;
+    },
+
+    /**
+     * Canonical GameDistribution link: https://html5.gamedistribution.com/<GAME_ID>/?gd_sdk_referrer_url=<REFERRER_URL>
+     * Any old or wrong referrer value is removed first (idempotent); other query parameters are kept and the
+     * referrer is appended last, unencoded, exactly in the format the provider documents.
+     */
+    withReferrer(url) {
+        const u = new URL(url.href);
+        [...u.searchParams.keys()].filter((k) => k.toLowerCase() === this.GD_PARAM).forEach((k) => u.searchParams.delete(k));
+        const rest = u.searchParams.toString();
+        let path = u.pathname;
+        if (!path.endsWith("/") && !/\.[a-z0-9]+$/i.test(path)) path += "/";  // .../GAME_ID -> .../GAME_ID/
+        return u.origin + path + "?" + (rest ? rest + "&" : "") + this.GD_PARAM + "=" + this.REFERRER_URL;
+    },
+
+    /** The link without the referrer parameter (what the editor shows: short and readable). */
+    cleanSrc(src) {
+        try {
+            const u = new URL(src);
+            [...u.searchParams.keys()].filter((k) => k.toLowerCase() === this.GD_PARAM).forEach((k) => u.searchParams.delete(k));
+            const rest = u.searchParams.toString();
+            return u.origin + u.pathname + (rest ? "?" + rest : "");
+        } catch (e) { return String(src || ""); }
     },
     clampInt(v, lo, hi, def) { v = Math.round(Number(v)); return Number.isFinite(v) ? Math.min(hi, Math.max(lo, v)) : def; },
     slug(t) { return String(t).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 36) || "game"; },
@@ -3443,24 +3486,18 @@ const Arcade = {
     },
 
     /**
-     * URL actually loaded in the iframe. data.json / Firebase keep the clean `src`; at load time
-     * GameDistribution games also get `gd_sdk_referrer_url` (this page), which tells their SDK which site
-     * embeds them. Without it some GD games treat the embed as unlisted and try to leave the iframe.
+     * URL actually loaded in the iframe. New data already carries the referrer; running the link through
+     * parseSrc() again also fixes lists saved by older versions (no parameter, or the wrong page URL).
+     * Returns "" when the stored link is no longer valid.
      */
-    embedUrl(g) {
-        try {
-            const u = new URL(g.src);
-            if (u.hostname.toLowerCase() === "html5.gamedistribution.com") {
-                u.searchParams.set("gd_sdk_referrer_url", window.location.href.split("#")[0].split("?")[0]);
-            }
-            return u.href;
-        } catch (e) { return g.src; }
-    },
+    embedUrl(g) { return this.parseSrc(g.src) || ""; },
 
     /** Mounts the standard iframe inside a responsive 'stage' container (always in place, never navigating). */
     open(id) {
         const g = this.list().find((x) => x.id === id && x.enabled);
         if (!g) return;
+        const url = this.embedUrl(g);
+        if (!url) return Notify.error("This game link is not valid. Ask the host to fix it in the Arcade editor.");
         this.unmount();
         this.activeId = id;
         this.$("arcade-title").textContent = g.title;
@@ -3469,9 +3506,9 @@ const Arcade = {
         stage.style.aspectRatio = g.width + " / " + g.height;
         const frame = document.createElement("iframe");
         if (this.SANDBOX) frame.setAttribute("sandbox", this.SANDBOX); // set BEFORE src: no top-navigation from the game
-        frame.src = this.embedUrl(g);
-        frame.width = String(g.width);
-        frame.height = String(g.height);
+        frame.src = url;
+        frame.setAttribute("width", "100%");              // the responsive stage (CSS aspect-ratio) sizes the frame
+        frame.setAttribute("height", String(g.height));   // 600 by default
         frame.setAttribute("scrolling", "no");
         frame.setAttribute("frameborder", "0");
         frame.setAttribute("allowfullscreen", "");
@@ -3708,7 +3745,7 @@ const Arcade = {
         if (!g || !this.f) return;
         const f = this.f;
         this.editingId = id;
-        f.title.value = g.title; f.icon.value = g.icon; f.src.value = g.src; f.thumb.value = g.thumb || ""; f.desc.value = g.description;
+        f.title.value = g.title; f.icon.value = g.icon; f.src.value = this.cleanSrc(g.src); f.thumb.value = g.thumb || ""; f.desc.value = g.description;
         f.w.value = g.width; f.h.value = g.height;
         f.save.textContent = "Save changes"; f.cancel.hidden = false;
         f.title.focus({ preventScroll: true });
