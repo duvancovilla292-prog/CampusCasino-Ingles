@@ -3259,7 +3259,7 @@ const ArcadeProgress = {
    * Every iframe src is validated: https only and host in ALLOWED_HOSTS (edit the list to add
      providers). Text is inserted with textContent, never as raw HTML.
    ========================================================================= */
-const Arcade = {
+   const Arcade = {
     KEY: "arcade",
     SEED_URL: "data/data.json",
     ALLOWED_HOSTS: ["gamedistribution.com", "crazygames.com", "poki.com"],
@@ -3268,19 +3268,18 @@ const Arcade = {
      * GameDistribution only serves a game on sites it knows. The embedding site is declared with the
      * `gd_sdk_referrer_url` query parameter, which MUST be this exact GitHub Pages address; without it the
      * game shows "is not available here". parseSrc() writes it into every GameDistribution link (data.json,
-     * Firebase, imports, the editor) and embedUrl() enforces it again at load time.
+     * Firebase, imports, the editor) and embedUrl() rebuilds it from the game ID at load time.
      */
     REFERRER_URL: "https://duvancovilla292-prog.github.io/CampusCasino-Ingles/",
     GD_HOST: "html5.gamedistribution.com",
     GD_PARAM: "gd_sdk_referrer_url",
     /**
-     * iframe sandbox. It deliberately OMITS allow-top-navigation (and allow-popups), so a game script can
-     * never run `top.location = ...` / `window.parent.location = ...` or open other tabs: the browser
-     * blocks it and the player stays inside the app. Add "allow-popups" if you want external links to open.
-     * Set to "" to disable the sandbox completely (not recommended). Add tokens only when a game needs them
-     * (allow-forms, allow-modals for alert()/confirm(), allow-orientation-lock for mobile landscape).
+     * iframe sandbox (declared once). It deliberately OMITS allow-top-navigation and allow-popups, so a game
+     * script can never run `top.location = ...` / `window.parent.location = ...` or open other tabs: the
+     * browser blocks it and the player stays inside the app. Set to "" to disable the sandbox completely
+     * (not recommended).
      */
-    SANDBOX: "allow-scripts allow-same-origin allow-pointer-lock allow-popups allow-popups-to-escape-sandbox allow-forms allow-modals allow-orientation-lock allow-presentation",
+    SANDBOX: "allow-scripts allow-same-origin allow-forms allow-pointer-lock allow-modals allow-orientation-lock allow-presentation",
     /** Fallback when data/data.json cannot be fetched (e.g. page opened from file://). */
     DEFAULT_GAMES: [{
         id: "kick-the-buddy", title: "Kick The Buddy", icon: "\u{1F94A}",
@@ -3486,11 +3485,22 @@ const Arcade = {
     },
 
     /**
-     * URL actually loaded in the iframe. New data already carries the referrer; running the link through
-     * parseSrc() again also fixes lists saved by older versions (no parameter, or the wrong page URL).
-     * Returns "" when the stored link is no longer valid.
+     * URL actually loaded in the iframe. For GameDistribution games it ALWAYS rebuilds the canonical link
+     * from the game ID only, so whatever is stored (bare code, short URL, old referrer, extra params) is
+     * ignored:
+     * https://html5.gamedistribution.com/GAME_ID/?gd_sdk_referrer_url=https://duvancovilla292-prog.github.io/CampusCasino-Ingles/
+     * Other allowed providers keep their validated URL. Returns "" when the stored link is not valid.
      */
-    embedUrl(g) { return this.parseSrc(g.src) || ""; },
+    embedUrl(g) {
+        const src = this.parseSrc(g && g.src);
+        if (!src) return "";
+        let u;
+        try { u = new URL(src); } catch (e) { return ""; }
+        if (u.hostname.toLowerCase() !== this.GD_HOST) return src;
+        const id = u.pathname.split("/").filter(Boolean)[0] || "";
+        if (!/^[a-f0-9]{32}$/i.test(id)) return "";
+        return "https://" + this.GD_HOST + "/" + id.toLowerCase() + "/?" + this.GD_PARAM + "=" + this.REFERRER_URL;
+    },
 
     /** Mounts the standard iframe inside a responsive 'stage' container (always in place, never navigating). */
     open(id) {
