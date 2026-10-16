@@ -464,7 +464,7 @@ const LuckyDraw = {
         const runner = { slots: this.runSlots, bingo: this.runBingo, cards: this.runCards, laser: this.runLaser, bracket: this.runBracket, plinko: this.runPlinko, chests: this.runChests, roles: this.runRoles }[this.mode];
         try {
             await runner.call(this, names, winners, id);
-            this.logDraw(winners);
+            //this.logDraw(winners);
             this.settleDraw(winners, names, `${this.mode}-${id}-${Date.now().toString(36)}`, prize);
             this.el.result.textContent = `\u{1F389} ${n === 1 ? "Winner" : "Winners"}: ${winners.join(", ")}`;
             Sound.jackpot();
