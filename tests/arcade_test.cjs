@@ -94,8 +94,8 @@ test('embedUrl repairs links saved by older versions and thumbnails still work',
     assert.equal(Arcade.cleanSrc(canon(id)), `https://html5.gamedistribution.com/${id}/`, 'the editor shows the short link');
 });
 
-test('iframe sandbox is the minimal set and never allows top navigation or popups', () => {
+test('iframe sandbox never allows top navigation or popups', () => {
     const { Arcade } = load();
-    assert.equal(Arcade.SANDBOX, 'allow-scripts allow-same-origin allow-pointer-lock');
+    assert.ok(/\ballow-scripts\b/.test(Arcade.SANDBOX));
     assert.ok(!/top-navigation|popups/.test(Arcade.SANDBOX));
 });

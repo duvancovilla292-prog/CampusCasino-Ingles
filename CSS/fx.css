@@ -1,0 +1,290 @@
+/* =========================================================================
+   CASINO CAMPUS — FX LAYER (ambient motion and feedback)
+   Loaded after style.css and purely additive:
+   - it only animates elements that had no animation of their own, so no existing
+     effect (balance pop, toasts, card deals, reels, celebration...) is replaced;
+   - movement uses the individual `translate` / `rotate` / `scale` properties, which
+     stack with (and never overwrite) the `transform` that the games set from JS;
+   - nothing animates `.game-section` beyond opacity, and no backdrop-filter is added
+     (see the note in style.css about black flashes on animated children);
+   - everything is wrapped in prefers-reduced-motion: no-preference.
+   ========================================================================= */
+
+@media (prefers-reduced-motion: no-preference) {
+
+    /* ---------- 1. Ambience: card suits drifting slowly behind the whole app ---------- */
+    body::after {
+        content: "";
+        position: fixed;
+        inset: -240px 0 0 -240px;
+        z-index: -1;
+        pointer-events: none;
+        opacity: .055;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240' font-family='Georgia,serif' font-size='42' fill='%23f5d27a'%3E%3Ctext x='18' y='60'%3E%E2%99%A0%3C/text%3E%3Ctext x='138' y='92' fill='%23e0483e'%3E%E2%99%A5%3C/text%3E%3Ctext x='74' y='176' fill='%23e0483e'%3E%E2%99%A6%3C/text%3E%3Ctext x='184' y='214'%3E%E2%99%A3%3C/text%3E%3C/svg%3E");
+        background-size: 240px 240px;
+        animation: fx-drift 80s linear infinite;
+        will-change: translate;
+    }
+
+    /* ---------- 2. Setup / player screens ---------- */
+    .auth-shell {
+        animation: fx-rise .7s cubic-bezier(.2, .8, .2, 1) both, fx-rim 6s ease-in-out .7s infinite;
+    }
+
+    .brand-icon {
+        display: inline-block;
+        animation: fx-coin 7s ease-in-out infinite, fx-gold-glow 3s ease-in-out infinite;
+    }
+
+    .auth-header h1 {
+        background-image: linear-gradient(110deg, var(--color-gold-strong) 0%, var(--color-gold) 38%, #fff6d5 50%, var(--color-gold) 62%, var(--color-gold-strong) 100%);
+        background-size: 250% auto;
+        animation: fx-shimmer 6s linear infinite;
+    }
+
+    .room-code-value {
+        animation: fx-neon 2.4s ease-in-out infinite;
+    }
+
+    .connection-dot.is-online {
+        animation: fx-ping 2s ease-out infinite;
+    }
+
+    .player-card:hover {
+        animation: fx-lift .2s ease-out forwards;
+    }
+
+    /* ---------- 3. Top bar ---------- */
+    .top-panel::after {
+        content: "";
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: -1px;
+        height: 2px;
+        pointer-events: none;
+        background: linear-gradient(90deg, transparent, rgba(245, 210, 122, .9), rgba(30, 200, 140, .7), rgba(245, 210, 122, .9), transparent) 0 0 / 50% 100% repeat-x;
+        animation: fx-line 5s linear infinite;
+    }
+
+    /* text-shadow is inherited, so the balance glows without touching the
+       balance-pop animation that lives on the value itself */
+    .top-panel-balance {
+        animation: fx-gold-glow 3.2s ease-in-out infinite;
+    }
+
+    .nav-menu-current-icon {
+        display: inline-block;
+        animation: fx-bob 2.6s ease-in-out infinite;
+    }
+
+    /* menu items cascade in each time the games menu opens */
+    .nav-menu.is-open .nav-menu-item {
+        animation: fx-slide-in .35s cubic-bezier(.2, .8, .2, 1) both;
+    }
+
+    .nav-menu.is-open .nav-menu-item:nth-of-type(2) { animation-delay: .03s; }
+    .nav-menu.is-open .nav-menu-item:nth-of-type(3) { animation-delay: .06s; }
+    .nav-menu.is-open .nav-menu-item:nth-of-type(4) { animation-delay: .09s; }
+    .nav-menu.is-open .nav-menu-item:nth-of-type(5) { animation-delay: .12s; }
+    .nav-menu.is-open .nav-menu-item:nth-of-type(6) { animation-delay: .15s; }
+    .nav-menu.is-open .nav-menu-item:nth-of-type(7) { animation-delay: .18s; }
+    .nav-menu.is-open .nav-menu-item:nth-of-type(8) { animation-delay: .21s; }
+    .nav-menu.is-open .nav-menu-item:nth-of-type(9) { animation-delay: .24s; }
+    .nav-menu.is-open .nav-menu-item:nth-of-type(n+10) { animation-delay: .27s; }
+
+    .nav-menu-icon {
+        display: inline-block;
+    }
+
+    .nav-menu-item:hover .nav-menu-icon,
+    .nav-menu-item:focus-visible .nav-menu-icon {
+        animation: fx-wiggle .5s ease-in-out;
+    }
+
+    /* ---------- 4. Game screens ---------- */
+    .game-section:not([hidden]) {
+        animation: fx-fade .45s ease-out both;
+    }
+
+    .game-section:not([hidden]) > h2 {
+        animation: fx-title-in .6s cubic-bezier(.2, .8, .2, 1) both, fx-title-glow 4s ease-in-out .6s infinite;
+    }
+
+    /* every result line pops in when a round is resolved (they are cleared at the start of each round) */
+    .game-result:not(:empty) {
+        animation: fx-result-pop .5s cubic-bezier(.2, 1.4, .4, 1) both;
+    }
+
+    /* ---------- 5. Buttons and chips ---------- */
+    .btn-primary:not(:disabled) {
+        animation: fx-btn-glow 3.2s ease-in-out infinite;
+    }
+
+    /* a light sweep crosses idle primary buttons every few seconds; `translate` stacks on
+       the hover sweep (transform) that style.css already defines */
+    .btn-primary:not(:disabled)::after {
+        animation: fx-sweep 5.5s ease-in-out 1.5s infinite;
+    }
+
+    .btn-primary:hover:not(:disabled),
+    .btn-secondary:hover:not(:disabled),
+    .btn-game-select:hover:not(:disabled),
+    .draw-mode-btn:hover:not(:disabled) {
+        animation: fx-lift .2s ease-out forwards;
+    }
+
+    .chip-btn:hover:not(:disabled) {
+        animation: fx-chip-flip .6s ease-in-out;
+    }
+
+    .chip-btn.is-selected {
+        animation: fx-chip-ring 1.6s ease-out infinite;
+    }
+
+    /* ---------- 6. Tables and social ---------- */
+    .slots-machine {
+        outline: 2px dashed rgba(245, 210, 122, .55);
+        outline-offset: 5px;
+        animation: fx-marquee 1.2s steps(1, end) infinite;
+    }
+
+    #jp-fill {
+        background-image: repeating-linear-gradient(115deg, rgba(255, 255, 255, .28) 0 6px, transparent 6px 14px), linear-gradient(90deg, var(--color-gold-dark), var(--color-gold-strong));
+        background-size: 28px 100%, 100% 100%;
+        animation: fx-stripes .9s linear infinite;
+    }
+
+    .leaderboard-item:nth-child(-n+3) .leaderboard-rank {
+        display: inline-block;
+        animation: fx-bob 2.2s ease-in-out infinite;
+    }
+
+    .leaderboard-item:nth-child(2) .leaderboard-rank { animation-delay: .25s; }
+    .leaderboard-item:nth-child(3) .leaderboard-rank { animation-delay: .5s; }
+
+    .leaderboard-item.is-current-player {
+        animation: fx-rim-soft 2.8s ease-in-out infinite;
+    }
+}
+
+/* ---------- Keyframes ---------- */
+@keyframes fx-drift {
+    to { translate: 240px 240px; }
+}
+
+@keyframes fx-rise {
+    from { opacity: 0; translate: 0 26px; scale: .98; }
+    to { opacity: 1; translate: 0 0; scale: 1; }
+}
+
+@keyframes fx-rim {
+    0%, 100% { box-shadow: var(--shadow-strong), 0 0 0 1px rgba(245, 210, 122, .12), 0 0 22px rgba(245, 210, 122, .06); }
+    50% { box-shadow: var(--shadow-strong), 0 0 0 1px rgba(245, 210, 122, .35), 0 0 42px rgba(245, 210, 122, .18), 0 0 70px rgba(30, 200, 140, .08); }
+}
+
+@keyframes fx-rim-soft {
+    0%, 100% { box-shadow: 0 0 0 1px rgba(245, 210, 122, .25); }
+    50% { box-shadow: 0 0 0 1px rgba(245, 210, 122, .6), 0 0 16px rgba(245, 210, 122, .3); }
+}
+
+@keyframes fx-coin {
+    0%, 70%, 100% { rotate: y 0deg; }
+    85% { rotate: y 360deg; }
+}
+
+@keyframes fx-gold-glow {
+    0%, 100% { text-shadow: 0 0 4px rgba(245, 210, 122, .25); }
+    50% { text-shadow: 0 0 14px rgba(245, 210, 122, .75), 0 0 28px rgba(245, 210, 122, .3); }
+}
+
+@keyframes fx-shimmer {
+    from { background-position: 100% 50%; }
+    to { background-position: -150% 50%; }
+}
+
+@keyframes fx-neon {
+    0%, 100% { text-shadow: 0 0 6px rgba(245, 210, 122, .35); }
+    50% { text-shadow: 0 0 16px rgba(245, 210, 122, .9), 0 0 34px rgba(245, 210, 122, .45); }
+}
+
+@keyframes fx-ping {
+    0% { box-shadow: 0 0 0 0 rgba(46, 139, 87, .75); }
+    100% { box-shadow: 0 0 0 9px rgba(46, 139, 87, 0); }
+}
+
+@keyframes fx-lift {
+    to { translate: 0 -2px; }
+}
+
+@keyframes fx-line {
+    to { background-position: 200% 0; }
+}
+
+@keyframes fx-bob {
+    0%, 100% { translate: 0 0; }
+    50% { translate: 0 -3px; }
+}
+
+@keyframes fx-slide-in {
+    from { opacity: 0; translate: 0 8px; }
+    to { opacity: 1; translate: 0 0; }
+}
+
+@keyframes fx-wiggle {
+    0%, 100% { rotate: 0deg; scale: 1; }
+    30% { rotate: -14deg; scale: 1.2; }
+    60% { rotate: 10deg; scale: 1.15; }
+}
+
+@keyframes fx-fade {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes fx-title-in {
+    from { opacity: 0; translate: 0 -10px; letter-spacing: .18em; }
+    to { opacity: 1; translate: 0 0; }
+}
+
+@keyframes fx-title-glow {
+    0%, 100% { text-shadow: 0 0 0 rgba(245, 210, 122, 0); }
+    50% { text-shadow: 0 0 18px rgba(245, 210, 122, .45); }
+}
+
+@keyframes fx-result-pop {
+    0% { opacity: 0; scale: .8; }
+    60% { opacity: 1; scale: 1.06; }
+    100% { opacity: 1; scale: 1; }
+}
+
+@keyframes fx-btn-glow {
+    0%, 100% { box-shadow: inset 0 1px 0 rgba(255, 255, 255, .55), 0 6px 18px rgba(224, 182, 76, .28); }
+    50% { box-shadow: inset 0 1px 0 rgba(255, 255, 255, .55), 0 6px 26px rgba(224, 182, 76, .5), 0 0 0 1px rgba(245, 210, 122, .35); }
+}
+
+@keyframes fx-sweep {
+    0% { translate: 0 0; }
+    18% { translate: 240% 0; }
+    18.01%, 100% { translate: 0 0; }
+}
+
+@keyframes fx-chip-flip {
+    from { rotate: y 0deg; }
+    to { rotate: y 360deg; }
+}
+
+@keyframes fx-chip-ring {
+    0% { box-shadow: 0 0 0 0 rgba(245, 210, 122, .7); }
+    100% { box-shadow: 0 0 0 10px rgba(245, 210, 122, 0); }
+}
+
+@keyframes fx-marquee {
+    0% { outline-color: rgba(245, 210, 122, .75); }
+    33% { outline-color: rgba(224, 72, 62, .75); }
+    66% { outline-color: rgba(30, 200, 140, .7); }
+}
+
+@keyframes fx-stripes {
+    to { background-position: 28px 0, 0 0; }
+}

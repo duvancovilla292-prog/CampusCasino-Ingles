@@ -713,10 +713,10 @@ const Quiz = {
         reader.readAsText(file);
     },
 
-    /** Adds the questions of quiz-examples.json (served next to index.html on GitHub Pages). */
+    /** Adds the questions of data/quiz-examples.json (served with the site on GitHub Pages). */
     async addExamples() {
         try {
-            const response = await fetch("quiz-examples.json", { cache: "no-store" });
+            const response = await fetch("data/quiz-examples.json", { cache: "no-store" });
             if (!response.ok) throw new Error(String(response.status));
             await this.importQuestions(await response.json());
         } catch (e) { Notify.error("Could not load quiz-examples.json."); }

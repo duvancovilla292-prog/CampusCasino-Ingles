@@ -382,12 +382,24 @@ const State = {
         return Number.isFinite(amount) && amount > 0 && amount <= this.balance;
     },
 
+    /**
+     * Wagers and credits are written as atomic deltas (never as an absolute balance), so a
+     * payout, jackpot share or admin edit landing at the same moment is never overwritten.
+     */
     debit(amount) {
-        this.setBalance(this.balance - amount);
+        this.applyDelta(-amount);
     },
 
     credit(amount) {
-        this.setBalance(this.balance + amount);
+        this.applyDelta(amount);
+    },
+
+    applyDelta(delta) {
+        delta = Math.round(Number(delta) || 0);
+        if (!delta) return;
+        this.balance = Math.max(0, this.balance + delta);
+        HUD.update();
+        if (this.username) Room.applyRound(this.username, { balance: delta });
     },
 
     reset() {
@@ -535,8 +547,11 @@ const TS = () => window.firebase.database.ServerValue.TIMESTAMP;
 /* ---------- Central Bank (reserve + emergency loans, admin approves) ---------- */
 const Bank = {
     d: {}, RES0: 5000,
-    cfg() { const c = this.d.cfg || {}; return { on: c.on !== false, max: c.max || 500, rate: c.rate == null ? 10 : c.rate, auto: !!c.auto }; },
-    res() { return this.d.res == null ? this.RES0 : this.d.res; },
+    cfg() {
+        const c = this.d.cfg || {}, max = Math.round(Number(c.max)), rate = Number(c.rate);
+        return { on: c.on !== false, max: max > 0 ? max : 500, rate: c.rate == null || !Number.isFinite(rate) ? 10 : Math.min(100, Math.max(0, rate)), auto: !!c.auto };
+    },
+    res() { const v = Number(this.d.res); return this.d.res == null || !Number.isFinite(v) ? this.RES0 : v; },
     loan() { const l = (Room.get(State.username) || {}).loan; return l && l.owed > 0 ? l.owed : 0; },
     mine() { return (this.d.req || {})[State.username] || null; },
     request(amt) {
@@ -640,7 +655,11 @@ const Z = {
         this.stop(); if (!Room.db || !Room.code) return;
         const on = (r, fn) => { if (!r) return; r.on("value", (s) => fn(s.val())); this.offs.push(() => r.off()); };
         on(Room.db.ref(".info/serverTimeOffset"), (v) => { Dice.off = v || 0; });
-        on(zref("lim"), (v) => { v = v || {}; BetLimits.g = v.g > 0 ? v.g : BetLimits.DEF; BetLimits.games = v.games || {}; ZAdmin.limits(); });
+        on(zref("lim"), (v) => {
+            v = v || {}; const g = Math.round(Number(v.g)), games = {};
+            Object.keys(v.games || {}).forEach((k) => { const n = Math.round(Number(v.games[k])); if (n > 0) games[k] = n; });
+            BetLimits.g = g > 0 ? g : BetLimits.DEF; BetLimits.games = games; ZAdmin.limits();
+        });
         on(zref("bank"), (v) => { Bank.d = v || {}; Rewards.render(false); ZAdmin.bank(); });
         on(zref("dice"), (v) => Dice.on(v));
         on(zref("tour"), (v) => Tour.on(v));

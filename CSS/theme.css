@@ -1,0 +1,693 @@
+/* =========================================================================
+   CASINO CAMPUS — LAS VEGAS THEMES
+   Two ambiences of the same casino, selected with <html data-theme="...">
+   (JS/theme.js sets the attribute and builds the switch):
+     night — "El casino en su punto máximo": midnight blue, deep violet, metallic
+             gold, magenta / red neon, silver highlights.
+     day   — "La mañana después": the same casino in daylight, closed, with the
+             traces of last night's party. Its tokens and scenery live in
+             CSS/theme-day.css (loaded right after this file).
+   How it works
+   1. Each theme redefines the palette variables that style.css already uses
+      everywhere (--color-gold, --color-border, --color-felt...), so hundreds of
+      existing rules recolour themselves without being duplicated.
+   2. A small set of --vg-* tokens describes the ambience (page background, panels,
+      edges, buttons, titles, particles). The component rules below are written once
+      and read those tokens, so both themes share one structure.
+   3. Component rules are prefixed with html[data-theme] so they outrank the older
+      single-class rules (and the styles some modules inject at runtime).
+   Loaded after style.css and fx.css. Motion is limited to transform / opacity /
+   small elements and is switched off under prefers-reduced-motion.
+   ========================================================================= */
+
+/* =========================================================================
+   1. TOKENS
+   ========================================================================= */
+html[data-theme="night"] {
+    color-scheme: dark;
+    /* palette used by style.css */
+    --color-bg: #05060d;
+    --color-bg-alt: #0a0c1c;
+    --color-surface: #0e1124;
+    --color-surface-alt: #161a33;
+    --color-border: #2c3156;
+    --color-gold: #ecc66b;
+    --color-gold-strong: #f7cf4b;
+    --color-gold-dark: #b8860b;
+    --color-red: #ff2d55;
+    --color-red-dark: #b3123a;
+    --color-text: #f2f4fa;
+    --color-text-muted: #aeb5cf;
+    --color-text-inverse: #0b0c14;
+
+    /* ambience */
+    --vg-bg:
+        radial-gradient(ellipse 70% 45% at 50% -8%, rgba(255, 43, 214, .22), transparent 62%),
+        radial-gradient(ellipse 45% 60% at 104% 22%, rgba(52, 104, 255, .26), transparent 66%),
+        radial-gradient(ellipse 45% 60% at -4% 68%, rgba(128, 38, 224, .26), transparent 66%),
+        radial-gradient(ellipse 60% 35% at 50% 108%, rgba(247, 207, 75, .16), transparent 62%),
+        linear-gradient(180deg, #05060d 0%, #090c22 46%, #12072a 100%);
+    --vg-beams:
+        conic-gradient(from 200deg at 12% -10%, transparent 0deg, rgba(255, 43, 214, .10) 12deg, transparent 26deg),
+        conic-gradient(from 140deg at 88% -10%, transparent 0deg, rgba(62, 168, 255, .10) 12deg, transparent 26deg),
+        radial-gradient(ellipse 80% 26% at 50% 100%, rgba(247, 207, 75, .08), transparent 72%);
+    --vg-particles: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240' font-family='Georgia,serif' font-size='40' fill='%23f7cf4b'%3E%3Ctext x='18' y='60'%3E%E2%99%A0%3C/text%3E%3Ctext x='138' y='92' fill='%23ff2d55'%3E%E2%99%A5%3C/text%3E%3Ctext x='74' y='176' fill='%23ff2bd6'%3E%E2%99%A6%3C/text%3E%3Ctext x='184' y='214'%3E%E2%99%A3%3C/text%3E%3Ccircle cx='110' cy='24' r='1.6' fill='%23fff'/%3E%3Ccircle cx='220' cy='140' r='1.2' fill='%23fff'/%3E%3Ccircle cx='30' cy='210' r='1.4' fill='%233ea8ff'/%3E%3C/svg%3E");
+    --vg-particles-opacity: .07;
+    --vg-panel: linear-gradient(160deg, rgba(24, 28, 58, .94) 0%, rgba(10, 11, 26, .96) 60%, rgba(20, 8, 38, .96) 100%);
+    --vg-panel-solid: #0c0e20;
+    --vg-edge: linear-gradient(135deg, rgba(247, 207, 75, .85), rgba(255, 43, 214, .45) 35%, rgba(62, 168, 255, .45) 65%, rgba(247, 207, 75, .85));
+    --vg-shadow: 0 26px 60px rgba(0, 0, 0, .66), 0 0 0 1px rgba(0, 0, 0, .55), 0 0 42px rgba(255, 43, 214, .12), 0 0 70px rgba(52, 104, 255, .10), inset 0 1px 0 rgba(255, 255, 255, .08);
+    --vg-header: linear-gradient(180deg, rgba(12, 13, 30, .97), rgba(6, 7, 16, .95));
+    --vg-line: linear-gradient(90deg, transparent, #ff2bd6 18%, #f7cf4b 50%, #3ea8ff 82%, transparent);
+    --vg-title: linear-gradient(180deg, #fffaf0 0%, #f7cf4b 46%, #b8860b 100%);
+    --vg-title-glow: drop-shadow(0 0 10px rgba(247, 207, 75, .55)) drop-shadow(0 0 26px rgba(255, 43, 214, .28));
+    --vg-heading: #f7cf4b;
+    --vg-heading-shadow: 0 0 14px rgba(247, 207, 75, .45), 0 0 30px rgba(255, 43, 214, .18);
+    --vg-btn: linear-gradient(160deg, #fdeaa8 0%, #e6bb4f 45%, #8f6a1c 100%);
+    --vg-btn-text: #15100a;
+    --vg-btn-glow: 0 6px 20px rgba(247, 207, 75, .32), 0 0 0 1px rgba(255, 236, 170, .35);
+    --vg-btn2: rgba(6, 7, 18, .55);
+    --vg-btn2-border: rgba(247, 207, 75, .55);
+    --vg-btn2-text: #f6e7b8;
+    --vg-btn2-hover: 0 0 0 1px rgba(247, 207, 75, .9), 0 0 18px rgba(247, 207, 75, .35), 0 0 30px rgba(255, 43, 214, .2);
+    --vg-card: linear-gradient(160deg, rgba(30, 34, 70, .92), rgba(11, 12, 28, .96));
+    --vg-card-border: rgba(247, 207, 75, .26);
+    --vg-card-hover: 0 0 0 1px rgba(247, 207, 75, .75), 0 10px 26px rgba(0, 0, 0, .5), 0 0 24px rgba(255, 43, 214, .32);
+    --vg-input: rgba(0, 0, 0, .5);
+    --vg-input-border: rgba(247, 207, 75, .28);
+    --vg-accent-1: #ff2bd6;
+    --vg-accent-2: #f7cf4b;
+    --vg-accent-3: #3ea8ff;
+    --vg-accent-4: #ff2d55;
+    --vg-bulb: #ffe08a;
+    --vg-bulb-alt: #ff2bd6;
+    --vg-sign: linear-gradient(180deg, #120a24, #070712);
+    --vg-switch-on: linear-gradient(160deg, #1b1f45, #2b0f4a);
+    --vg-switch-text: #f7cf4b;
+    --vg-deco: "\25C6";
+}
+
+/* =========================================================================
+   2. PAGE AMBIENCE (background, spotlights, particles)
+   ========================================================================= */
+html[data-theme] body {
+    background: var(--vg-bg);
+    background-color: var(--color-bg);
+    background-attachment: fixed;
+}
+
+/* spotlights (style.css already animates the opacity of this layer) */
+html[data-theme] body::before {
+    background: var(--vg-beams);
+}
+
+/* suits at night, dust and stray confetti by day; drift is added by fx.css when motion is allowed */
+html[data-theme] body::after {
+    content: "";
+    position: fixed;
+    inset: -240px 0 0 -240px;
+    z-index: -1;
+    pointer-events: none;
+    background-image: var(--vg-particles);
+    background-size: 240px 240px;
+    opacity: var(--vg-particles-opacity);
+}
+
+/* =========================================================================
+   3. THEME SWITCH
+   ========================================================================= */
+.theme-switch {
+    display: inline-flex;
+    align-items: stretch;
+    gap: 3px;
+    padding: 3px;
+    border-radius: 999px;
+    background: rgba(0, 0, 0, .35);
+    border: 1px solid var(--vg-btn2-border);
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, .45);
+    flex: none;
+}
+
+.theme-switch-opt {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: .4rem;
+    min-height: 40px;
+    min-width: 44px;
+    padding: .35rem .8rem;
+    border: 0;
+    border-radius: 999px;
+    background: transparent;
+    color: var(--color-text-muted);
+    font: inherit;
+    font-size: .82rem;
+    font-weight: 700;
+    letter-spacing: .01em;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background .25s, color .25s, box-shadow .25s;
+}
+
+.theme-switch-opt:hover {
+    color: var(--color-text);
+    background: rgba(255, 255, 255, .08);
+}
+
+.theme-switch-opt[aria-checked="true"] {
+    background: var(--vg-switch-on);
+    color: var(--vg-switch-text);
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, .25), 0 0 16px var(--vg-accent-1);
+}
+
+.theme-switch-opt:focus-visible {
+    outline: 2px solid var(--vg-accent-3);
+    outline-offset: 2px;
+}
+
+.theme-switch-ic {
+    font-size: 1.05rem;
+    line-height: 1;
+}
+
+.theme-switch-short {
+    display: none;
+}
+
+/* compact version inside the lobby bar: icon + short label */
+.tp-theme .theme-switch-txt {
+    display: none;
+}
+
+.tp-theme .theme-switch-short {
+    display: inline;
+}
+
+.theme-switch-opt[aria-checked="true"] .theme-switch-ic {
+    filter: drop-shadow(0 0 2px rgba(0, 0, 0, .55));
+}
+
+.auth-theme {
+    display: flex;
+    width: fit-content;
+    margin: 0 auto 1rem;
+}
+
+@media (max-width: 1100px) {
+    .tp-theme .theme-switch-short {
+        display: none;
+    }
+
+    .tp-theme .theme-switch-opt {
+        padding-inline: .55rem;
+    }
+}
+
+@media (max-width: 460px) {
+    .auth-theme .theme-switch-txt {
+        display: none;
+    }
+
+    .auth-theme .theme-switch-short {
+        display: inline;
+    }
+}
+
+/* phones: the lobby switch gets its own full-width row above the action buttons */
+@media (max-width: 480px) {
+    .tp-theme {
+        order: -1;
+        flex: 1 0 100%;
+    }
+
+    .tp-theme .theme-switch-opt {
+        flex: 1;
+        padding-inline: .6rem;
+    }
+
+    .tp-theme .theme-switch-short {
+        display: inline;
+    }
+}
+
+/* soft curtain used only where the View Transitions API is not available */
+.theme-curtain {
+    position: fixed;
+    inset: 0;
+    z-index: 100000;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity .2s ease;
+}
+
+.theme-curtain[data-to="night"] {
+    background: linear-gradient(180deg, #05060d, #12072a);
+}
+
+.theme-curtain.is-in {
+    opacity: .85;
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+    animation-duration: .45s;
+    animation-timing-function: ease;
+}
+
+/* =========================================================================
+   4. HEADER / NAVIGATION
+   ========================================================================= */
+html[data-theme] .top-panel {
+    background: var(--vg-header);
+    border-bottom: 0;
+    box-shadow: 0 10px 34px rgba(0, 0, 0, .45), 0 1px 0 rgba(255, 255, 255, .06) inset;
+}
+
+/* fx.css draws the moving line; here it takes the theme's neon colours */
+html[data-theme] .top-panel::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -1px;
+    height: 2px;
+    pointer-events: none;
+    background: var(--vg-line) 0 0 / 50% 100% repeat-x;
+    box-shadow: 0 0 12px var(--vg-accent-1);
+}
+
+.tp-brand {
+    display: flex;
+    align-items: center;
+    gap: .55rem;
+    flex: none;
+    padding-right: .4rem;
+}
+
+.tp-brand-chip {
+    width: 38px;
+    height: 38px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    font-size: 1.15rem;
+    color: var(--color-text-inverse);
+    background:
+        radial-gradient(circle at 50% 50%, var(--vg-accent-2) 0 46%, transparent 47%),
+        repeating-conic-gradient(from 0deg, #fff 0 15deg, var(--vg-accent-1) 15deg 30deg);
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, .65), 0 0 16px var(--vg-accent-1);
+}
+
+.tp-brand-name {
+    display: flex;
+    flex-direction: column;
+    line-height: .95;
+    font-family: var(--font-display, Georgia, serif);
+    font-size: .78rem;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+}
+
+.tp-brand-name b {
+    font-size: 1.12rem;
+    letter-spacing: .06em;
+    background: var(--vg-title);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    filter: var(--vg-title-glow);
+}
+
+@media (max-width: 1180px) {
+    .tp-brand-name {
+        display: none;
+    }
+}
+
+@media (max-width: 480px) {
+    .tp-brand {
+        display: none;
+    }
+}
+
+/* games menu trigger and panel (the catalog) */
+html[data-theme] .nav-menu-trigger {
+    background: var(--vg-card);
+    border-color: var(--vg-btn2-border);
+    color: var(--color-gold-strong);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .12), 0 0 16px rgba(0, 0, 0, .25);
+}
+
+html[data-theme] .nav-menu-trigger:hover,
+html[data-theme] .nav-menu-trigger[aria-expanded="true"] {
+    border-color: var(--vg-accent-2);
+    box-shadow: var(--vg-btn2-hover);
+}
+
+html[data-theme] .nav-menu-panel {
+    border: 2px solid transparent;
+    background: var(--vg-panel) padding-box, var(--vg-edge) border-box;
+    box-shadow: var(--vg-shadow);
+}
+
+/* Desktop: the panel hangs from the right edge of the whole header instead of the
+   trigger, so it always fits the viewport however many controls share the bar. */
+@media (min-width: 801px) {
+    html[data-theme] .nav-menu {
+        position: static;
+    }
+
+    html[data-theme] .nav-menu-panel {
+        top: calc(100% + .5rem);
+        right: max(1rem, env(safe-area-inset-right));
+    }
+}
+
+html[data-theme] .nav-menu-heading {
+    color: var(--vg-heading);
+    text-shadow: var(--vg-heading-shadow);
+    border-bottom-color: var(--vg-card-border);
+}
+
+html[data-theme] .nav-menu-heading small {
+    text-shadow: none;
+}
+
+html[data-theme] .nav-menu-group[data-category="casino"] .nav-menu-heading { border-bottom-color: var(--vg-accent-2); }
+html[data-theme] .nav-menu-group[data-category="tools"] .nav-menu-heading { border-bottom-color: var(--vg-accent-3); }
+html[data-theme] .nav-menu-group[data-category="casual"] .nav-menu-heading { border-bottom-color: var(--vg-accent-1); }
+
+/* every game entry is a small card */
+html[data-theme] .nav-menu-item {
+    border: 1px solid var(--vg-card-border);
+    background: var(--vg-card);
+    border-radius: var(--radius-sm);
+    margin-bottom: .2rem;
+    transition: box-shadow .2s, border-color .2s, background .2s;
+}
+
+html[data-theme] .nav-menu-item:hover,
+html[data-theme] .nav-menu-item:focus-visible {
+    border-color: transparent;
+    box-shadow: var(--vg-card-hover);
+}
+
+html[data-theme] .nav-menu-item:active {
+    box-shadow: var(--vg-card-hover);
+    filter: brightness(1.12);
+}
+
+html[data-theme] .nav-menu-item[aria-current="true"] {
+    border-color: var(--vg-accent-2);
+    box-shadow: inset 4px 0 0 var(--vg-accent-2), 0 0 16px rgba(0, 0, 0, .2);
+}
+
+html[data-theme] .nav-menu-chip {
+    border-color: var(--vg-card-border);
+}
+
+/* =========================================================================
+   5. PANELS (setup card, game tables, modals, chat, catalog)
+   ========================================================================= */
+html[data-theme] .auth-shell,
+html[data-theme] .game-section,
+html[data-theme] .modal,
+html[data-theme] #shop-modal > .modal,
+html[data-theme] #admin-modal .admin-modal,
+html[data-theme] .px-card,
+html[data-theme] .chat-panel {
+    border: 2px solid transparent;
+    background: var(--vg-panel) padding-box, var(--vg-edge) border-box;
+    box-shadow: var(--vg-shadow);
+}
+
+html[data-theme] .auth-panel {
+    background: rgba(0, 0, 0, .18);
+    border-color: var(--vg-card-border);
+}
+
+html[data-theme] .auth-header {
+    background:
+        radial-gradient(ellipse 60% 120% at 50% -20%, rgba(255, 255, 255, .14), transparent 60%),
+        linear-gradient(180deg, rgba(255, 255, 255, .06), transparent);
+    border-bottom-color: var(--vg-card-border);
+}
+
+html[data-theme] .auth-footer {
+    color: var(--color-text-muted);
+}
+
+html[data-theme] .jackpot-bar {
+    background: var(--vg-card);
+    border-color: var(--vg-card-border);
+}
+
+/* =========================================================================
+   6. TITLES — the casino sign
+   ========================================================================= */
+html[data-theme] .auth-header .brand {
+    position: relative;
+    display: inline-flex;
+    margin: .2rem auto 1rem;
+    padding: .7rem 1.6rem .8rem;
+    border-radius: 18px;
+    background: var(--vg-sign);
+    box-shadow: 0 0 0 3px var(--vg-accent-2), 0 0 0 6px rgba(0, 0, 0, .35), 0 0 34px var(--vg-accent-1), inset 0 0 26px rgba(0, 0, 0, .45);
+}
+
+/* marquee bulbs around the sign */
+html[data-theme] .auth-header .brand::after {
+    content: "";
+    position: absolute;
+    inset: -11px;
+    border-radius: 24px;
+    border: 5px dotted var(--vg-bulb);
+    filter: drop-shadow(0 0 4px var(--vg-bulb));
+    pointer-events: none;
+}
+
+html[data-theme] .auth-header h1 {
+    background: var(--vg-title);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+    filter: var(--vg-title-glow);
+    font-size: clamp(1.7rem, 4.2vw, 2.5rem);
+    letter-spacing: .04em;
+    text-transform: uppercase;
+}
+
+html[data-theme] .brand-icon {
+    color: var(--vg-accent-2);
+    text-shadow: 0 0 12px var(--vg-accent-1);
+}
+
+html[data-theme] .auth-subtitle {
+    color: var(--color-text-muted);
+}
+
+html[data-theme] .game-section > h2,
+html[data-theme] .modal h2 {
+    color: var(--vg-heading);
+    text-shadow: var(--vg-heading-shadow);
+    letter-spacing: .03em;
+}
+
+html[data-theme] .game-section > h2 {
+    font-size: clamp(1.45rem, 3.4vw, 2.05rem);
+    text-transform: uppercase;
+}
+
+/* small decorative diamonds (filled at night, outlined by day) on both sides of each game title */
+html[data-theme] .game-section > h2::before,
+html[data-theme] .game-section > h2::after {
+    content: var(--vg-deco);
+    display: inline-block;
+    margin: 0 .55em;
+    font-size: .6em;
+    vertical-align: .25em;
+    color: var(--vg-accent-1);
+    text-shadow: 0 0 10px var(--vg-accent-1);
+}
+
+html[data-theme] .game-section > h2::after {
+    color: var(--vg-accent-3);
+    text-shadow: 0 0 10px var(--vg-accent-3);
+}
+
+/* =========================================================================
+   7. BUTTONS, INPUTS, CHIPS
+   ========================================================================= */
+html[data-theme] .btn-primary {
+    background: var(--vg-btn);
+    color: var(--vg-btn-text);
+    font-weight: 800;
+    box-shadow: var(--vg-btn-glow);
+}
+
+html[data-theme] .btn-primary:hover:not(:disabled) {
+    filter: brightness(1.08) saturate(1.1);
+}
+
+html[data-theme] .btn-secondary,
+html[data-theme] .btn-ghost,
+html[data-theme] .btn-icon,
+html[data-theme] .btn-game-select {
+    background: var(--vg-btn2);
+    border-color: var(--vg-btn2-border);
+    color: var(--vg-btn2-text);
+}
+
+html[data-theme] .btn-ghost {
+    border-style: dashed;
+}
+
+html[data-theme] .btn-secondary:hover:not(:disabled),
+html[data-theme] .btn-ghost:hover:not(:disabled),
+html[data-theme] .btn-icon:hover:not(:disabled),
+html[data-theme] .btn-game-select:hover:not(:disabled) {
+    box-shadow: var(--vg-btn2-hover);
+    color: var(--color-text);
+}
+
+html[data-theme] .btn-game-select[aria-pressed="true"] {
+    background: var(--vg-switch-on);
+    color: var(--vg-switch-text);
+    border-color: transparent;
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, .3), 0 0 16px var(--vg-accent-1);
+}
+
+html[data-theme] .input-field,
+html[data-theme] .chat-input-row input {
+    background: var(--vg-input);
+    border-color: var(--vg-input-border);
+    color: var(--color-text);
+}
+
+html[data-theme] .input-field::placeholder,
+html[data-theme] .chat-input-row input::placeholder {
+    color: var(--color-text-muted);
+    opacity: .75;
+}
+
+html[data-theme] .input-field:focus {
+    border-color: var(--vg-accent-3);
+    box-shadow: 0 0 0 3px rgba(0, 0, 0, .2), 0 0 14px var(--vg-accent-3);
+}
+
+/* =========================================================================
+   8. CARDS (players, leaderboard, arcade catalog)
+   ========================================================================= */
+html[data-theme] .player-card,
+html[data-theme] .leaderboard-item,
+html[data-theme] .arcade-card {
+    background: var(--vg-card);
+    border-color: var(--vg-card-border);
+    transition: box-shadow .2s, border-color .2s;
+}
+
+html[data-theme] .player-card:hover,
+html[data-theme] .arcade-card:hover,
+html[data-theme] .arcade-card:focus-visible {
+    border-color: transparent;
+    box-shadow: var(--vg-card-hover);
+}
+
+html[data-theme] .arcade-card:active,
+html[data-theme] .player-card:active {
+    box-shadow: var(--vg-card-hover);
+}
+
+html[data-theme] .leaderboard-item.is-current-player {
+    border-color: var(--vg-accent-2);
+}
+
+html[data-theme] .players-count-badge,
+html[data-theme] .role-badge {
+    background: var(--vg-switch-on);
+    color: var(--vg-switch-text);
+}
+
+/* =========================================================================
+   9. MOTION (only when the user allows it)
+   ========================================================================= */
+@media (prefers-reduced-motion: no-preference) {
+    html[data-theme] .auth-header .brand::after {
+        animation: vg-bulbs 1.1s steps(1, end) infinite;
+    }
+
+    html[data-theme] .tp-brand-chip {
+        animation: vg-chip-spin 9s linear infinite;
+    }
+
+    html[data-theme] .top-panel::after {
+        animation: fx-line 5s linear infinite;
+    }
+
+    html[data-theme] .game-section > h2::before,
+    html[data-theme] .game-section > h2::after {
+        animation: vg-twinkle 2.4s ease-in-out infinite;
+    }
+
+    html[data-theme] .game-section > h2::after {
+        animation-delay: 1.2s;
+    }
+
+    html[data-theme="night"] .theme-switch-opt[aria-checked="true"] {
+        animation: vg-switch-glow 2.6s ease-in-out infinite;
+    }
+
+    /* fx.css glows are gold-only; in a theme they use the theme's own shadows */
+    html[data-theme] .game-section:not([hidden]) > h2 {
+        animation: fx-title-in .6s cubic-bezier(.2, .8, .2, 1) both;
+    }
+
+    html[data-theme] .btn-primary:not(:disabled) {
+        animation: vg-btn-pulse 3.2s ease-in-out infinite;
+    }
+
+    html[data-theme] .auth-shell {
+        animation: fx-rise .7s cubic-bezier(.2, .8, .2, 1) both, vg-rim 6s ease-in-out .7s infinite;
+    }
+}
+
+@keyframes vg-btn-pulse {
+    0%, 100% { box-shadow: var(--vg-btn-glow); }
+    50% { box-shadow: var(--vg-btn-glow), 0 0 26px var(--vg-accent-1); }
+}
+
+@keyframes vg-rim {
+    0%, 100% { box-shadow: var(--vg-shadow); }
+    50% { box-shadow: var(--vg-shadow), 0 0 70px var(--vg-accent-1), 0 0 110px var(--vg-accent-3); }
+}
+
+@keyframes vg-bulbs {
+    0% { border-color: var(--vg-bulb); }
+    50% { border-color: var(--vg-bulb-alt); }
+}
+
+@keyframes vg-chip-spin {
+    to { rotate: 360deg; }
+}
+
+@keyframes vg-twinkle {
+    0%, 100% { opacity: .55; scale: .85; }
+    50% { opacity: 1; scale: 1.2; }
+}
+
+@keyframes vg-switch-glow {
+    0%, 100% { box-shadow: 0 0 0 1px rgba(255, 255, 255, .25), 0 0 10px var(--vg-accent-1); }
+    50% { box-shadow: 0 0 0 1px rgba(255, 255, 255, .45), 0 0 22px var(--vg-accent-1), 0 0 34px var(--vg-accent-3); }
+}
+
+@media (max-width: 480px) {
+    html[data-theme] .auth-header .brand {
+        padding: .55rem 1rem .6rem;
+    }
+
+    html[data-theme] .auth-header h1 {
+        font-size: 1.55rem;
+    }
+}

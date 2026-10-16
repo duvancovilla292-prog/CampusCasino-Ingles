@@ -52,9 +52,14 @@ Simulador educativo de casino y juegos de mesa **multijugador en tiempo real** c
 index.html
 CSS/
   style.css
+  fx.css             Capa de animaciones (ambiente, botones, títulos); se carga después de style.css
+  theme.css          Temas Las Vegas: estructura común y Modo Noche (Casino)
+  theme-day.css      Modo Día (la mañana después): paleta clara y sencilla
 data/
   data.json          Lista por defecto de juegos del Arcade (reemplázala con la que descargues del panel)
+  quiz-examples.json Preguntas de ejemplo que carga el botón "Add examples" del quiz
 JS/
+  theme.js           Interruptor Día / Noche (se carga en <head>, antes de pintar la página)
   firebase-sync.js   (1) Firebase, Room, State, mesas compartidas (Tables), Banco, listeners por sala
   game-catalog.js    Catálogo de herramientas y juegos, navegación y visibilidad
   ui-audio.js        (2) DOM, audio, UI, router, tienda, chat, jackpot, misiones, logros, Lucky Spin
@@ -107,14 +112,13 @@ La barra superior muestra sala, jugador, saldo y la navegación entre juegos, ad
 |---|---|
 | **Blackjack** | Mesa compartida con lobby y hasta 5 asientos. Hit y Stand; la banca pide hasta llegar a 17; ases valen 11 o 1. Blackjack natural **×2,5**, victoria normal ×2, empate devuelve la apuesta |
 | **Baccarat** | Rondas multijugador con temporizador compartido |
-| **Poker Dice** | Dados 3D |
+| **Poker Dice** | Dados 3D. Puedes volver a tirar una vez los dados no retenidos; la casa también vuelve a tirar una vez reteniendo sus parejas. Cualquier victoria paga **×1,9**, póker **×2** y repóker **×5**; el empate devuelve la apuesta |
 | **VIP Keno** | Sorteo de números |
 | **Ruleta** (0–36) | Apuesta a número, color o paridad. Número pleno **×36**; color y paridad **×2** (el 0 pierde en paridad) |
-| **Tragamonedas** | 3 rodillos con 6 símbolos. Tres iguales **×10**; dos iguales **×2** |
+| **Tragamonedas** | 3 rodillos con 6 símbolos. Tres iguales **×12**; dos iguales **×1,5** (retorno teórico del 95,8 %) |
 | **Hi-Lo** | Adivina si la siguiente carta es mayor o menor. Acierto ×2; empate devuelve la apuesta |
 | **Craps, Crash, Money Wheel** | Juegos de apuesta con fichas; las reglas se explican en su pantalla |
 | **Black Widow Poker (La Viuda Negra)** | Mesa compartida de hasta 6 asientos con ante de 10 fichas |
-| **Quick Dice** | Ronda de dados sincronizada para toda la sala |
 
 ### Casuales y de fiesta (apuesta opcional)
 
@@ -227,6 +231,8 @@ Mientras haya cambios sin descargar, el editor muestra un aviso naranja. Formato
 }
 ```
 
+El archivo que descarga el panel también incluye `app`, `schemaVersion`, `exportedAt` y un bloque `modules` (quiz, tienda, sala y jugadores); para el Arcade solo se usa `games`.
+
 El `src` se guarda **sin** el parámetro `gd_sdk_referrer_url` (si lo pegas con uno, por ejemplo con `example.com`, se elimina al guardar); al cargar el iframe se añade la URL real de tu página.
 
 `thumb` es opcional: si falta y el juego es de GameDistribution se genera automáticamente.
@@ -319,7 +325,7 @@ Un centro de control con pestañas:
 
 ## Arquitectura
 
-El código está organizado en módulos (objetos literales) repartidos en cinco archivos. Resumen:
+El código está organizado en módulos (objetos literales) repartidos en siete archivos (los cinco principales más `game-catalog.js` y `quiz.js`). Resumen:
 
 | Archivo | Módulos principales | Responsabilidad |
 |---|---|---|
@@ -331,7 +337,7 @@ El código está organizado en módulos (objetos literales) repartidos en cinco 
 
 Principios de diseño:
 - **Firebase es la única fuente de verdad.** Los saldos nunca se guardan en local; `players-updated` sincroniza el saldo propio en vivo (por ejemplo, tras un cambio del admin).
-- **Pagos atómicos:** los pagos y ajustes usan transacciones con deltas, de modo que un premio, un reparto de jackpot o una edición del admin no se pisan entre sí.
+- **Pagos atómicos:** las apuestas (`State.debit`), los pagos y los ajustes usan transacciones con deltas, de modo que un premio, un reparto de jackpot o una edición del admin no se pisan entre sí.
 - **Sin dependencias externas** aparte del SDK de Firebase; el audio es sintetizado.
 - **Manipulación segura del DOM:** los textos de usuario se insertan con `textContent` o escapados, no con HTML crudo.
 - **Vistas:** `view-setup` → `view-auth` → `view-lobby`, controladas con el atributo `hidden`.
@@ -465,8 +471,7 @@ Proyecto con fines **educativos y de entretenimiento**. Las fichas no tienen val
 ## Menú y partidas de deducción
 
 La entrada activa es `index.html`: carga los módulos `firebase-sync`, `game-catalog`,
-`ui-audio`, `casino-games`, `casual-games`, `quiz` y `admin-panel`. `JS/app.js` es la versión
-monolítica antigua y no se carga en la página.
+`ui-audio`, `casino-games`, `casual-games`, `quiz` y `admin-panel`.
 
 - **Host Settings → Room → Games & sections** permite activar cada juego o toda
   una categoría al instante. Los estados se guardan en `rooms/{code}/cfg/disabled`
@@ -497,7 +502,7 @@ Cloud Functions). No se despliegan reglas ni servicios remotos con estos cambios
 
 ### Comprobación local
 
-Sin dependencias adicionales: `node --test tests/deduction.test.cjs` ejecuta pruebas
+Sin dependencias adicionales: `node --test tests/deduction_test.cjs` ejecuta pruebas
 sobre los motores utilizados por la aplicación: turnos, configuración, pistas,
 validación del PIN, Word Master y política de visibilidad de categorías.
 Sirve la carpeta con `python3 -m http.server 8080` para inspeccionar la interfaz.
@@ -541,5 +546,22 @@ estando en los datos recibidos. Como los controles existentes, el PIN y el dispo
 Host protegen la interfaz: exigir permisos contra escrituras externas requiere
 Firebase Authentication y reglas de seguridad del servidor (ver alcance de permisos).
 
-Verificación local: `node --test tests/*.test.cjs`. Las pruebas del quiz usan un
+Verificación local: `node --test tests/*.cjs`. Las pruebas del quiz usan un
 adaptador de Realtime Database en memoria; no escriben en las salas de Firebase.
+
+
+## Temas: Modo Día y Modo Noche
+
+La app tiene dos ambientes del mismo casino, que se eligen con el interruptor **☀️ Modo Día — Mañana / 🌙 Modo Noche — Casino**. Está en la pantalla de sala, en la de selección de jugador y en la barra superior del lobby.
+
+- **Modo Noche** (predeterminado): azul medianoche, violeta profundo, dorado metálico y neón magenta y rojo.
+- **Modo Día**: el mismo casino por la mañana, cerrado y tranquilo. Usa una paleta clara y apagada (beige, gris claro, dorado envejecido, champán y gris carbón suave), con el neón apagado, sin brillos ni pulsos y sin decoración extra. Las mesas y tableros conservan su fieltro oscuro, como una mesa real a plena luz, y sus textos siguen siendo claros.
+
+Cómo funciona:
+
+- `JS/theme.js` pone `data-theme="day"` o `data-theme="night"` en `<html>` antes del primer pintado, para que no parpadee. Guarda la elección en `localStorage` (`casinoCampus.theme.v1`) y sincroniza las demás pestañas con el evento `storage`.
+- El cambio usa la View Transitions API (fundido). Si el navegador no la tiene, usa una cortina de color breve. Con `prefers-reduced-motion` el cambio es instantáneo.
+- `CSS/theme-day.css` contiene solo el Modo Día (todo bajo `html[data-theme="day"]`), así que el modo noche no se ve afectado.
+- `CSS/theme.css` redefine las variables de color que ya usa `style.css` (`--color-gold`, `--color-border`, `--color-felt`…) y unos tokens `--vg-*` (fondo, paneles, bordes, botones, títulos y partículas). Los componentes se escriben una sola vez y leen esos tokens.
+- El interruptor es un `radiogroup` accesible: funciona con clic, toque y teclado (flechas, Inicio y Fin) y marca el modo activo con `aria-checked`.
+- Para usar el tema desde otro módulo: `Theme.get()`, `Theme.set("day" | "night")` y `Theme.toggle()`.

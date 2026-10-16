@@ -1253,7 +1253,7 @@ const Plus = (() => {
             const ns = names();
             box.innerHTML = `
                <h3>Room</h3><div class="px-row"><span>Name</span><span><input type="text" id="pxa-name" value="${esc(cfg.roomName)}" maxlength="30" placeholder="Campus VIP Table"></span></div>
-               <div class="px-row"><span>Daily bonus multiplier</span><span><input type="number" id="pxa-mult" min="0" max="10" step="0.5" value="${cfg.bonusMult}"></span></div>
+               <div class="px-row"><span>Daily bonus multiplier</span><span><input type="number" id="pxa-mult" min="0" max="10" step="0.5" value="${esc(cfg.bonusMult)}"></span></div>
                <div class="px-row"><span>Daily missions (master switch)</span><span></span><input type="checkbox" role="switch" id="pxa-miss" ${cfg.missionsOn ? "checked" : ""}></div>
                <h3>Games &amp; sections</h3><p class="form-help">Game and section visibility now lives in Administrator Panel &rsaquo; Casual Games.</p>
                <h3>Secret winner (all random tools)</h3>

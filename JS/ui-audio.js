@@ -1909,7 +1909,7 @@ const Rewards = {
         const opts = [100, 250, c.max].filter((v, i, s) => v <= c.max && s.indexOf(v) === i);
         $z("z-pane").innerHTML = `<div class="z-bank"><div><small>Bank reserve</small><b>${fmt(Bank.res())}</b></div><div><small>Interest</small><b>${c.rate}%</b></div><div><small>You owe</small><b>${fmt(owed)}</b></div></div>
            <p class="mx-hint">${c.on ? `Out of chips? Request a small emergency loan (max ${fmt(c.max)}). The host approves it; 30% of your winnings repay it automatically.` : "The Central Bank is currently closed."}</p>
-           ${q ? `<div class="px-row"><span>\u{1F4DD}</span><span>Last request: ${fmt(q.amt)} chips \u2014 <b>${q.st}</b></span></div>` : ""}
+           ${q ? `<div class="px-row"><span>\u{1F4DD}</span><span>Last request: ${fmt(q.amt)} chips \u2014 <b>${esc(q.st)}</b></span></div>` : ""}
            ${owed ? `<button type="button" class="btn btn-secondary btn-block" data-repay="1">Repay now (${fmt(Math.min(owed, State.balance))})</button>` : ""}
            ${c.on && !owed && !pend ? `<div class="mx-tools"><select id="z-loan-amt">${opts.map((v) => `<option>${v}</option>`).join("")}</select><button type="button" class="btn btn-primary" data-loan="1" ${State.balance > 0 ? "disabled" : ""}>${State.balance > 0 ? "Only at 0 chips" : "Request loan"}</button></div>` : ""}`;
     },

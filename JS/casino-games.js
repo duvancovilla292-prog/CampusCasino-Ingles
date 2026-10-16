@@ -905,7 +905,9 @@ const Baccarat = {
 const PokerDice = {
     FACES: ["A", "K", "Q", "J", "10", "9"],
     RANKS: [5, 4, 3, 2, 1, 0],
-    MULT: { 7: 12, 6: 6, 5: 4, 4: 3, 3: 2, 2: 1.5, 1: 1 },
+    /** Total return (stake included) for a winning hand; any other win pays WIN_PAYS. ~97.8% RTP with good play. */
+    PAYS: { 7: 5, 6: 2 },
+    WIN_PAYS: 1.9,
 
     playerDice: [0, 0, 0, 0, 0],
     dealerDice: [0, 0, 0, 0, 0],
@@ -932,7 +934,7 @@ const PokerDice = {
     evalHand(dice) {
         const cnt = {};
         dice.forEach((x) => { cnt[x] = (cnt[x] || 0) + 1; });
-        const grp = Object.entries(cnt).map(([f, n]) => [n, Number(f)]).sort((a, b) => b[0] - a[0] || b[1] - a[1]);
+        const grp = Object.entries(cnt).map(([f, n]) => [n, this.RANKS[Number(f)]]).sort((a, b) => b[0] - a[0] || b[1] - a[1]);
         const pat = grp.map((x) => x[0]).join("");
         const uniq = [...new Set(dice)].sort((a, b) => a - b);
         const straight = uniq.length === 5 && (uniq[4] - uniq[0] === 4);
@@ -1044,6 +1046,18 @@ const PokerDice = {
         this.finishRound();
     },
 
+    /** House rule: the House keeps a straight or better, otherwise holds its matched dice
+     *  (or its single highest die) and rerolls the rest once, just like the player. */
+    houseReroll() {
+        const d = this.dealerDice;
+        if (this.evalHand(d).cat >= 4) return;
+        const cnt = {};
+        d.forEach((x) => { cnt[x] = (cnt[x] || 0) + 1; });
+        const paired = d.some((x) => cnt[x] >= 2);
+        const bestAt = d.indexOf(Math.min(...d)); // face index 0 = Ace (highest)
+        this.dealerDice = d.map((x, i) => ((paired ? cnt[x] >= 2 : i === bestAt) ? x : this.randDie()));
+    },
+
     finishRound() {
         this.state = "finished";
         const btnRoll = this.$("btn-pd-roll");
@@ -1053,6 +1067,7 @@ const PokerDice = {
         if (btnReroll) btnReroll.disabled = true;
         if (btnStand) btnStand.disabled = true;
 
+        this.houseReroll();
         const pEval = this.evalHand(this.playerDice);
         const dEval = this.evalHand(this.dealerDice);
 
@@ -1060,11 +1075,11 @@ const PokerDice = {
 
         const won = pEval.score > dEval.score;
         const tie = pEval.score === dEval.score;
-        const mult = this.MULT[pEval.cat] || 1;
+        const pays = this.PAYS[pEval.cat] || this.WIN_PAYS;
         let payout = 0;
 
         if (won) {
-            payout = Math.floor(this.betAmount * (1 + mult));
+            payout = Math.floor(this.betAmount * pays);
         } else if (tie) {
             payout = this.betAmount;
         }
@@ -1553,6 +1568,9 @@ const Roulette = {
    ========================================================================= */
 const Slots = {
     SYMBOLS: ["\u{1F352}", "\u{1F34B}", "\u{1F514}", "\u2B50", "7\uFE0F\u20E3", "\u{1F347}"],
+    /** Total return (stake included). 6 equally likely symbols: 12x and 1.5x give a 95.8% RTP. */
+    PAY_THREE: 12,
+    PAY_TWO: 1.5,
     isSpinning: false,
     visible: [],
     raf: 0,
@@ -1697,8 +1715,8 @@ const Slots = {
     resolveSpin(bet, results) {
         const [a, b, c] = results;
         let payout = 0;
-        if (a === b && b === c) payout = bet * 10;
-        else if (a === b || b === c || a === c) payout = bet * 2;
+        if (a === b && b === c) payout = bet * this.PAY_THREE;
+        else if (a === b || b === c || a === c) payout = Math.floor(bet * this.PAY_TWO);
 
         if (DOM.slotsResult) {
             if (payout > 0) {

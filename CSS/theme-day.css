@@ -1,0 +1,332 @@
+/* =========================================================================
+   CASINO CAMPUS — DAY THEME: "La mañana después"
+   The same casino in daylight: closed, calm and simple. Neon is off, glows and
+   pulses are gone, colours are light and slightly faded (beige, light grey,
+   aged gold, champagne, softened charcoal). No scenery or extra decoration.
+   Everything is scoped to html[data-theme="day"]; night mode is untouched.
+   Loaded after CSS/theme.css, which provides the shared component rules that
+   read the --vg-* tokens defined below.
+   ========================================================================= */
+
+/* =========================================================================
+   1. TOKENS
+   ========================================================================= */
+html[data-theme="day"] {
+    color-scheme: light;
+
+    /* palette read by style.css */
+    --color-bg: #e6ddcf;
+    --color-bg-alt: #ddd3c3;
+    --color-surface: #f4efe6;
+    --color-surface-alt: #e9e2d5;
+    --color-border: #cbbea5;
+    --color-gold: #775b29;
+    --color-gold-strong: #80612c;
+    --color-gold-dark: #6c5226;
+    --color-red: #a24a42;
+    --color-red-dark: #7f3832;
+    --color-green: #4e7a60;
+    --color-black: #2f2d2a;
+    --color-felt: #3f5f52;
+    --color-felt-dark: #2f4a3f;
+    --color-felt-light: #557566;
+    --color-text: #2e2924;
+    --color-text-muted: #635a50;
+    --color-text-inverse: #fffaf1;
+    --shadow-soft: 0 6px 18px rgba(74, 58, 38, .12);
+    --shadow-strong: 0 14px 34px rgba(74, 58, 38, .16);
+    --neon: 0 0 0 1px rgba(132, 101, 47, .35);
+    --glow-gold: 0 0 0 transparent;
+    --glow-emerald: 0 0 0 transparent;
+
+    /* ambience */
+    --vg-bg: linear-gradient(180deg, #f1ebe1 0%, #e6ddcf 100%);
+    --vg-panel: linear-gradient(170deg, rgba(250, 247, 241, .97) 0%, rgba(243, 237, 227, .97) 55%, rgba(236, 229, 217, .97) 100%);
+    --vg-panel-solid: #f2ece2;
+    --vg-edge: linear-gradient(135deg, #c3a970 0%, #e4d4ae 30%, #a98b55 55%, #d6c294 80%, #b0935c 100%);
+    --vg-shadow: 0 18px 40px rgba(74, 58, 38, .16), 0 2px 6px rgba(74, 58, 38, .08), inset 0 1px 0 rgba(255, 255, 255, .8);
+    --vg-header: linear-gradient(180deg, rgba(249, 245, 237, .97), rgba(238, 231, 219, .97));
+    --vg-line: linear-gradient(90deg, transparent, #c3a970 20%, #e4d4ae 50%, #c3a970 80%, transparent);
+    --vg-title: linear-gradient(180deg, #8f7546 0%, #6c5226 100%);
+    --vg-title-glow: drop-shadow(0 1px 0 rgba(255, 255, 255, .7));
+    --vg-heading: #5c4724;
+    --vg-heading-shadow: 0 1px 0 rgba(255, 255, 255, .7);
+    --vg-btn: linear-gradient(170deg, #e2cd9c 0%, #c8ab6c 50%, #a9894f 100%);
+    --vg-btn-text: #2b2116;
+    --vg-btn-glow: 0 3px 8px rgba(84, 62, 30, .22), inset 0 1px 0 rgba(255, 255, 255, .55);
+    --vg-btn2: rgba(255, 255, 255, .65);
+    --vg-btn2-border: #c2b293;
+    --vg-btn2-text: #3a3229;
+    --vg-btn2-hover: 0 0 0 1px #a98b55, 0 4px 12px rgba(74, 58, 38, .14);
+    --vg-card: linear-gradient(170deg, #f8f4ec, #ede6d9);
+    --vg-card-border: #d5c8ae;
+    --vg-card-hover: 0 0 0 1px #a98b55, 0 6px 16px rgba(74, 58, 38, .15);
+    --vg-input: #fbf9f4;
+    --vg-input-border: #cdbfa4;
+    --vg-accent-1: #8a7aa0;   /* muted violet */
+    --vg-accent-2: #b39a62;   /* champagne */
+    --vg-accent-3: #7c8ea2;   /* grey-blue */
+    --vg-accent-4: #a0675a;   /* soft brick */
+    --vg-bulb: #c9bfae;       /* bulbs switched off */
+    --vg-bulb-alt: #c9bfae;
+    --vg-sign: linear-gradient(180deg, #59544c, #403c36);
+    --vg-switch-on: linear-gradient(180deg, #f3e8cf, #dcc89c);
+    --vg-switch-text: #3a2e1c;
+    --vg-deco: "\25C7";
+}
+
+/* =========================================================================
+   2. PAGE BACKGROUND — plain daylight, no decoration
+   ========================================================================= */
+html[data-theme="day"] body::before,
+html[data-theme="day"] body::after {
+    display: none;
+}
+
+/* =========================================================================
+   3. SURFACES
+   ========================================================================= */
+/* light panel inside a thin aged-gold frame */
+html[data-theme="day"] .auth-shell,
+html[data-theme="day"] .game-section,
+html[data-theme="day"] .modal,
+html[data-theme="day"] #shop-modal > .modal,
+html[data-theme="day"] #admin-modal .admin-modal,
+html[data-theme="day"] .px-card,
+html[data-theme="day"] .chat-panel,
+html[data-theme="day"] .nav-menu-panel {
+    background: var(--vg-panel) padding-box, var(--vg-edge) border-box;
+}
+
+html[data-theme="day"] .auth-panel {
+    background: rgba(255, 255, 255, .45);
+    border-color: var(--vg-card-border);
+}
+
+html[data-theme="day"] .auth-header {
+    background: linear-gradient(180deg, rgba(255, 252, 244, .9), rgba(244, 238, 228, .4));
+}
+
+html[data-theme="day"] .top-panel {
+    box-shadow: 0 6px 18px rgba(74, 58, 38, .12);
+}
+
+html[data-theme="day"] .top-panel::after {
+    box-shadow: none;
+    opacity: .8;
+}
+
+html[data-theme="day"] .jackpot-bar {
+    box-shadow: var(--shadow-soft);
+}
+
+/* dark overlays meant for night become light veils by day */
+html[data-theme="day"] .modal-overlay,
+html[data-theme="day"] .px-modal {
+    background: rgba(70, 58, 42, .38);
+}
+
+/* Game tables, boards and stages keep their dark felt / lacquer in daylight, like a
+   real table under the window. Inside them the palette variables return to light
+   values, so every label drawn on the felt stays readable. */
+html[data-theme="day"] :is(.blackjack-table, .bw-table, .hilo-table, .pd-stage-box, .draw-stage,
+    .slots-machine, .xg-stage, .tl, .hm-setup, .quiz-stage, .bs-grid, .c4-board, .cc-board, .pq-board,
+    .wheel-dial, .cx-card, .z-match, .ui-dialog, .btn-action, .bac-spot, .top-panel-avatar,
+    .player-avatar, .tl-avatar, .tl-seat, .nav-menu-current-icon) {
+    --color-text: #f3eee5;
+    --color-text-muted: #e2dacb;
+    --color-gold: #ead7a6;
+    --color-gold-strong: #f0dfb2;
+    --color-gold-dark: #b39a62;
+    --color-border: #5d5a52;
+    --color-text-inverse: #2b2116;
+    color: var(--color-text);
+}
+
+/* black see-through veils that sit on a light panel become light veils */
+html[data-theme="day"] :is(.keno-blower-box, .keno-rack-box, .keno-paytable-card, .keno-toolbar,
+    .keno-grid, .keno-spots-badge, .keno-hits-counter, .cx-balance, .z-title, .tl-pill, .mx-sum,
+    details.mx-det, .mx-preview, .marble-fate-panel, .jp-track, .bw-phase) {
+    background: rgba(255, 255, 255, .55);
+    border-color: var(--color-border);
+}
+
+html[data-theme="day"] .keno-blower-dome {
+    background: radial-gradient(circle at 40% 30%, rgba(255, 255, 255, .85), rgba(220, 211, 196, .7));
+}
+
+/* buttons that used white text on what is now a light surface */
+html[data-theme="day"] .roulette-parity-bet,
+html[data-theme="day"] .wheel-winner-name,
+html[data-theme="day"] #z-dice-st {
+    color: var(--color-text);
+}
+
+/* action buttons on the felt: a shade darker so their labels stay crisp */
+html[data-theme="day"] .btn-action {
+    background: linear-gradient(180deg, #4a6a5c, #3a584b);
+}
+
+html[data-theme="day"] .btn-action:hover:not(:disabled) {
+    background: linear-gradient(180deg, #557566, #42604f);
+}
+
+/* =========================================================================
+   4. THE SIGN — neon switched off, a single bulb still on
+   ========================================================================= */
+html[data-theme="day"] .auth-header .brand {
+    box-shadow: 0 0 0 3px #b39a62, 0 0 0 6px rgba(74, 58, 38, .12), 0 8px 18px rgba(74, 58, 38, .2);
+}
+
+html[data-theme="day"] .auth-header .brand::after {
+    filter: none;
+    border-color: #c9bfae;
+}
+
+html[data-theme="day"] .auth-header h1 {
+    /* pale glass tubes, unlit */
+    background: linear-gradient(180deg, #ece4d6 0%, #c8bca8 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    filter: drop-shadow(0 0 1px rgba(0, 0, 0, .35));
+}
+
+html[data-theme="day"] .auth-header .brand-icon {
+    color: #c9a7ae;
+    text-shadow: 0 0 5px rgba(231, 161, 180, .45);   /* the one tube that still glows, barely */
+}
+
+html[data-theme="day"] .tp-brand-chip {
+    color: #fffaf1;
+    background:
+        radial-gradient(circle at 50% 50%, #a98b55 0 46%, transparent 47%),
+        repeating-conic-gradient(from 0deg, #f4efe6 0 15deg, #8a7aa0 15deg 30deg);
+    box-shadow: 0 0 0 2px #c3a970, 0 2px 6px rgba(74, 58, 38, .25);
+}
+
+html[data-theme="day"] .tp-brand-name b {
+    filter: none;
+}
+
+/* =========================================================================
+   5. CONTROLS
+   ========================================================================= */
+html[data-theme="day"] .theme-switch {
+    background: rgba(255, 255, 255, .6);
+    box-shadow: inset 0 1px 2px rgba(74, 58, 38, .15);
+}
+
+html[data-theme="day"] .theme-switch-opt:hover {
+    background: rgba(132, 101, 47, .1);
+}
+
+html[data-theme="day"] .theme-switch-opt[aria-checked="true"] {
+    box-shadow: 0 0 0 1px #b39a62, 0 2px 6px rgba(74, 58, 38, .18);
+}
+
+html[data-theme="day"] .theme-switch-opt[aria-checked="true"] .theme-switch-ic {
+    filter: none;
+}
+
+html[data-theme="day"] .btn-primary {
+    font-weight: 700;
+}
+
+html[data-theme="day"] .btn-primary::after {
+    opacity: .5;
+}
+
+html[data-theme="day"] .btn-game-select[aria-pressed="true"] {
+    box-shadow: 0 0 0 1px #a98b55, 0 2px 6px rgba(74, 58, 38, .18);
+}
+
+html[data-theme="day"] .input-field:focus {
+    border-color: #a98b55;
+    box-shadow: 0 0 0 3px rgba(169, 139, 85, .22);
+}
+
+html[data-theme="day"] .nav-menu-trigger {
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .8), 0 2px 6px rgba(74, 58, 38, .12);
+}
+
+html[data-theme="day"] .nav-menu-item[aria-current="true"] {
+    box-shadow: inset 4px 0 0 var(--vg-accent-2), 0 2px 6px rgba(74, 58, 38, .1);
+}
+
+html[data-theme="day"] .nav-menu-item:active {
+    filter: brightness(.97);
+}
+
+/* game titles: engraved, with small outlined diamonds instead of glowing stars */
+html[data-theme="day"] .game-section > h2::before,
+html[data-theme="day"] .game-section > h2::after {
+    text-shadow: none;
+    color: var(--vg-accent-2);
+}
+
+html[data-theme="day"] .bw-title-sub {
+    color: var(--color-text-muted);
+}
+
+/* roulette chips in daylight: the same chips, less saturated */
+html[data-theme="day"] .chip-btn {
+    border-color: #a98b55;
+    background: var(--vg-card);
+    color: var(--color-text);
+}
+
+html[data-theme="day"] .chip-btn.is-selected {
+    background: var(--vg-btn);
+    color: var(--vg-btn-text);
+}
+
+/* the theme change curtain (only used by browsers without View Transitions) */
+.theme-curtain[data-to="day"] {
+    background: linear-gradient(180deg, #f4efe6, #e2d8c8);
+}
+
+/* =========================================================================
+   6. MOTION — the casino is closed: almost everything is still.
+   Neon, glows and pulses are off; only the short entrance of the setup card remains.
+   ========================================================================= */
+html[data-theme="day"] .auth-header .brand::after,
+html[data-theme="day"] .tp-brand-chip,
+html[data-theme="day"] .top-panel::after,
+html[data-theme="day"] .top-panel-balance,
+html[data-theme="day"] .room-code-value,
+html[data-theme="day"] .brand-icon,
+html[data-theme="day"] .theme-switch-opt[aria-checked="true"],
+html[data-theme="day"] .btn-primary:not(:disabled),
+html[data-theme="day"] .btn-primary:not(:disabled)::after,
+html[data-theme="day"] .slots-machine,
+html[data-theme="day"] .chip-btn.is-selected,
+html[data-theme="day"] .leaderboard-item.is-current-player,
+html[data-theme="day"] .game-section > h2::before,
+html[data-theme="day"] .game-section > h2::after {
+    animation: none;
+}
+
+html[data-theme="day"] .slots-machine {
+    outline-color: rgba(169, 139, 85, .45);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    /* a calmer entrance for the setup card: no glowing rim */
+    html[data-theme="day"] .auth-shell {
+        animation: fx-rise .7s cubic-bezier(.2, .8, .2, 1) both;
+    }
+}
+
+/* inner black shadows and hard table shadows from the night styles, softened for daylight */
+html[data-theme="day"] .input-field {
+    box-shadow: inset 0 1px 2px rgba(74, 58, 38, .12);
+}
+
+html[data-theme="day"] .auth-panel {
+    box-shadow: none;
+}
+
+html[data-theme="day"] :is(.blackjack-table, .hilo-table, .bw-table, .draw-stage, .slots-machine,
+    .roulette-board-wrapper, .pd-stage-box) {
+    box-shadow: 0 8px 20px rgba(74, 58, 38, .2);
+}

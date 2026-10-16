@@ -472,7 +472,7 @@ test('question import appends in order, validates every type and reports what wa
 });
 
 test('quiz-examples.json: valid, covers every type, and imports through the normal paths', async () => {
-    const file = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'quiz-examples.json'), 'utf8'));
+    const file = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'data', 'quiz-examples.json'), 'utf8'));
     const { host } = await turnRoom({ bank: {} });
     const list = host.extractQuestions(file);
     assert.ok(list.length >= 3);
