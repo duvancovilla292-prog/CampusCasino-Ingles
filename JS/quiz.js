@@ -4,7 +4,7 @@
  * Classic script, loaded before admin-panel.js.
  *  - Data lives at rooms/<code>/quiz = { questions: {id: {...}}, live: {...} }.
  *  - UI permissions follow AdminCtl; server enforcement requires Firebase
- *    Auth / database rules (client checks alone cannot stop a determined user).
+ *    Auth / database rules (client checks alone cannot stop a determined user)
  *  - Bank edits never change the published snapshot until "Present" is pressed.
  *  - Every write is a Firebase transaction, so bank edits, presentations and
  *    deletions are serialized and stale controls can never hit a newer question.
