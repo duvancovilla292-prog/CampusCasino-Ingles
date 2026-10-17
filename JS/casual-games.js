@@ -288,7 +288,11 @@ const LuckyDraw = {
         slots: ["\u{1F3B0}", "Vertical reels spin and brake one by one."],
         bingo: ["\u{1F3B1}", "Spheres tumble in the blower and the tube picks the winners."],
         cards: ["\u{1F0CF}", "The deck is shuffled, then winning cards are dealt and flipped."],
-        laser: ["\u{1F52E}", "Chips swirl while a laser pulses to lock in each winner."]
+        laser: ["\u{1F52E}", "Chips swirl while a laser pulses to lock in each winner."],
+        bracket: ["\u{1F3C6}", "Players are seeded into a 1v1 knockout bracket. Match by match, a champion is crowned."],
+        plinko: ["\u{1F535}", "Balls bounce down through the pegs and land in the winners' slots."],
+        chests: ["\u{1F381}", "Every player gets a mystery chest. The chests open one by one to reveal the winners."],
+        roles: ["\u{1F9E9}", "The selected players are matched to roles and tasks in a matrix."]
     },
 
     init() {
@@ -431,10 +435,11 @@ const LuckyDraw = {
         this.updateInfo();
     },
 
-    announce(name, rank) {
+    announce(name, rank, role) {
         const item = this.mk("div", "podium-item");
         item.setAttribute("role", "listitem");
         item.append(this.mk("span", "podium-rank", String(rank + 1)), this.mk("span", "podium-name", name));
+        if (role) item.appendChild(this.mk("span", "podium-role", role));
         this.el.podium.appendChild(item);
         Sound.win();
     },
@@ -503,7 +508,9 @@ const LuckyDraw = {
             await runner.call(this, names, winners, id);
             this.logDraw(winners);
             this.settleDraw(winners, names, `${this.mode}-${id}-${Date.now().toString(36)}`, prize);
-            this.el.result.textContent = `\u{1F389} ${n === 1 ? "Winner" : "Winners"}: ${winners.join(", ")}`;
+            this.el.result.textContent = this.mode === "roles" && this.lastRoles
+                ? `\u{1F9E9} Roles: ${this.lastRoles.map(([who, role]) => `${who} \u2192 ${role}`).join(", ")}`
+                : `\u{1F389} ${n === 1 ? "Winner" : "Winners"}: ${winners.join(", ")}`;
             Sound.jackpot();
         } catch (err) {
             if (err !== this.CANCEL) { console.error(err); Notify.error("The draw was interrupted."); }
@@ -829,6 +836,231 @@ const LuckyDraw = {
                 return false;
             });
             await this.frames(id, (dt, t) => { render(dt, null, 0, false); return t > 300; });
+        }
+    },
+
+    /* ------------------ MODE 5: 1v1 ELIMINATION BRACKET ------------------
+       Players are seeded into a knockout bracket (up to 16 shown). Seeds follow the standard
+       order, so winner #1 is the champion, #2 the runner-up, #3-#4 the semifinalists and so on:
+       the bracket always ends exactly as the draw decided. Byes fill the empty seats. */
+    async runBracket(names, winners, id) {
+        const others = this.shuffle(names.filter((n) => !winners.includes(n)));
+        const ranking = winners.concat(others).slice(0, Math.max(2, Math.min(16, names.length)));
+        let size = 1;
+        while (size < ranking.length) size *= 2;
+        let order = [1];
+        while (order.length < size) { const len = order.length * 2; order = order.flatMap((s) => [s, len + 1 - s]); }
+        const rank = new Map(ranking.map((n, i) => [n, i]));
+        const better = (a, b) => (a == null ? b : b == null ? a : rank.get(a) < rank.get(b) ? a : b);
+
+        const rounds = [order.map((s) => ranking[s - 1] ?? null)];
+        while (rounds[rounds.length - 1].length > 1) {
+            const prev = rounds[rounds.length - 1], next = [];
+            for (let i = 0; i < prev.length; i += 2) next.push(better(prev[i], prev[i + 1]));
+            rounds.push(next);
+        }
+
+        const total = rounds.length - 1;
+        const label = (r) => (r === total ? "Champion" : r === total - 1 ? "Final" : r === total - 2 ? "Semifinal" : "Round " + (r + 1));
+        const board = this.mk("div", "z-bracket draw-bracket");
+        const cells = rounds.map((round, r) => {
+            const col = this.mk("div", "z-col");
+            col.appendChild(this.mk("small", "", label(r)));
+            const slots = [];
+            const per = r === total ? 1 : 2;
+            for (let i = 0; i < round.length; i += per) {
+                const match = this.mk("div", "z-match");
+                for (let j = 0; j < per; j += 1) {
+                    const slot = this.mk("div", "z-slot", r === 0 ? (round[i + j] == null ? "bye" : this.short(round[i + j], 16)) : "…");
+                    match.appendChild(slot);
+                    slots.push(slot);
+                }
+                col.appendChild(match);
+            }
+            board.appendChild(col);
+            return slots;
+        });
+        if (total === 0) cells[0][0].textContent = this.short(rounds[0][0], 16);
+        this.el.stage.replaceChildren(board);
+        await this.wait(500, id);
+
+        for (let r = 0; r < total; r += 1) {
+            const round = rounds[r];
+            for (let i = 0; i < round.length; i += 2) {
+                const a = round[i], b = round[i + 1], w = rounds[r + 1][i / 2];
+                const sa = cells[r][i], sb = cells[r][i + 1];
+                if (a != null && b != null) {
+                    // a short "face-off": the highlight bounces between the two players
+                    for (let k = 0; k < 4; k += 1) {
+                        sa.classList.toggle("is-live", k % 2 === 0);
+                        sb.classList.toggle("is-live", k % 2 === 1);
+                        Sound.tone(520 + k * 60, 45, "square", 0.025);
+                        await this.wait(r === total - 1 ? 200 : 110, id);
+                    }
+                }
+                sa.classList.remove("is-live"); sb.classList.remove("is-live");
+                (w === a ? sa : sb).classList.add("win");
+                if (a != null && b != null) (w === a ? sb : sa).classList.add("out");
+                const dest = cells[r + 1][i / 2];
+                dest.textContent = this.short(w, 16);
+                dest.classList.add("is-new");
+                Sound.click();
+            }
+            await this.wait(250, id);
+        }
+        cells[total][0].classList.add("win");
+        await this.wait(400, id);
+        winners.forEach((w, k) => this.announce(w, k));
+        await this.wait(300, id);
+    },
+
+    /* ----------------------- MODE 6: PLINKO / GRAVITY DROP -----------------------
+       Bins at the bottom carry player names (winners plus random others, up to 9). One ball per
+       winner bounces peg to peg; its left/right path is chosen so it settles in that winner's bin. */
+    async runPlinko(names, winners, id) {
+        const B = Math.min(9, Math.max(names.length, winners.length));
+        const fill = this.shuffle(names.filter((n) => !winners.includes(n))).slice(0, Math.max(0, B - winners.length));
+        const bins = this.shuffle(winners.concat(fill));
+        const rows = Math.max(1, bins.length - 1);
+        const H = 430, { ctx, w, h } = this.makeCanvas(H);
+        const sp = (w - 24) / bins.length, top = 34, rowH = (h - 120 - top) / rows;
+        const binTop = h - 78, cx = w / 2;
+        const pegX = (row, k) => cx + (k - row / 2) * sp;
+        const pegY = (row) => top + row * rowH;
+        const binX = (k) => cx + (k - (bins.length - 1) / 2) * sp;
+        const landed = new Set();
+        const balls = [];
+
+        const draw = () => {
+            ctx.clearRect(0, 0, w, h);
+            for (let r = 0; r < rows; r += 1) {
+                for (let k = 0; k <= r; k += 1) {
+                    ctx.beginPath(); ctx.arc(pegX(r, k), pegY(r), 4, 0, Math.PI * 2);
+                    ctx.fillStyle = "rgba(244,196,48,.85)"; ctx.fill();
+                }
+            }
+            bins.forEach((name, k) => {
+                const x = binX(k) - sp / 2 + 2, win = landed.has(k);
+                ctx.fillStyle = win ? "rgba(244,196,48,.9)" : "rgba(255,255,255,.08)";
+                ctx.strokeStyle = "rgba(233,196,106,.6)"; ctx.lineWidth = 1.5;
+                ctx.beginPath(); ctx.roundRect ? ctx.roundRect(x, binTop, sp - 4, 70, 8) : ctx.rect(x, binTop, sp - 4, 70);
+                ctx.fill(); ctx.stroke();
+                ctx.save();
+                ctx.translate(binX(k), binTop + 64); ctx.rotate(-Math.PI / 2);
+                ctx.fillStyle = win ? "#14171c" : "#eef2f5"; ctx.textAlign = "left"; ctx.textBaseline = "middle";
+                ctx.font = `700 ${Math.max(9, Math.min(12, sp * 0.3))}px "Segoe UI", Arial, sans-serif`;
+                ctx.fillText(this.short(name, 9), 0, 0, 58);
+                ctx.restore();
+            });
+            balls.forEach((b) => this.drawChip(ctx, b.x, b.y, 11, "", b.color, true));
+        };
+
+        for (let n = 0; n < winners.length; n += 1) {
+            const target = bins.indexOf(winners[n]);
+            // exactly `target` steps to the right, in random order
+            const steps = Array.from({ length: rows }, (_, i) => (i < target ? 1 : 0));
+            const path = this.shuffle.call({ shuffle: null }, steps);
+            const pts = [{ x: cx, y: 6 }];
+            let k = 0;
+            for (let r = 0; r < rows; r += 1) { pts.push({ x: pegX(r, k), y: pegY(r) - 12 }); k += path[r]; }
+            if (bins.length === 1) k = 0;
+            pts.push({ x: binX(k), y: binTop + 18 });
+            const ball = { x: cx, y: 6, color: this.CHIP_COLORS[n % this.CHIP_COLORS.length] };
+            balls.push(ball);
+            const HOP = 170;
+            let lastSeg = -1;
+            await this.frames(id, (dt, t) => {
+                t = Math.max(0, t);   // the first rAF timestamp can precede the start time by a fraction of a ms
+                const seg = Math.min(pts.length - 2, Math.floor(t / HOP)), p = Math.min(1, (t - seg * HOP) / HOP);
+                const a = pts[seg], b = pts[seg + 1];
+                ball.x = a.x + (b.x - a.x) * p;
+                ball.y = a.y + (b.y - a.y) * p - Math.sin(p * Math.PI) * Math.min(18, rowH * 0.45);
+                if (seg !== lastSeg) { lastSeg = seg; Sound.tick(seg); }
+                draw();
+                return t >= HOP * (pts.length - 1);
+            });
+            landed.add(k);
+            draw();
+            this.announce(winners[n], n);
+            await this.wait(350, id);
+        }
+    },
+
+    /* ------------------------ MODE 7: MYSTERY CHESTS ------------------------
+       Every player gets a chest (up to 24 shown). After a shuffle, a few chests open to reveal
+       other players, then the winners' chests burst open one by one. */
+    async runChests(names, winners, id) {
+        const others = this.shuffle(names.filter((n) => !winners.includes(n)));
+        const inGrid = this.shuffle(winners.concat(others.slice(0, Math.max(0, 24 - winners.length))));
+        const grid = this.mk("div", "chest-grid draw-chests");
+        const chests = inGrid.map((name) => {
+            const c = this.mk("div", "chest", "\u{1F381}");
+            c.setAttribute("aria-hidden", "true");
+            c.dataset.name = name;
+            grid.appendChild(c);
+            return c;
+        });
+        this.el.stage.replaceChildren(grid);
+
+        grid.classList.add("is-shuffling");
+        for (let i = 0; i < 6; i += 1) { Sound.tone(260 + Math.random() * 160, 40, "square", 0.025); await this.wait(180, id); }
+        grid.classList.remove("is-shuffling");
+
+        const open = (c, win) => {
+            c.textContent = this.short(c.dataset.name, 14);
+            c.classList.add("open");
+            if (win) c.classList.add("win");
+        };
+        const decoys = this.shuffle(chests.filter((c) => !winners.includes(c.dataset.name))).slice(0, Math.min(4, chests.length - winners.length));
+        for (const c of decoys) { open(c, false); Sound.click(); await this.wait(320, id); }
+        for (let k = 0; k < winners.length; k += 1) {
+            const c = chests.find((x) => x.dataset.name === winners[k]);
+            c.classList.add("is-shaking");
+            Sound.tone(700, 120, "triangle", 0.05);
+            await this.wait(650, id);
+            c.classList.remove("is-shaking");
+            open(c, true);
+            this.announce(winners[k], k);
+            await this.wait(450, id);
+        }
+    },
+
+    /* --------------------- MODE 8: ROLES & TASK MATRIX ---------------------
+       Each selected player gets a different role. The role column spins through the list and
+       lands on the assigned role, row by row (no chips are paid in this mode). */
+    ROLES: ["Leader", "Timekeeper", "Note-taker", "Presenter", "Researcher", "Checker"],
+
+    async runRoles(names, winners, id) {
+        const roles = this.shuffle.call({ shuffle: null }, this.ROLES.slice()).slice(0, winners.length);
+        const matrix = this.mk("div", "roles-matrix");
+        const head = this.mk("div", "roles-row roles-head");
+        head.append(this.mk("div", "roles-cell", "Player"), this.mk("div", "roles-cell", "Role / Task"));
+        matrix.appendChild(head);
+        const rows = winners.map((name) => {
+            const row = this.mk("div", "roles-row");
+            const who = this.mk("div", "roles-cell", "?");
+            const role = this.mk("div", "roles-cell", "…");
+            row.append(who, role);
+            matrix.appendChild(row);
+            return { who, role, name };
+        });
+        this.el.stage.replaceChildren(matrix);
+        await this.wait(300, id);
+
+        this.lastRoles = [];
+        for (let k = 0; k < rows.length; k += 1) {
+            const r = rows[k];
+            r.who.textContent = r.name;
+            for (let i = 0; i < 12; i += 1) {
+                r.role.textContent = this.ROLES[(k + i) % this.ROLES.length];
+                Sound.tick(i);
+                await this.wait(60 + i * 12, id);
+            }
+            r.role.textContent = roles[k];
+            r.role.classList.add("landed");
+            this.lastRoles.push([r.name, roles[k]]);
+            this.announce(r.name, k, roles[k]);
+            await this.wait(350, id);
         }
     }
 };

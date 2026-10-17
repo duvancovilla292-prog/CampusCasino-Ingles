@@ -55,11 +55,14 @@ CSS/
   fx.css             Capa de animaciones (ambiente, botones, títulos); se carga después de style.css
   theme.css          Temas Las Vegas: estructura común y Modo Noche (Casino)
   theme-day.css      Modo Día (la mañana después): paleta clara y sencilla
+  home.css           Página de Inicio del lobby
 data/
   data.json          Lista por defecto de juegos del Arcade (reemplázala con la que descargues del panel)
   quiz-examples.json Preguntas de ejemplo que carga el botón "Add examples" del quiz
 JS/
   theme.js           Interruptor Día / Noche (se carga en <head>, antes de pintar la página)
+  home.js            Página de Inicio del lobby (carrusel, mejores ganadores, bóveda, juegos destacados, recompensas)
+  top-menu.js        Menú ☰ de la barra superior (Juegos con sus categorías, Clasificación, Misiones, Ajustes del Host, Admin, Tienda, Salir)
   firebase-sync.js   (1) Firebase, Room, State, mesas compartidas (Tables), Banco, listeners por sala
   game-catalog.js    Catálogo de herramientas y juegos, navegación y visibilidad
   ui-audio.js        (2) DOM, audio, UI, router, tienda, chat, jackpot, misiones, logros, Lucky Spin
@@ -99,8 +102,18 @@ No hay paso de instalación ni de build. Si abres `index.html` directamente desd
 - Nombre de usuario: **3 a 16 caracteres**, solo letras, números, `_` y `-`. No se permiten nombres repetidos en la misma sala.
 - Fichas iniciales a elegir: **500, 1.000 (por defecto), 2.500 o 5.000**.
 
+### Inicio
+Al entrar al lobby se abre la página de **Inicio**, que también se abre desde **☰ → 🏠 Inicio**. Contiene:
+
+- Un carrusel de destacados (Blackjack, mesas en vivo, Lucky Draw y Quiz). Cada botón abre el juego. Avanza solo cada 7 s, se pausa al pasar el mouse y no se mueve con «reducir movimiento».
+- **Mejores ganadores** de la sala, en vivo, según la ganancia neta.
+- La **Bóveda comunitaria**, con el mismo contador que la barra superior.
+- **Juegos principales** por categoría y **Recompensas**: Misiones, Lucky Spin, Tienda VIP y Banco. Las tarjetas de juegos que el Host desactiva se ocultan también aquí.
+
 ### Lobby
-La barra superior muestra sala, jugador, saldo y la navegación entre juegos, además de sonido, clasificación, recompensas, chat, panel de admin (solo Host) y **Leave**.
+La barra superior muestra sala, jugador, saldo, el interruptor Día / Noche, el sonido y un botón **☰**. Al pulsarlo se despliegan **🎮 Juegos** (debajo indica el juego actual), **Leaderboard**, **Daily Missions**, **Host Settings** y **Administrator Panel** (solo Host), **Shop** y **Leave**. El menú se cierra al elegir una opción, al tocar fuera o con Escape. Funciona con teclado: la flecha abajo lo abre y las flechas recorren las opciones. Si hay misiones por reclamar, el ☰ muestra el contador.
+
+**Juegos** abre como sub-opciones las tres categorías (**Casino Games**, **Tools** y **Casual & Party Games**). Cada una despliega sus juegos y, al elegir uno, el juego se abre y el menú se cierra. Las categorías y los juegos que el Host desactiva siguen ocultándose igual que antes.
 
 ---
 
@@ -245,7 +258,7 @@ Al importar, los juegos inválidos (título vacío o `src` no permitido) se omit
 
 ### Lucky Draw: sorteo de 1 a 6 ganadores
 
-Elige cuántos ganadores (1–6) y uno de los cuatro modos; pulsa **Draw Winners**. Los ganadores se eligen con un barajado imparcial (Fisher-Yates) y después la animación se dirige hacia ellos. Si hay menos jugadores que ganadores pedidos, se sortean los que existan y se avisa.
+Elige cuántos ganadores (1–6) y uno de los modos; pulsa **Draw Winners**. Los ganadores se eligen con un barajado imparcial (Fisher-Yates) y después la animación se dirige hacia ellos. Si hay menos jugadores que ganadores pedidos, se sortean los que existan y se avisa.
 
 | Modo | Descripción |
 |---|---|
@@ -253,6 +266,10 @@ Elige cuántos ganadores (1–6) y uno de los cuatro modos; pulsa **Draw Winners
 | 🎱 **Bingo Blower** | Un globo con esferas que rebotan y chocan (física 2D en canvas); un tubo extrae la esfera de cada ganador |
 | 🃏 **Card Dealer** | Un mazo se baraja, se reparten N cartas y se voltean automáticamente con resplandor dorado |
 | 🔮 **Chip Laser** | Fichas con los nombres caen y giran; un láser fija a cada ganador, que vuela al podio |
+| 🏆 **1v1 Bracket** | Cuadro de eliminación directa (hasta 16 jugadores, con byes). El ganador 1 es el campeón, el 2 el finalista y así sucesivamente |
+| 🔵 **Plinko** | Una bola por ganador rebota entre los pines y cae en la casilla con su nombre |
+| 🎁 **Mystery Chests** | Un cofre por jugador (hasta 24); se abren algunos y luego los de los ganadores |
+| 🧩 **Roles Matrix** | Asigna a cada elegido un rol distinto (Leader, Timekeeper, Note-taker, Presenter, Researcher, Checker); no reparte fichas |
 
 Detalles:
 - Los ganadores aparecen en un **podio** numerado y se resumen en texto al final.

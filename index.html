@@ -12,6 +12,7 @@
   <link rel="stylesheet" href="CSS/fx.css">
   <link rel="stylesheet" href="CSS/theme.css">
   <link rel="stylesheet" href="CSS/theme-day.css">
+  <link rel="stylesheet" href="CSS/home.css">
   <!-- Day / Night theme: runs before the body renders so the saved theme never flashes -->
   <script src="JS/theme.js"></script>
   <!-- Firebase Realtime Database (serverless sync layer). The project config is
@@ -214,95 +215,110 @@
         <span class="top-panel-unit">chips</span>
       </div>
 
-      <nav id="game-selector" class="nav-menu" aria-label="Game selection">
-        <button type="button" id="nav-menu-trigger" class="nav-menu-trigger" aria-haspopup="true" aria-expanded="false"
-          aria-controls="nav-menu-panel">
-          <span id="nav-menu-current-icon" class="nav-menu-current-icon" aria-hidden="true">&#127137;</span>
-          <span class="nav-menu-current-text"><small>Playing</small><b id="nav-menu-current">Blackjack</b></span>
-          <svg class="nav-menu-chevron" viewBox="0 0 20 20" width="18" height="18" aria-hidden="true" focusable="false">
-            <path d="M5 7.5l5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-              stroke-linejoin="round" />
-          </svg>
-        </button>
-        <div id="nav-menu-panel" class="nav-menu-panel" role="menu" aria-label="Games and tools">
-          <div class="nav-menu-group" role="group" data-category="casino" aria-labelledby="nav-cat-games">
-            <h3 id="nav-cat-games" class="nav-menu-heading">Casino Games<small>Play with your chips</small></h3>
-            <button type="button" class="nav-menu-item" role="menuitem" data-game="blackjack"><span class="nav-menu-icon" aria-hidden="true">&#127137;</span><span>Blackjack</span></button>
-            <button type="button" class="nav-menu-item" role="menuitem" data-game="baccarat"><span class="nav-menu-icon" aria-hidden="true">&#127153;</span><span>Baccarat</span></button>
-            <button type="button" class="nav-menu-item" role="menuitem" data-game="pokerdice"><span class="nav-menu-icon" aria-hidden="true">&#127183;</span><span>Poker Dice</span></button>
-            <button type="button" class="nav-menu-item" role="menuitem" data-game="keno"><span class="nav-menu-icon" aria-hidden="true">&#127921;</span><span>VIP Keno</span></button>
-            <button type="button" class="nav-menu-item" role="menuitem" data-game="roulette"><span class="nav-menu-icon" aria-hidden="true">&#127923;</span><span>Roulette</span></button>
-            <button type="button" class="nav-menu-item" role="menuitem" data-game="slots"><span class="nav-menu-icon" aria-hidden="true">&#127920;</span><span>Slots</span></button>
-            <button type="button" class="nav-menu-item" role="menuitem" data-game="hilo"><span class="nav-menu-icon" aria-hidden="true">&#128256;</span><span>Hi-Lo</span></button>
-            <button type="button" class="nav-menu-item" role="menuitem" data-game="craps"><span class="nav-menu-icon" aria-hidden="true">&#127922;</span><span>Craps</span></button>
-            <button type="button" class="nav-menu-item" role="menuitem" data-game="crash"><span class="nav-menu-icon" aria-hidden="true">&#128640;</span><span>Crash</span></button>
-            <button type="button" class="nav-menu-item" role="menuitem" data-game="moneywheel"><span class="nav-menu-icon" aria-hidden="true">&#128176;</span><span>Money Wheel</span></button>
-            <button type="button" class="nav-menu-item" role="menuitem" data-game="blackwidow"><span class="nav-menu-icon" aria-hidden="true">&#128375;</span><span>Black Widow Poker</span></button>
-          </div>
-          <div class="nav-menu-group" role="group" data-category="tools" aria-labelledby="nav-cat-tools">
-            <h3 id="nav-cat-tools" class="nav-menu-heading">Tools<small>Quizzes, student draw, teams and
-                turns</small></h3>
-            <button type="button" class="nav-menu-item" role="menuitem" data-game="draw"><span class="nav-menu-icon"
-                aria-hidden="true">&#127873;</span><span>Lucky Draw</span></button>
-            <button type="button" class="nav-menu-item" role="menuitem" data-game="quiz"><span class="nav-menu-icon" aria-hidden="true">❓</span><span>Quiz / Live Questions</span></button>
-            <div class="nav-menu-chips" role="group" aria-label="Lucky Draw visual modes"><button type="button"
-                class="nav-menu-chip" role="menuitem" data-game="draw" data-draw-mode="slots">Slot Reels</button><button
-                type="button" class="nav-menu-chip" role="menuitem" data-game="draw" data-draw-mode="bingo">Bingo
-                Blower</button><button type="button" class="nav-menu-chip" role="menuitem" data-game="draw"
-                data-draw-mode="cards">Card Dealer</button><button type="button" class="nav-menu-chip" role="menuitem"
-                data-game="draw" data-draw-mode="laser">Chip Laser</button></div>
-            <button type="button" class="nav-menu-item" role="menuitem" data-game="wheel"><span class="nav-menu-icon"
-                aria-hidden="true">&#127905;</span><span>Player Wheel</span></button>
-            <button type="button" class="nav-menu-item" role="menuitem" data-game="draw" data-draw-mode="bracket"><span
-                class="nav-menu-icon" aria-hidden="true">&#127942;</span><span>1v1 Elimination Bracket</span></button>
-            <button type="button" class="nav-menu-item" role="menuitem" data-game="draw" data-draw-mode="plinko"><span
-                class="nav-menu-icon" aria-hidden="true">&#128309;</span><span>Plinko / Gravity Drop</span></button>
-            <button type="button" class="nav-menu-item" role="menuitem" data-game="draw" data-draw-mode="marble"><span
-                class="nav-menu-icon" aria-hidden="true">&#128302;</span><span>Marble Gravity Race</span></button>
-            <button type="button" class="nav-menu-item" role="menuitem" data-game="draw" data-draw-mode="chests"><span
-                class="nav-menu-icon" aria-hidden="true">&#127873;</span><span>Mystery Chests</span></button>
-            <button type="button" class="nav-menu-item" role="menuitem" data-game="draw" data-draw-mode="roles"><span
-                class="nav-menu-icon" aria-hidden="true">&#129513;</span><span>Roles &amp; Task Matrix</span></button>
-          </div>
-          <div class="nav-menu-group" role="group" data-category="casual" aria-labelledby="nav-cat-party">
-            <h3 id="nav-cat-party" class="nav-menu-heading">Casual &amp; Party Games<small>Social games with optional
-                chip bets</small></h3>
-            <button type="button" class="nav-menu-item" role="menuitem" data-game="uno"><span class="nav-menu-icon"
-                aria-hidden="true">&#127924;</span><span>UNO</span></button>
-            <button type="button" class="nav-menu-item" role="menuitem" data-game="parques"><span class="nav-menu-icon"
-                aria-hidden="true">&#127922;</span><span>Colombian Ludo</span></button>
-            <button type="button" class="nav-menu-item" role="menuitem" data-game="dominoes"><span class="nav-menu-icon"
-                aria-hidden="true">&#127074;</span><span>Dominoes</span></button>
-            <button type="button" class="nav-menu-item" role="menuitem" data-game="chess"><span class="nav-menu-icon"
-                aria-hidden="true">&#9823;</span><span>Chess</span></button>
-            <button type="button" class="nav-menu-item" role="menuitem" data-game="checkers"><span class="nav-menu-icon"
-                aria-hidden="true">&#11088;</span><span>Chinese Checkers</span></button>
-            <button type="button" class="nav-menu-item" role="menuitem" data-game="connect4"><span class="nav-menu-icon"
-                aria-hidden="true">&#128308;</span><span>Connect Four</span></button>
-            <button type="button" class="nav-menu-item" role="menuitem" data-game="battleship"><span
-                class="nav-menu-icon" aria-hidden="true">&#9875;</span><span>Battleship</span></button>
-            <button type="button" class="nav-menu-item" role="menuitem" data-game="mastermind"><span
-                class="nav-menu-icon" aria-hidden="true">&#127912;</span><span>Color Code Breaker</span></button>
-            <button type="button" class="nav-menu-item" role="menuitem" data-game="bullscows"><span
-                class="nav-menu-icon" aria-hidden="true">&#128290;</span><span>Bulls &amp; Cows</span></button>
-            <button type="button" class="nav-menu-item" role="menuitem" data-game="hangman"><span
-                class="nav-menu-icon" aria-hidden="true">&#128292;</span><span>Hangman</span></button>
-            <button type="button" class="nav-menu-item" role="menuitem" data-game="arcade"><span
-                class="nav-menu-icon" aria-hidden="true">&#128377;</span><span>Arcade Games</span></button>
-          </div>
-          <p id="nav-menu-empty" class="nav-menu-empty" role="status" hidden>Nothing is enabled right now.</p>
-        </div>
-        <p id="games-empty" class="bw-info" role="status" hidden>No games are available. The host can enable them in Host Settings.</p>
-      </nav>
 
       <div class="top-panel-actions">
         <div class="tp-theme" data-theme-switch></div>
         <button type="button" id="btn-sound-toggle" class="btn btn-icon" aria-pressed="true"
           aria-label="Mute sound">&#128266;</button>
-        <button type="button" id="btn-open-leaderboard" class="btn btn-secondary">&#127942;</button>
-        <button type="button" id="btn-open-admin-lobby" class="btn btn-secondary" hidden>&#9881;</button>
-        <button type="button" id="btn-open-shop" class="btn btn-secondary" title="Profile Shop">&#128717; Shop</button>
-        <button type="button" id="btn-logout" class="btn btn-secondary">Leave</button>
+        <!-- Hamburger menu: the room actions fold into one ☰ button (JS/top-menu.js).
+             Buttons that other modules insert before #btn-open-admin-lobby land in this panel too. -->
+        <div class="tp-menu">
+          <button type="button" id="btn-tp-menu" class="btn btn-secondary tp-menu-toggle" aria-expanded="false"
+            aria-controls="tp-menu-panel" aria-label="Open menu" title="Menu">
+            <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false">
+              <path d="M4 7h16M4 12h16M4 17h16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" />
+            </svg>
+          </button>
+          <div id="tp-menu-panel" class="tp-menu-panel" hidden>
+            <button type="button" id="btn-home" class="btn btn-secondary" title="Inicio">&#127968;</button>
+            <!-- "Juegos": the games catalog; its categories unfold as sub-options (JS/top-menu.js) -->
+          <nav id="game-selector" class="nav-menu" aria-label="Game selection">
+            <button type="button" id="nav-menu-trigger" class="nav-menu-trigger" aria-haspopup="true" aria-expanded="false"
+              aria-controls="nav-menu-panel">
+              <span class="nav-menu-games-icon" aria-hidden="true">&#127918;</span>
+              <span id="nav-menu-current-icon" class="nav-menu-current-icon" aria-hidden="true">&#127137;</span>
+              <span class="nav-menu-current-text"><b class="nav-menu-games-label">Juegos</b><small>Playing: <span id="nav-menu-current">Blackjack</span></small></span>
+              <svg class="nav-menu-chevron" viewBox="0 0 20 20" width="18" height="18" aria-hidden="true" focusable="false">
+                <path d="M5 7.5l5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                  stroke-linejoin="round" />
+              </svg>
+            </button>
+            <div id="nav-menu-panel" class="nav-menu-panel" role="menu" aria-label="Games and tools">
+              <div class="nav-menu-group" role="group" data-category="casino" aria-labelledby="nav-cat-games">
+                <h3 id="nav-cat-games" class="nav-menu-heading">Casino Games<small>Play with your chips</small></h3>
+                <button type="button" class="nav-menu-item" role="menuitem" data-game="blackjack"><span class="nav-menu-icon" aria-hidden="true">&#127137;</span><span>Blackjack</span></button>
+                <button type="button" class="nav-menu-item" role="menuitem" data-game="baccarat"><span class="nav-menu-icon" aria-hidden="true">&#127153;</span><span>Baccarat</span></button>
+                <button type="button" class="nav-menu-item" role="menuitem" data-game="pokerdice"><span class="nav-menu-icon" aria-hidden="true">&#127183;</span><span>Poker Dice</span></button>
+                <button type="button" class="nav-menu-item" role="menuitem" data-game="keno"><span class="nav-menu-icon" aria-hidden="true">&#127921;</span><span>VIP Keno</span></button>
+                <button type="button" class="nav-menu-item" role="menuitem" data-game="roulette"><span class="nav-menu-icon" aria-hidden="true">&#127923;</span><span>Roulette</span></button>
+                <button type="button" class="nav-menu-item" role="menuitem" data-game="slots"><span class="nav-menu-icon" aria-hidden="true">&#127920;</span><span>Slots</span></button>
+                <button type="button" class="nav-menu-item" role="menuitem" data-game="hilo"><span class="nav-menu-icon" aria-hidden="true">&#128256;</span><span>Hi-Lo</span></button>
+                <button type="button" class="nav-menu-item" role="menuitem" data-game="craps"><span class="nav-menu-icon" aria-hidden="true">&#127922;</span><span>Craps</span></button>
+                <button type="button" class="nav-menu-item" role="menuitem" data-game="crash"><span class="nav-menu-icon" aria-hidden="true">&#128640;</span><span>Crash</span></button>
+                <button type="button" class="nav-menu-item" role="menuitem" data-game="moneywheel"><span class="nav-menu-icon" aria-hidden="true">&#128176;</span><span>Money Wheel</span></button>
+                <button type="button" class="nav-menu-item" role="menuitem" data-game="blackwidow"><span class="nav-menu-icon" aria-hidden="true">&#128375;</span><span>Black Widow Poker</span></button>
+              </div>
+              <div class="nav-menu-group" role="group" data-category="tools" aria-labelledby="nav-cat-tools">
+                <h3 id="nav-cat-tools" class="nav-menu-heading">Tools<small>Quizzes, student draw, teams and
+                    turns</small></h3>
+                <button type="button" class="nav-menu-item" role="menuitem" data-game="draw"><span class="nav-menu-icon"
+                    aria-hidden="true">&#127873;</span><span>Lucky Draw</span></button>
+                <button type="button" class="nav-menu-item" role="menuitem" data-game="quiz"><span class="nav-menu-icon" aria-hidden="true">❓</span><span>Quiz / Live Questions</span></button>
+                <div class="nav-menu-chips" role="group" aria-label="Lucky Draw visual modes"><button type="button"
+                    class="nav-menu-chip" role="menuitem" data-game="draw" data-draw-mode="slots">Slot Reels</button><button
+                    type="button" class="nav-menu-chip" role="menuitem" data-game="draw" data-draw-mode="bingo">Bingo
+                    Blower</button><button type="button" class="nav-menu-chip" role="menuitem" data-game="draw"
+                    data-draw-mode="cards">Card Dealer</button><button type="button" class="nav-menu-chip" role="menuitem"
+                    data-game="draw" data-draw-mode="laser">Chip Laser</button></div>
+                <button type="button" class="nav-menu-item" role="menuitem" data-game="wheel"><span class="nav-menu-icon"
+                    aria-hidden="true">&#127905;</span><span>Player Wheel</span></button>
+                <button type="button" class="nav-menu-item" role="menuitem" data-game="draw" data-draw-mode="bracket"><span
+                    class="nav-menu-icon" aria-hidden="true">&#127942;</span><span>1v1 Elimination Bracket</span></button>
+                <button type="button" class="nav-menu-item" role="menuitem" data-game="draw" data-draw-mode="plinko"><span
+                    class="nav-menu-icon" aria-hidden="true">&#128309;</span><span>Plinko / Gravity Drop</span></button>
+                <button type="button" class="nav-menu-item" role="menuitem" data-game="draw" data-draw-mode="marble"><span
+                    class="nav-menu-icon" aria-hidden="true">&#128302;</span><span>Marble Gravity Race</span></button>
+                <button type="button" class="nav-menu-item" role="menuitem" data-game="draw" data-draw-mode="chests"><span
+                    class="nav-menu-icon" aria-hidden="true">&#127873;</span><span>Mystery Chests</span></button>
+                <button type="button" class="nav-menu-item" role="menuitem" data-game="draw" data-draw-mode="roles"><span
+                    class="nav-menu-icon" aria-hidden="true">&#129513;</span><span>Roles &amp; Task Matrix</span></button>
+              </div>
+              <div class="nav-menu-group" role="group" data-category="casual" aria-labelledby="nav-cat-party">
+                <h3 id="nav-cat-party" class="nav-menu-heading">Casual &amp; Party Games<small>Social games with optional
+                    chip bets</small></h3>
+                <button type="button" class="nav-menu-item" role="menuitem" data-game="uno"><span class="nav-menu-icon"
+                    aria-hidden="true">&#127924;</span><span>UNO</span></button>
+                <button type="button" class="nav-menu-item" role="menuitem" data-game="parques"><span class="nav-menu-icon"
+                    aria-hidden="true">&#127922;</span><span>Colombian Ludo</span></button>
+                <button type="button" class="nav-menu-item" role="menuitem" data-game="dominoes"><span class="nav-menu-icon"
+                    aria-hidden="true">&#127074;</span><span>Dominoes</span></button>
+                <button type="button" class="nav-menu-item" role="menuitem" data-game="chess"><span class="nav-menu-icon"
+                    aria-hidden="true">&#9823;</span><span>Chess</span></button>
+                <button type="button" class="nav-menu-item" role="menuitem" data-game="checkers"><span class="nav-menu-icon"
+                    aria-hidden="true">&#11088;</span><span>Chinese Checkers</span></button>
+                <button type="button" class="nav-menu-item" role="menuitem" data-game="connect4"><span class="nav-menu-icon"
+                    aria-hidden="true">&#128308;</span><span>Connect Four</span></button>
+                <button type="button" class="nav-menu-item" role="menuitem" data-game="battleship"><span
+                    class="nav-menu-icon" aria-hidden="true">&#9875;</span><span>Battleship</span></button>
+                <button type="button" class="nav-menu-item" role="menuitem" data-game="mastermind"><span
+                    class="nav-menu-icon" aria-hidden="true">&#127912;</span><span>Color Code Breaker</span></button>
+                <button type="button" class="nav-menu-item" role="menuitem" data-game="bullscows"><span
+                    class="nav-menu-icon" aria-hidden="true">&#128290;</span><span>Bulls &amp; Cows</span></button>
+                <button type="button" class="nav-menu-item" role="menuitem" data-game="hangman"><span
+                    class="nav-menu-icon" aria-hidden="true">&#128292;</span><span>Hangman</span></button>
+                <button type="button" class="nav-menu-item" role="menuitem" data-game="arcade"><span
+                    class="nav-menu-icon" aria-hidden="true">&#128377;</span><span>Arcade Games</span></button>
+              </div>
+              <p id="nav-menu-empty" class="nav-menu-empty" role="status" hidden>Nothing is enabled right now.</p>
+            </div>
+            <p id="games-empty" class="bw-info" role="status" hidden>No games are available. The host can enable them in Host Settings.</p>
+          </nav>
+            <button type="button" id="btn-open-leaderboard" class="btn btn-secondary" title="Leaderboard">&#127942;</button>
+            <button type="button" id="btn-open-admin-lobby" class="btn btn-secondary" title="Administrator Panel" hidden>&#9881;</button>
+            <button type="button" id="btn-open-shop" class="btn btn-secondary" title="Profile Shop">&#128717; Shop</button>
+            <button type="button" id="btn-logout" class="btn btn-secondary">Leave</button>
+          </div>
+        </div>
       </div>
     </header>
 
@@ -336,6 +352,139 @@
         <button type="button" id="btn-chat-send" class="btn btn-primary btn-small">Send</button>
       </div>
     </aside>
+
+    <!-- ============================= -->
+    <!-- HOME (lobby landing page)     -->
+    <!-- ============================= -->
+    <!-- Every button here opens a real game or feature (JS/home.js). Tiles of games the Host
+         disables are hidden automatically, mirroring the games menu. -->
+    <section id="game-home" class="game-section home" data-game-section="home" hidden aria-labelledby="home-heading">
+      <h2 id="home-heading" class="home-sr">Inicio</h2>
+
+      <div class="home-top">
+        <div class="home-hero" role="region" aria-roledescription="carousel" aria-label="Destacados">
+          <div class="home-slides" aria-live="polite">
+            <article class="home-slide is-active" data-slide="0" aria-roledescription="slide" aria-label="1 de 4">
+              <div class="home-slide-art" aria-hidden="true"><span>&#127920;</span><span>&#9824;</span><span>&#127922;</span></div>
+              <div class="home-slide-text">
+                <p class="home-kicker">Bienvenido a</p>
+                <h3 class="home-title">Casino Campus</h3>
+                <p class="home-lead">Juega en tiempo real con toda la sala, con fichas virtuales y cero riesgo.</p>
+                <button type="button" class="btn btn-primary" data-go="blackjack">Jugar Blackjack</button>
+              </div>
+            </article>
+            <article class="home-slide" data-slide="1" aria-roledescription="slide" aria-label="2 de 4" hidden>
+              <div class="home-slide-art" aria-hidden="true"><span>&#127924;</span><span>&#127922;</span><span>&#127074;</span></div>
+              <div class="home-slide-text">
+                <p class="home-kicker">Mesas en vivo</p>
+                <h3 class="home-title">Juega con la sala</h3>
+                <p class="home-lead">UNO, Colombian Ludo, Dominoes y Chess con tus compañeros, en vivo.</p>
+                <button type="button" class="btn btn-primary" data-go="uno">Abrir UNO</button>
+              </div>
+            </article>
+            <article class="home-slide" data-slide="2" aria-roledescription="slide" aria-label="3 de 4" hidden>
+              <div class="home-slide-art" aria-hidden="true"><span>&#127873;</span><span>&#127942;</span><span>&#128309;</span></div>
+              <div class="home-slide-text">
+                <p class="home-kicker">Para la clase</p>
+                <h3 class="home-title">Lucky Draw</h3>
+                <p class="home-lead">Elige ganadores al azar con Plinko, Mystery Chests, 1v1 Bracket y más.</p>
+                <button type="button" class="btn btn-primary" data-go="draw">Hacer un sorteo</button>
+              </div>
+            </article>
+            <article class="home-slide" data-slide="3" aria-roledescription="slide" aria-label="4 de 4" hidden>
+              <div class="home-slide-art" aria-hidden="true"><span>&#10067;</span><span>&#128161;</span><span>&#127775;</span></div>
+              <div class="home-slide-text">
+                <p class="home-kicker">Preguntas en vivo</p>
+                <h3 class="home-title">Quiz</h3>
+                <p class="home-lead">Proyecta una pregunta, muestra las opciones y revela la respuesta correcta.</p>
+                <button type="button" class="btn btn-primary" data-go="quiz">Ir al Quiz</button>
+              </div>
+            </article>
+          </div>
+          <button type="button" class="home-arrow home-prev" aria-label="Anterior">&#8249;</button>
+          <button type="button" class="home-arrow home-next" aria-label="Siguiente">&#8250;</button>
+          <div class="home-dots" role="group" aria-label="Elegir destacado">
+            <button type="button" data-dot="0" aria-label="Destacado 1" aria-current="true"></button>
+            <button type="button" data-dot="1" aria-label="Destacado 2"></button>
+            <button type="button" data-dot="2" aria-label="Destacado 3"></button>
+            <button type="button" data-dot="3" aria-label="Destacado 4"></button>
+          </div>
+        </div>
+
+        <aside class="home-side" aria-label="Sala en vivo">
+          <h3 class="home-side-title">Mejores ganadores</h3>
+          <ol id="home-winners" class="home-winners"></ol>
+          <h3 class="home-side-title">Bóveda comunitaria</h3>
+          <p class="home-vault"><b id="home-vault-amount">0</b><span> / <span id="home-vault-target">500</span> fichas</span></p>
+          <div class="home-vault-track" aria-hidden="true"><i id="home-vault-fill"></i></div>
+          <p class="home-side-note">El 2 % de cada apuesta llena la bóveda. Al llenarse, se reparte entre los jugadores activos.</p>
+        </aside>
+      </div>
+
+      <h3 class="home-sec-title">Juegos principales</h3>
+      <div class="home-cats">
+        <div class="home-cat">
+          <h4>Azar</h4>
+          <div class="home-tiles">
+            <button type="button" class="home-tile" data-go="slots" style="--t1:#b3122e;--t2:#5a0716"><span class="home-tile-art" aria-hidden="true">&#127920;</span><span class="home-tile-name">Slots</span></button>
+            <button type="button" class="home-tile" data-go="roulette" style="--t1:#0f6b3d;--t2:#06321d"><span class="home-tile-art" aria-hidden="true">&#127923;</span><span class="home-tile-name">Roulette</span></button>
+            <button type="button" class="home-tile" data-go="keno" style="--t1:#5b2bb8;--t2:#22104a"><span class="home-tile-art" aria-hidden="true">&#127921;</span><span class="home-tile-name">VIP Keno</span></button>
+            <button type="button" class="home-tile" data-go="crash" style="--t1:#c2570c;--t2:#4a1e04"><span class="home-tile-art" aria-hidden="true">&#128640;</span><span class="home-tile-name">Crash</span></button>
+          </div>
+        </div>
+        <div class="home-cat">
+          <h4>Juegos de mesa</h4>
+          <div class="home-tiles">
+            <button type="button" class="home-tile" data-go="blackjack" style="--t1:#14532d;--t2:#052e16"><span class="home-tile-art" aria-hidden="true">&#127137;</span><span class="home-tile-name">Blackjack</span></button>
+            <button type="button" class="home-tile" data-go="baccarat" style="--t1:#1e3a8a;--t2:#0b1640"><span class="home-tile-art" aria-hidden="true">&#127153;</span><span class="home-tile-name">Baccarat</span></button>
+            <button type="button" class="home-tile" data-go="pokerdice" style="--t1:#7c2d12;--t2:#2e0f05"><span class="home-tile-art" aria-hidden="true">&#127922;</span><span class="home-tile-name">Poker Dice</span></button>
+            <button type="button" class="home-tile" data-go="hilo" style="--t1:#0e7490;--t2:#06303b"><span class="home-tile-art" aria-hidden="true">&#128256;</span><span class="home-tile-name">Hi-Lo</span></button>
+          </div>
+        </div>
+        <div class="home-cat">
+          <h4>En vivo con la sala</h4>
+          <div class="home-tiles home-tiles-one">
+            <button type="button" class="home-tile home-tile-big" data-go="uno" style="--t1:#b91c1c;--t2:#1d4ed8"><span class="home-tile-art" aria-hidden="true">&#127924;</span><span class="home-tile-name">UNO · hasta 6 jugadores</span></button>
+          </div>
+        </div>
+        <div class="home-cat">
+          <h4>Para la clase</h4>
+          <div class="home-tiles home-tiles-one">
+            <button type="button" class="home-tile home-tile-big" data-go="draw" style="--t1:#a16207;--t2:#3f2a04"><span class="home-tile-art" aria-hidden="true">&#127873;</span><span class="home-tile-name">Lucky Draw</span></button>
+          </div>
+        </div>
+      </div>
+
+      <h3 class="home-sec-title">Recompensas</h3>
+      <div class="home-promos">
+        <div class="home-promo" data-promo="missions">
+          <span class="home-promo-art" aria-hidden="true">&#127919;</span>
+          <h4>Misiones diarias</h4>
+          <p>Completa retos del día y gana fichas extra.</p>
+          <button type="button" class="btn btn-secondary" data-action="missions">Ver misiones</button>
+        </div>
+        <div class="home-promo" data-promo="spin">
+          <span class="home-promo-art" aria-hidden="true">&#127905;</span>
+          <h4>Lucky Spin diario</h4>
+          <p>Un giro gratis cada día: de 25 a 1,000 fichas.</p>
+          <button type="button" class="btn btn-secondary" data-action="spin">Girar</button>
+        </div>
+        <div class="home-promo" data-promo="shop">
+          <span class="home-promo-art" aria-hidden="true">&#128717;</span>
+          <h4>Tienda VIP</h4>
+          <p>Avatares, marcos, insignias y títulos para tu perfil.</p>
+          <button type="button" class="btn btn-secondary" data-action="shop">Abrir tienda</button>
+        </div>
+        <div class="home-promo" data-promo="bank">
+          <span class="home-promo-art" aria-hidden="true">&#127974;</span>
+          <h4>Banco Central</h4>
+          <p>¿Te quedaste en 0? Pide un préstamo de emergencia al Host.</p>
+          <button type="button" class="btn btn-secondary" data-action="bank">Ir al banco</button>
+        </div>
+      </div>
+
+      <p class="home-about"><b>Acerca de Casino Campus:</b> simulador educativo de casino y juegos de mesa. Las fichas son virtuales y no tienen valor real.</p>
+    </section>
 
     <!-- ============================= -->
     <!-- GAME SECTION: BLACKJACK       -->
@@ -1495,6 +1644,8 @@
   <script defer src="JS/casual-games.js"></script>    <!-- 4. UNO, Colombian Ludo, Dominoes, duels, Marble Race, Lucky Draw... -->
   <script defer src="JS/quiz.js"></script>
   <script defer src="JS/admin-panel.js"></script>     <!-- 5. Admin panel, Host Settings, rig, bet limits, audit, bootstrap -->
+  <script defer src="JS/home.js"></script>        <!-- 6. Lobby home page: carousel, top winners, vault, featured games -->
+  <script defer src="JS/top-menu.js"></script>    <!-- 7. Hamburger menu for the room actions -->
   
 </body>
 

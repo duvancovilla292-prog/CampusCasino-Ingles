@@ -370,7 +370,7 @@ const Router = {
         DOM.btnOpenAdminLobby.hidden = !State.isHost;
         HUD.update();
         Social.start();
-        this.selectGame(GameCatalog.first(Missions.cfg));
+        this.selectGame("home");   // the lobby opens on the casino home page (JS/home.js)
     },
 
     currentGameKey: null,

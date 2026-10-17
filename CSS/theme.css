@@ -691,3 +691,352 @@ html[data-theme] .role-badge {
         font-size: 1.55rem;
     }
 }
+
+/* =========================================================================
+   10. HAMBURGER MENU (room actions folded behind ☰ — JS/top-menu.js)
+   Uses the theme tokens, so it follows day and night automatically.
+   ========================================================================= */
+.tp-menu {
+    position: relative;
+    display: flex;
+}
+
+.tp-menu-toggle {
+    position: relative;
+    display: inline-grid;
+    place-items: center;
+    min-width: 46px;
+    min-height: 44px;
+    padding: .4rem .7rem;
+}
+
+.tp-menu-toggle[aria-expanded="true"] {
+    box-shadow: var(--vg-btn2-hover);
+}
+
+/* the sum of the badges inside (e.g. missions ready to claim) */
+.tp-menu-toggle[data-n]::after {
+    content: attr(data-n);
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 4px;
+    border-radius: 99px;
+    display: grid;
+    place-items: center;
+    background: var(--color-red);
+    color: #fff;
+    font-size: .68rem;
+    font-weight: 800;
+    line-height: 1;
+}
+
+.tp-menu-panel {
+    position: absolute;
+    top: calc(100% + .5rem);
+    right: 0;
+    z-index: 140;
+    display: flex;
+    flex-direction: column;
+    gap: .35rem;
+    width: max-content;
+    min-width: 230px;
+    max-width: calc(100vw - 2rem);
+    padding: .6rem;
+    border-radius: var(--radius-md);
+    border: 2px solid transparent;
+    background: var(--vg-panel) padding-box, var(--vg-edge) border-box;
+    box-shadow: var(--vg-shadow);
+}
+
+.tp-menu-panel[hidden] {
+    display: none;
+}
+
+/* every action becomes a full-width row: icon + label */
+.tp-menu-panel > .btn {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: .65rem;
+    width: 100%;
+    min-height: 44px;
+    padding: .55rem .9rem;
+    text-align: left;
+    white-space: nowrap;
+}
+
+.tp-menu-panel > .btn[hidden] {
+    display: none;
+}
+
+.tp-menu-label {
+    font-weight: 600;
+}
+
+/* Leave sits apart at the bottom, as the exit */
+.tp-menu-panel > #btn-logout {
+    margin-top: .25rem;
+    border-top-color: var(--vg-card-border);
+}
+
+/* the missions badge sits at the end of its row inside the menu */
+.tp-menu-panel #btn-missions[data-n]::after {
+    position: static;
+    margin-left: auto;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .tp-menu-panel:not([hidden]) {
+        animation: tp-menu-in .16s ease-out both;
+    }
+}
+
+@keyframes tp-menu-in {
+    from { opacity: 0; translate: 0 -6px; }
+    to { opacity: 1; translate: 0 0; }
+}
+
+/* ---------- "Juegos" inside the ☰ menu: the games catalog as nested sub-options ---------- */
+.top-panel-actions {
+    margin-left: auto;
+}
+
+.tp-menu-panel {
+    width: min(320px, calc(100vw - 2rem));
+    max-height: calc(100vh - 6rem);
+    max-height: calc(100dvh - 6rem);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}
+
+.tp-menu-panel #game-selector {
+    order: -1;
+    width: 100%;
+    margin: 0;
+    position: static;
+}
+
+.tp-menu-panel #game-selector .nav-menu-trigger {
+    width: 100%;
+    min-width: 0;
+    min-height: 48px;
+    gap: .65rem;
+}
+
+.tp-menu-panel .nav-menu-current-icon {
+    display: none;
+}
+
+.nav-menu-games-icon {
+    font-size: 1.2rem;
+    line-height: 1;
+}
+
+.tp-menu-panel .nav-menu-games-label {
+    font-size: 1rem;
+}
+
+.tp-menu-panel .nav-menu-current-text small {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* the old dropdown becomes an in-place list under "Juegos" */
+.tp-menu-panel #game-selector .nav-menu-panel {
+    position: static;
+    display: none;
+    width: auto;
+    height: auto !important;
+    max-height: none;
+    overflow: visible;
+    clip-path: none;
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+    pointer-events: auto;
+    grid-template-columns: 1fr;
+    gap: .35rem;
+    margin: 0;
+    padding: .45rem 0 .1rem .6rem;
+    border: 0;
+    border-left: 2px solid var(--vg-card-border);
+    border-radius: 0;
+    background: none;
+    box-shadow: none;
+    transition: none;
+}
+
+.tp-menu-panel #game-selector.is-open .nav-menu-panel {
+    display: grid;
+}
+
+.tp-menu-panel .nav-menu-group {
+    gap: .3rem;
+    padding: 0;
+}
+
+.tp-menu-panel .nav-menu-heading {
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+
+/* each category is a sub-option that unfolds its games */
+.nav-cat-toggle {
+    position: relative;
+    display: block;
+    width: 100%;
+    min-height: 44px;
+    padding: .5rem 2.2rem .5rem .8rem;
+    border: 1px solid var(--vg-card-border);
+    border-radius: var(--radius-sm);
+    background: var(--vg-card);
+    color: var(--vg-heading);
+    font: inherit;
+    font-weight: 700;
+    text-align: left;
+    cursor: pointer;
+}
+
+.nav-cat-toggle small {
+    display: block;
+    margin-top: .1rem;
+    font-size: .74rem;
+    font-weight: 400;
+    color: var(--color-text-muted);
+    text-shadow: none;
+}
+
+.nav-cat-toggle:hover,
+.nav-cat-toggle:focus-visible,
+.nav-cat-toggle[aria-expanded="true"] {
+    box-shadow: var(--vg-card-hover);
+}
+
+.nav-cat-toggle:focus-visible {
+    outline: 2px solid var(--vg-accent-3);
+    outline-offset: 2px;
+}
+
+.nav-cat-chevron {
+    position: absolute;
+    right: .85rem;
+    top: 50%;
+    translate: 0 -50%;
+    font-size: 1.3rem;
+    line-height: 1;
+    transition: rotate .2s ease;
+}
+
+.nav-cat-toggle[aria-expanded="true"] .nav-cat-chevron {
+    rotate: 90deg;
+}
+
+.tp-menu-panel .nav-menu-group.is-collapsed > :not(.nav-menu-heading) {
+    display: none;
+}
+
+.tp-menu-panel .nav-menu-group:not(.is-collapsed) > .nav-menu-item,
+.tp-menu-panel .nav-menu-group:not(.is-collapsed) > .nav-menu-chips {
+    margin-left: .6rem;
+    width: calc(100% - .6rem);
+}
+
+/* phones and small tablets: the menu hangs from the whole header, edge to edge */
+@media (max-width: 640px) {
+    .tp-menu {
+        position: static;
+    }
+
+    .tp-menu-panel {
+        left: max(.75rem, env(safe-area-inset-left));
+        right: max(.75rem, env(safe-area-inset-right));
+        top: calc(100% + .4rem);
+        width: auto;
+        min-width: 0;
+        max-width: none;
+    }
+}
+
+/* =========================================================================
+   11. LUCKY DRAW TOOLS — 1v1 Bracket, Plinko, Mystery Chests, Roles Matrix
+   ========================================================================= */
+.draw-bracket {
+    width: 100%;
+    justify-content: center;
+}
+
+.draw-bracket .z-slot {
+    cursor: default;
+    min-height: 2rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: background .15s, color .15s;
+}
+
+.draw-bracket .z-slot.is-live {
+    background: rgba(233, 196, 106, .3);
+    color: var(--color-text);
+}
+
+.draw-chests {
+    padding: .25rem;
+}
+
+.draw-chests .chest {
+    display: grid;
+    place-items: center;
+    cursor: default;
+    text-align: center;
+}
+
+.roles-head .roles-cell {
+    background: transparent;
+    border-style: dashed;
+    color: var(--color-text-muted);
+    font-size: .8rem;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .draw-bracket .z-slot.is-new {
+        animation: tp-menu-in .25s ease-out both;
+    }
+
+    .draw-chests.is-shuffling .chest {
+        animation: draw-chest-wobble .18s ease-in-out infinite alternate;
+    }
+
+    .draw-chests .chest:nth-child(odd) {
+        animation-delay: .09s;
+    }
+
+    .draw-chests .chest.is-shaking {
+        animation: draw-chest-shake .12s ease-in-out infinite alternate;
+    }
+
+    .draw-chests .chest.win {
+        animation: celebration-pop .45s ease-out both;
+    }
+}
+
+@keyframes draw-chest-wobble {
+    from { rotate: -4deg; }
+    to { rotate: 4deg; }
+}
+
+@keyframes draw-chest-shake {
+    from { translate: -3px 0; scale: 1.06; }
+    to { translate: 3px 0; scale: 1.1; }
+}
+
+/* "🏠 Inicio" sits first in the ☰ menu, above "Juegos" */
+.tp-menu-panel > #btn-home {
+    order: -2;
+}

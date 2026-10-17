@@ -11,6 +11,7 @@ const GameCatalog = {
         return item?.querySelector("span:nth-child(2)")?.textContent.trim() || key;
     },
     available(key, cfg) {
+        if (key === "home") return true;   // the lobby home page is always reachable
         const category = this.categories.find((c) => c.games.includes(key));
         return !!category && !cfg.disabled?.[key] && !cfg.sectionsDisabled?.[category.id];
     },

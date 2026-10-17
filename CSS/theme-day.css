@@ -330,3 +330,9 @@ html[data-theme="day"] :is(.blackjack-table, .hilo-table, .bw-table, .draw-stage
     .roulette-board-wrapper, .pd-stage-box) {
     box-shadow: 0 8px 20px rgba(74, 58, 38, .2);
 }
+
+/* style.css paints hovered secondary buttons dark navy (#24303d); on touch screens that
+   hover state sticks after a tap. By day the hover stays light. */
+html[data-theme="day"] :is(.btn-secondary, .btn-ghost, .btn-icon, .btn-game-select):hover:not(:disabled) {
+    background: rgba(255, 255, 255, .92);
+}
