@@ -108,8 +108,9 @@ const Dialog = (() => {
 
 /* =========================================================================
    19d. PRESENCE — who is online right now (rooms/<code>/presence/<username>)
-   Each device writes its own node and asks the server to delete it on disconnect, so the
-   count is real-time and self-healing. If database rules refuse it, `supported` stays false
+   Each device writes its own node ({ ts, deviceId }) and asks the server to delete it on disconnect,
+   so the count is real-time and self-healing. The deviceId tells the Admin Panel which device is
+   behind each online player (used to give / remove admin rank per device). If database rules refuse it, `supported` stays false
    and the UI simply hides the online indicators.
    ========================================================================= */
 const Presence = {
@@ -144,7 +145,7 @@ const Presence = {
             if (snapshot.val() !== true || this.mine !== mine) return;
             // Register the cleanup first, then announce: a crash in between can never leave a ghost.
             mine.onDisconnect().remove()
-                .then(() => mine.set({ ts: TS() }))
+                .then(() => mine.set({ ts: TS(), deviceId: DeviceStore.getDeviceId() }))
                 .catch(() => { this.broken = true; this.supported = false; PubSub.emit("presence-updated"); });
         };
         this.connRef.on("value", this.connListener);
@@ -797,10 +798,10 @@ const Admin = {
     },
 
     open() {
-        // Defense in depth: even if the button were somehow revealed, only the
-        // device that created this room may unlock the panel.
+        // Defense in depth: even if the button were somehow revealed, only an administrator
+        // device (main or secondary: State.isHost === esAdmin) may open the panel.
         if (!State.isHost) {
-            Notify.error("Only this room's Host device can open the Administrator Panel.");
+            Notify.error("Only administrator devices can open the Administrator Panel.");
             return;
         }
         window.clearTimeout(this.closeTimer);
@@ -831,6 +832,7 @@ const Admin = {
     },
 
     tryUnlock() {
+        if (!State.isHost) { DOM.adminLockError.textContent = "This device is not an administrator."; return; }
         if (DOM.inputAdminCode.value === CONFIG.ADMIN_CODE) {
             this.unlocked = true;
             DOM.adminLock.hidden = true;
@@ -867,6 +869,9 @@ const Admin = {
             if (Presence.supported) wrap.append(el("span", `presence-dot${isOnline ? " is-on" : ""}`));
             wrap.append(el("span", "pl-text", player.username));
             if (player.username === State.username) wrap.append(el("span", "badge badge-gold", "You"));
+            const rank = RolesUI.rankOf(player.username);
+            if (rank.esAdminPrincipal) wrap.append(el("span", "badge badge-gold", "Main admin"));
+            else if (rank.esAdmin) wrap.append(el("span", "badge badge-warn", "Admin"));
             if (Presence.supported) wrap.append(el("span", `badge ${isOnline ? "badge-ok" : "badge-off"}`, isOnline ? "Online" : "Offline"));
             nameCell.append(wrap);
 
@@ -890,7 +895,8 @@ const Admin = {
             const deleteBtn = el("button", "btn btn-small btn-danger", "Delete");
             deleteBtn.type = "button";
             deleteBtn.addEventListener("click", () => this.deletePlayer(player.username));
-            actionsCell.append(resetBtn, kickBtn, deleteBtn);
+            const roleBtn = RolesUI.rowButton(player.username); // null for secondary admins: the control is never created for them
+            actionsCell.append(resetBtn, ...(roleBtn ? [roleBtn] : []), kickBtn, deleteBtn);
 
             row.append(nameCell, balanceCell, roundsCell, netCell, actionsCell);
             DOM.adminTableBody.appendChild(row);
@@ -1086,6 +1092,7 @@ const AdminCtl = {
         s3.append(row3, save);
 
         root.append(s1, s2, s3);
+        if (State.isPrincipal) root.append(RolesUI.section()); // main admins only: the card is not even created for secondary admins
         this.built = true;
         this.dirty = false;
     },
@@ -1543,6 +1550,150 @@ const Audit = {
     log(type, msg, amt) { const r = zref("audit"); if (r && State.username) r.push({ ts: TS(), type, u: State.username, msg: String(msg).slice(0, 160), amt: Math.round(amt || 0) }).catch(() => { }); }
 };
 
+/* =========================================================================
+   20c. ADMIN RANKS UI (device-based RBAC; data layer = Roles in firebase-sync.js)
+   - Every administrator device (main or secondary) sees the rank badges in the Players tab.
+   - Only MAIN administrators get the "Make admin" / "Remove admin" buttons and the
+     "Administrator devices" card. For a secondary admin those controls are never built in
+     the DOM, and Roles.setAdmin() refuses the call anyway.
+   - A rank change made in the database (or by a main admin) is applied live: a device that loses
+     admin rank is locked out and its panel closes; one that gains it can unlock with the PIN.
+   ========================================================================= */
+const RolesUI = {
+    /** Device behind a player: the live one from presence, else the device that created the player. */
+    deviceFor(username) {
+        const pres = Presence.users[Presence.key(username)], player = Room.get(username);
+        if (pres && typeof pres.deviceId === "string" && pres.deviceId) return { id: pres.deviceId, live: true };
+        return { id: player && typeof player.deviceId === "string" ? player.deviceId : "", live: false };
+    },
+
+    rankOf(username) {
+        const d = this.deviceFor(username);
+        return d.id ? Roles.levelOf(d.id) : { esAdmin: false, esAdminPrincipal: false };
+    },
+
+    /** "Make admin" / "Remove admin" for one player row; null unless this device is a main admin. */
+    rowButton(username) {
+        if (!State.isPrincipal) return null;
+        const d = this.deviceFor(username), lv = d.id ? Roles.levelOf(d.id) : { esAdmin: false, esAdminPrincipal: false };
+        if (lv.esAdminPrincipal) return null;                         // main admins are managed in the database only
+        const enable = !lv.esAdmin, own = !!d.id && d.id === DeviceStore.getDeviceId();
+        const needsOnline = enable && Presence.supported && !d.live;  // never hand rank to a device guessed from old data
+        const btn = AdminCtl.el("button", `btn btn-small ${enable ? "btn-secondary" : "btn-warn"}`, enable ? "Make admin" : "Remove admin");
+        btn.type = "button";
+        btn.disabled = !d.id || own || needsOnline;
+        btn.title = own ? "This is your own device." : needsOnline ? "The player must be online to receive admin rank." : "";
+        btn.addEventListener("click", () => this.toggle(username));
+        return btn;
+    },
+
+    async toggle(username) {
+        if (!State.isPrincipal) return Notify.error("Only a main administrator can give or remove admin rank.");
+        const d = this.deviceFor(username);
+        if (!d.id) return Notify.error("Could not identify that player's device.");
+        const enable = !Roles.levelOf(d.id).esAdmin;
+        const device = d.live ? `the device signed in as "${username}"` : `the last known device of "${username}"`;
+        const ok = await Dialog.confirm(enable ? {
+            title: "Make admin", confirmLabel: "Make admin",
+            message: `Give secondary administrator rank to ${device}?\nRank belongs to the device, so everyone playing from it gets admin powers (except giving or removing admin rank).`
+        } : {
+            title: "Remove admin", tone: "danger", confirmLabel: "Remove admin",
+            message: `Remove administrator rank from ${device}?`
+        });
+        if (ok) await this.run(d.id, enable, username);
+    },
+
+    async run(deviceId, enable, label) {
+        try {
+            const res = await Roles.setAdmin(deviceId, enable, label);
+            if (!res.ok) return Notify.error(res.message);
+            Audit.log("role", `${enable ? "Made" : "Removed"} ${label} ${enable ? "a secondary admin" : "from admins"}`);
+            Notify.success(enable ? `${label}'s device is now an admin.` : `Admin rank removed from ${label}'s device.`);
+        } catch (err) {
+            Notify.error("Could not change that rank. Check your connection and the database rules.");
+        }
+    },
+
+    /** Room tab card (main admins only): every administrator device, with Remove admin for secondary ones. */
+    section() {
+        const el = AdminCtl.el.bind(AdminCtl), card = el("section", "ac-section"), h3 = el("h3"), icon = el("span", "ac-ic", "\uD83D\uDEE1\uFE0F");
+        card.id = "ac-roles"; icon.setAttribute("aria-hidden", "true");
+        h3.append(icon, document.createTextNode("Administrator devices"));
+        const list = el("ul", "gv-list"); list.id = "ac-roles-list";
+        card.append(h3, el("p", "mx-hint", "Admin rank belongs to a device. Secondary admins can do everything except give or remove admin rank. Main admins are set in the database (devices/<deviceId>: esAdmin, esAdminPrincipal)."), list);
+        this.renderDevices(list);
+        return card;
+    },
+
+    renderDevices(list) {
+        list = list || document.getElementById("ac-roles-list");
+        if (!list) return;
+        const el = AdminCtl.el.bind(AdminCtl), me = DeviceStore.getDeviceId(), devices = Roles.list();
+        list.textContent = "";
+        if (!devices.length) { const li = el("li", "mx-hint", "No administrator devices yet."); list.append(li); return; }
+        devices.forEach((dev) => {
+            const row = el("li", "gv-row"), box = el("div", "pl-name");
+            row.style.padding = ".5rem 0";
+            box.append(el("span", "pl-text", dev.label || "Unnamed device"),
+                el("span", `badge ${dev.esAdminPrincipal ? "badge-gold" : "badge-warn"}`, dev.esAdminPrincipal ? "Main admin" : "Admin"),
+                el("span", "badge badge-off", `\u2026${dev.id.slice(-6)}`));
+            if (dev.id === me) box.append(el("span", "badge badge-ok", "This device"));
+            if (!dev.esAdminPrincipal && dev.id !== me) {
+                const btn = el("button", "btn btn-small btn-warn", "Remove admin");
+                btn.type = "button";
+                btn.addEventListener("click", async () => {
+                    const ok = await Dialog.confirm({ title: "Remove admin", tone: "danger", confirmLabel: "Remove admin", message: `Remove administrator rank from the device of "${dev.label || "Unnamed device"}"?` });
+                    if (ok) await this.run(dev.id, false, dev.label || "Unnamed device");
+                });
+                box.append(btn);
+            }
+            row.append(box); list.append(row);
+        });
+    },
+
+    /** Badges and the two Admin buttons follow the rank (role-badge text: MAIN ADMIN / ADMIN). */
+    refreshChrome() {
+        const admin = State.isHost === true, main = State.isPrincipal === true;
+        [DOM.authHostBadge, DOM.lobbyHostBadge].forEach((badge) => {
+            if (!badge) return;
+            badge.hidden = !admin; badge.textContent = main ? "\u2605 MAIN ADMIN" : "\u2605 ADMIN";
+        });
+        DOM.btnOpenAdmin.hidden = !admin; DOM.btnOpenAdminLobby.hidden = !admin;
+    },
+
+    onRoles(e) {
+        this.refreshChrome();
+        if (!State.isHost) {                                          // lost admin rank (or left the room)
+            Admin.unlocked = false;
+            if (!DOM.adminModal.hidden) Admin.close();
+            AdminCtl.clear();
+        } else if (e.prevPrincipal !== State.isPrincipal) {           // main <-> secondary: rebuild what the panel offers
+            AdminCtl.clear();
+            if (Admin.unlocked && !DOM.adminModal.hidden) Admin.renderTable();
+        }
+        PubSub.emit("players-updated", Room.playersCache);            // re-runs every Host-only toggle (prize rows, Host Settings...)
+        if (e.silent) return;                                         // first read when entering the room: no toast
+        if (State.isHost && !e.prevAdmin) {
+            Notify.success(State.isPrincipal ? "You are now a main administrator." : "You are now an administrator.");
+            if (State.username) Z.start();                            // admin-only listeners (audit log) start now
+        } else if (!State.isHost && e.prevAdmin) {
+            Notify.warning("Your administrator rank was removed.");
+        } else if (State.isPrincipal && !e.prevPrincipal) {
+            Notify.success("You are now a main administrator.");
+        } else if (!State.isPrincipal && e.prevPrincipal) {
+            Notify.warning("You are no longer a main administrator.");
+        }
+    },
+
+    onRegistry() {
+        this.renderDevices();
+        if (State.isHost && Admin.unlocked && !DOM.adminModal.hidden) Admin.renderTable();
+    }
+};
+
+PubSub.on("roles-updated", (e) => RolesUI.onRoles(e || {}));
+PubSub.on("roles-registry-updated", () => RolesUI.onRegistry());
+
 const resolve0 = GameResolver.resolve.bind(GameResolver);
 
 GameResolver.resolve = function (id, r) {
@@ -1588,7 +1739,7 @@ const ZAdmin = {
     },
     audit() {
         const box = $z("z-a-audit"); if (!box) return;
-        const T = ["all", "bigwin", "rig", "mission", "loan", "spin", "limit", "tour", "bank", "achv", "kick", "force", "score", "config"], rows = this.log.filter((r) => this.filter === "all" || r.type === this.filter).slice().reverse();
+        const T = ["all", "bigwin", "rig", "mission", "loan", "spin", "limit", "tour", "bank", "achv", "kick", "force", "score", "config", "role"], rows = this.log.filter((r) => this.filter === "all" || r.type === this.filter).slice().reverse();
         box.innerHTML = `<h3>Room audit log</h3><div class="mx-tools"><select id="za-f">${T.map((t) => `<option ${t === this.filter ? "selected" : ""}>${t}</option>`).join("")}</select><button type="button" class="btn btn-ghost btn-small" id="za-clear">Clear log</button></div>
            <div class="z-log">${rows.map((r) => `<div class="z-lr t-${esc(r.type)}"><small>${new Date(r.ts || 0).toLocaleTimeString()}</small><b>${esc(r.type)}</b><span>${esc(r.u)}: ${esc(r.msg)}</span></div>`).join("") || '<p class="mx-hint">No events yet.</p>'}</div>`;
     },

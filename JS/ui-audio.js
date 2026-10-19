@@ -453,7 +453,7 @@ const SetupScreen = {
         try {
             const code = await Room.createRoom();
             State.roomCode = code;
-            State.isHost = true;
+            // State.isHost / State.isPrincipal were set by Roles: the creator device is the first main admin.
 
             DOM.createdRoomCode.textContent = code;
             DOM.hostRoomResult.hidden = false;
@@ -496,9 +496,9 @@ const SetupScreen = {
         DOM.btnJoinRoom.textContent = "Joining\u2026";
 
         try {
-            const meta = await Room.joinRoom(code);
+            await Room.joinRoom(code);
             State.roomCode = Room.code;
-            State.isHost = meta.hostDeviceId === DeviceStore.getDeviceId();
+            // Admin rank comes from rooms/<code>/devices/<deviceId> (see Roles), already applied to State.
             Notify.success(`Connected to room ${Room.code}.`);
             Router.showAuth();
         } catch (err) {
@@ -678,6 +678,7 @@ const AuthScreen = {
         State.reset();
         State.roomCode = "";
         State.isHost = false;
+        State.isPrincipal = false;
         Admin.unlocked = false;
         Router.showSetup();
     }

@@ -108,6 +108,7 @@ const Room = {
     db: null,
     code: null,
     metaRef: null,
+    meta: null,              // meta of the room this device is in (hostDeviceId is the legacy creator marker)
     playersRef: null,
     playersCache: {},
     listenersBound: false,
@@ -160,9 +161,20 @@ const Room = {
             createdAt: window.firebase.database.ServerValue.TIMESTAMP,
             roomCode: code
         });
+        this.meta = { hostDeviceId: deviceId, roomCode: code };
+
+        // The creator's device is the first MAIN administrator: rooms/<code>/devices/<deviceId>.
+        // If the database rules refuse this write, Roles still recognises the creator through
+        // meta.hostDeviceId (legacy fallback), so room creation never fails because of it.
+        try {
+            await this.db.ref(`rooms/${code}/devices/${Roles.key(deviceId)}`).set(Roles.record(true, true, "Room creator", deviceId, true));
+        } catch (err) {
+            console.warn("Could not store the creator's device role:", err);
+        }
 
         this.code = code;
         this.attachListeners();
+        await Roles.ready;      // State.isHost / State.isPrincipal are final before the UI continues
         return code;
     },
 
@@ -174,8 +186,10 @@ const Room = {
             throw new Error("Room not found. Double-check the code with your host.");
         }
         this.code = normalized;
+        this.meta = snap.val() || {};
         this.attachListeners();
-        return snap.val();
+        await Roles.ready;      // this device's admin rank (if any) is resolved before the UI continues
+        return this.meta;
     },
 
     attachListeners() {
@@ -188,9 +202,11 @@ const Room = {
         };
         this.playersRef.on("value", this.onPlayersChange);
         this.listenersBound = true;
+        Roles.start();          // live admin rank of this device (rooms/<code>/devices/<deviceId>)
     },
 
     detachListeners() {
+        Roles.stop();
         if (this.cfgRef) this.cfgRef.off();
         this.cfgRef = null;
         if (this.playersRef && this.onPlayersChange) {
@@ -205,6 +221,7 @@ const Room = {
     disconnect() {
         this.detachListeners();
         this.code = null;
+        this.meta = null;
         if (this.app) {
             try { this.app.delete(); } catch (err) { /* ignore */ }
         }
@@ -367,7 +384,13 @@ const State = {
     username: "",
     balance: 0,
     roomCode: "",
+    // Device-based RBAC (see Roles below). Both flags are set ONLY by Roles from the database:
+    //   isHost      === esAdmin           -> true for EVERY administrator device (main and secondary);
+    //                                        the whole app keeps gating its admin features on this flag.
+    //   isPrincipal === esAdminPrincipal  -> true only for MAIN administrator devices; the only ones
+    //                                        allowed to give or take away admin rank.
     isHost: false,
+    isPrincipal: false,
     applyingRemoteUpdate: false,
 
     setBalance(newBalance, { persist = true } = {}) {
@@ -405,6 +428,181 @@ const State = {
     reset() {
         this.username = "";
         this.balance = 0;
+    }
+};
+
+/* =========================================================================
+   4b. DEVICE ROLES (device-based RBAC)
+   Several people can sign in from the same account, so rank belongs to the DEVICE (the id kept
+   in localStorage by DeviceStore), exactly like the original Host check.
+
+   Database (one record per device):
+     rooms/<code>/devices/<deviceId> = {
+         esAdmin:          true | false   any administrator (main OR secondary)
+         esAdminPrincipal: true | false   MAIN administrator only (implies esAdmin)
+         label, grantedBy, updatedAt      informational (who the device was when it got its rank)
+     }
+
+   Hierarchy
+     - Secondary admin  (esAdmin: true,  esAdminPrincipal: false)  every admin power EXCEPT giving or
+                        removing admin rank.
+     - Main admin       (esAdmin: true,  esAdminPrincipal: true)   everything, and the ONLY rank that
+                        may grant or revoke admin rank on other devices.
+     - Anyone else      no record (or both flags false).
+
+   Main admins are configured in the database: set esAdminPrincipal to true (several are allowed)
+   or to false from the Firebase console. The UI only ever creates / removes SECONDARY admins and
+   never touches a main admin, so the room can't be locked out by a click.
+   To demote the room creator, set BOTH flags to false (don't delete the node: a room without a
+   record for its creator falls back to the legacy creator rule and the record is rewritten).
+
+   Flags are strict booleans: any other value ("true", 1...) counts as false. esAdminPrincipal: true
+   implies esAdmin even if the second flag was left out when editing by hand.
+
+   Security note: like the rest of this app the checks run in the browser. They stop the UI and
+   honest clients; real enforcement needs Firebase Authentication plus database rules.
+   ========================================================================= */
+const Roles = {
+    ready: Promise.resolve(),     // resolves when this device's rank for the current room is known
+    registry: {},                 // rooms/<code>/devices (loaded while this device is an administrator)
+    ownRef: null, ownListener: null, regRef: null, regListener: null, token: 0,
+
+    /** Firebase keys cannot contain . $ # [ ] / */
+    key(id) { return String(id == null ? "" : id).replace(/[.$#\[\]\/]/g, "_"); },
+
+    /** Strict reading of a device record -> { esAdmin, esAdminPrincipal }. */
+    level(rec) {
+        const principal = !!rec && rec.esAdminPrincipal === true;
+        return { esAdmin: principal || (!!rec && rec.esAdmin === true), esAdminPrincipal: principal };
+    },
+
+    /** Rank of any device, from the live registry (administrators only receive it). */
+    levelOf(deviceId) { return this.level(this.registry[this.key(deviceId)]); },
+
+    /** A new device record. `server` uses the server clock (multi-path / set writes only). */
+    record(admin, principal, label, by, server) {
+        return {
+            esAdmin: !!admin || !!principal,
+            esAdminPrincipal: !!principal,
+            label: String(label || "").slice(0, 40),
+            grantedBy: String(by || ""),
+            updatedAt: server ? window.firebase.database.ServerValue.TIMESTAMP : Date.now()
+        };
+    },
+
+    /** Rooms made before roles existed have no record: their creator device is the main admin. */
+    isLegacyCreator() {
+        return !!Room.meta && Room.meta.hostDeviceId === DeviceStore.getDeviceId();
+    },
+
+    /** Administrator devices known to this client: [{ id, label, esAdmin, esAdminPrincipal, updatedAt }]. */
+    list() {
+        return Object.keys(this.registry).map((id) => {
+            const rec = this.registry[id] || {}, lv = this.level(rec);
+            return { id, label: typeof rec.label === "string" ? rec.label : "", updatedAt: Number(rec.updatedAt) || 0, ...lv };
+        }).filter((d) => d.esAdmin).sort((a, b) => (b.esAdminPrincipal - a.esAdminPrincipal) || a.label.localeCompare(b.label) || a.id.localeCompare(b.id));
+    },
+
+    /** Starts the live listener on THIS device's record. Called by Room.attachListeners(). */
+    start() {
+        this.stop();
+        if (!Room.db || !Room.code) return;
+        const token = ++this.token, me = DeviceStore.getDeviceId();
+        const base = Room.db.ref(`rooms/${Room.code}`);
+        this.ownRef = base.child(`devices/${this.key(me)}`);
+        let first = true;
+        this.ready = new Promise((resolve) => {
+            let done = false;
+            const timer = window.setTimeout(() => finish(), 4000);   // a slow connection must never block entering the room
+            const finish = () => { if (!done) { done = true; window.clearTimeout(timer); resolve(); } };
+            this.ownListener = (snap) => {
+                if (token !== this.token) return;
+                let rec = snap.val();
+                if (rec == null && this.isLegacyCreator()) {
+                    rec = { esAdmin: true, esAdminPrincipal: true };    // effective immediately...
+                    this.ownRef.transaction((cur) => (cur == null ? this.record(true, true, "Room creator", me) : undefined)).catch(() => { });   // ...and stored
+                }
+                this.apply(this.level(rec), first);
+                first = false; finish();
+            };
+            this.ownRef.on("value", this.ownListener, () => {
+                // The rules refused the read: only the legacy creator keeps (main) admin rank.
+                if (token !== this.token) return;
+                this.apply(this.isLegacyCreator() ? { esAdmin: true, esAdminPrincipal: true } : { esAdmin: false, esAdminPrincipal: false }, first);
+                first = false; finish();
+            });
+        });
+    },
+
+    /** Detaches every listener and drops the rank (leaving the room / switching rooms). */
+    stop() {
+        this.token++;
+        if (this.ownRef && this.ownListener) this.ownRef.off("value", this.ownListener);
+        this.ownRef = this.ownListener = null;
+        this.ready = Promise.resolve();
+        State.isHost = false; State.isPrincipal = false;   // rank is dropped first: nothing re-renders as admin while detaching
+        this.detachRegistry();
+    },
+
+    /** Applies this device's rank to State and tells the UI when it changed (event "roles-updated"). */
+    apply(next, silent) {
+        const prev = { admin: State.isHost === true, principal: State.isPrincipal === true };
+        State.isHost = next.esAdmin === true;
+        State.isPrincipal = next.esAdminPrincipal === true;
+        if (State.isHost) this.attachRegistry(); else this.detachRegistry();
+        if (prev.admin === State.isHost && prev.principal === State.isPrincipal) return;
+        PubSub.emit("roles-updated", { prevAdmin: prev.admin, prevPrincipal: prev.principal, silent: !!silent });
+    },
+
+    /** Administrators watch the whole devices node (to show ranks); everyone else only sees their own record. */
+    attachRegistry() {
+        if (this.regRef || !Room.db || !Room.code) return;
+        const token = this.token, ref = Room.db.ref(`rooms/${Room.code}/devices`);
+        this.regRef = ref;
+        this.regListener = (snap) => { if (token === this.token) { this.registry = snap.val() || {}; PubSub.emit("roles-registry-updated"); } };
+        ref.on("value", this.regListener, () => { if (token === this.token) { this.registry = {}; PubSub.emit("roles-registry-updated"); } });
+    },
+
+    detachRegistry() {
+        if (this.regRef && this.regListener) this.regRef.off("value", this.regListener);
+        const had = !!this.regRef || Object.keys(this.registry).length > 0;
+        this.regRef = this.regListener = null; this.registry = {};
+        if (had) PubSub.emit("roles-registry-updated");
+    },
+
+    /**
+     * MAIN ADMIN ONLY: gives (enable = true) or removes (enable = false) SECONDARY admin rank on a device.
+     * Re-checks this device's rank against the database right before writing, and refuses to touch
+     * main admins or this device itself. Resolves { ok, message }.
+     */
+    async setAdmin(deviceId, enable, label) {
+        const deny = (message) => ({ ok: false, message });
+        const me = DeviceStore.getDeviceId(), target = this.key(deviceId);
+        if (!Room.db || !Room.code || !this.ownRef) return deny("You are not connected to a room.");
+        if (!target) return deny("Could not identify that device.");
+        if (target === this.key(me)) return deny("You can't change the rank of your own device.");
+        if (!State.isPrincipal) return deny("Only a main administrator can give or remove admin rank.");
+
+        const mine = (await this.ownRef.once("value")).val();
+        const stillMain = mine == null ? this.isLegacyCreator() : this.level(mine).esAdminPrincipal;
+        if (!stillMain) return deny("Only a main administrator can give or remove admin rank.");
+
+        let blocked = null;
+        const res = await Room.db.ref(`rooms/${Room.code}/devices/${target}`).transaction((cur) => {
+            const lv = this.level(cur);
+            if (lv.esAdminPrincipal) { blocked = "main"; return; }            // main admins are managed in the database only
+            if (!cur && !enable) { blocked = "none"; return; }                 // nothing to remove
+            if (cur && lv.esAdmin === enable) return cur;                      // already in that state
+            return Object.assign({}, cur || {}, {
+                esAdmin: enable, esAdminPrincipal: false,
+                label: String(label || (cur && cur.label) || "").slice(0, 40),
+                grantedBy: me, updatedAt: Date.now()
+            });
+        });
+        if (blocked === "main") return deny("That device is a main administrator. Main admins can only be changed in the database.");
+        if (blocked === "none") return deny("That device has no admin rank.");
+        if (!res.committed) return deny("The change could not be saved. Try again.");
+        return { ok: true, message: "" };
     }
 };
 
