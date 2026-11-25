@@ -1,0 +1,608 @@
+{
+  "app": "casino-campus",
+  "schemaVersion": 2,
+  "help": {
+    "topic": "Information Questions — Sessions 1, 2 and 3 (IT English)",
+    "how_to_load": "Admin panel > Quiz & Tools > 'Import JSON' and choose this file. The questions are ADDED to the end of the room's bank (nothing is deleted).",
+    "sections": "[Session 1] Wh- words, do/does/did, the 'to be' exception. [Session 2] continuous, perfect, future and modals. [Session 3] subject vs object questions and prepositions at the end. [Final Challenge] mixed review."
+  },
+  "modules": {
+    "quiz": {
+      "questions": [
+        {
+          "type": "choice",
+          "prompt": "[Session 1 · Present & Past Simple] Which Wh- word asks for a LOCATION or a file path?",
+          "options": [
+            "What",
+            "Where",
+            "When",
+            "Who"
+          ],
+          "correctIndex": 1
+        },
+        {
+          "type": "choice",
+          "prompt": "[Session 1 · Present & Past Simple] ____ does the antivirus scan run? — It runs every Friday at 6 PM.",
+          "options": [
+            "Where",
+            "When",
+            "Who",
+            "Why"
+          ],
+          "correctIndex": 1
+        },
+        {
+          "type": "choice",
+          "prompt": "[Session 1 · Present & Past Simple] ____ do you restart the database service? — You run the restart script from the terminal.",
+          "options": [
+            "How",
+            "Who",
+            "Where",
+            "Which"
+          ],
+          "correctIndex": 0
+        },
+        {
+          "type": "text",
+          "prompt": "[Session 1 · Present & Past Simple] Write the missing Wh- word: ____ did the users complain? — Because the login page was too slow.",
+          "answers": [
+            "Why"
+          ],
+          "caseSensitive": false
+        },
+        {
+          "type": "text",
+          "prompt": "[Session 1 · Present & Past Simple] Write the missing Wh- word: ____ is responsible for the network? — Carlos, the network administrator.",
+          "answers": [
+            "Who"
+          ],
+          "caseSensitive": false
+        },
+        {
+          "type": "text",
+          "prompt": "[Session 1 · Present & Past Simple] Complete with do, does or did: Which browser ____ your team use every day?",
+          "answers": [
+            "does"
+          ],
+          "caseSensitive": false
+        },
+        {
+          "type": "text",
+          "prompt": "[Session 1 · Present & Past Simple] Complete with do, does or did: How many emails ____ the system send last night?",
+          "answers": [
+            "did"
+          ],
+          "caseSensitive": false
+        },
+        {
+          "type": "text",
+          "prompt": "[Session 1 · Present & Past Simple] Complete with do, does or did: Where ____ you usually store the test passwords?",
+          "answers": [
+            "do"
+          ],
+          "caseSensitive": false
+        },
+        {
+          "type": "text",
+          "prompt": "[Session 1 · Present & Past Simple] Complete with do, does or did: What time ____ the meeting start every Monday?",
+          "answers": [
+            "does"
+          ],
+          "caseSensitive": false
+        },
+        {
+          "type": "choice",
+          "prompt": "[Session 1 · Present & Past Simple] Which question is CORRECT?",
+          "options": [
+            "What did she installed?",
+            "What she installed?",
+            "What did she install?",
+            "What does she installed?"
+          ],
+          "correctIndex": 2
+        },
+        {
+          "type": "choice",
+          "prompt": "[Session 1 · Present & Past Simple] Fix the bug: \"When did the update started?\"",
+          "options": [
+            "When did the update starts?",
+            "When did the update start?",
+            "When the update started?",
+            "When does the update started?"
+          ],
+          "correctIndex": 1
+        },
+        {
+          "type": "choice",
+          "prompt": "[Session 1 · Present & Past Simple] The \"To Be\" exception: Why ____ the Wi-Fi so slow yesterday?",
+          "options": [
+            "did",
+            "was",
+            "were",
+            "does"
+          ],
+          "correctIndex": 1
+        },
+        {
+          "type": "choice",
+          "prompt": "[Session 1 · Present & Past Simple] Which question is CORRECT?",
+          "options": [
+            "Where does the log file?",
+            "Where is the log file?",
+            "Where do is the log file?",
+            "Where the log file is?"
+          ],
+          "correctIndex": 1
+        },
+        {
+          "type": "order",
+          "prompt": "[Session 1 · Present & Past Simple] Put the fragments in order to make a correct question.",
+          "fragments": [
+            "Why",
+            "does",
+            "the laptop",
+            "overheat",
+            "every afternoon?"
+          ]
+        },
+        {
+          "type": "order",
+          "prompt": "[Session 1 · Present & Past Simple] Put the fragments in order to make a correct question.",
+          "fragments": [
+            "What",
+            "did",
+            "the technician",
+            "replace",
+            "last week?"
+          ]
+        },
+        {
+          "type": "order",
+          "prompt": "[Session 1 · Present & Past Simple] Put the fragments in order to make a correct question.",
+          "fragments": [
+            "Where",
+            "were",
+            "the backup drives",
+            "during the power cut?"
+          ]
+        },
+        {
+          "type": "order",
+          "prompt": "[Session 1 · Present & Past Simple] Put the fragments in order to make a correct question.",
+          "fragments": [
+            "How often",
+            "do",
+            "you",
+            "clean",
+            "the server room?"
+          ]
+        },
+        {
+          "type": "choice",
+          "prompt": "[Session 2 · Mixing the Tenses] Which tense is this? \"What are the developers testing?\"",
+          "options": [
+            "Present Simple",
+            "Present Continuous",
+            "Present Perfect",
+            "Future (will)"
+          ],
+          "correctIndex": 1
+        },
+        {
+          "type": "choice",
+          "prompt": "[Session 2 · Mixing the Tenses] Which tense is this? \"How many users have signed up this week?\"",
+          "options": [
+            "Past Simple",
+            "Present Continuous",
+            "Present Perfect",
+            "Modal verb"
+          ],
+          "correctIndex": 2
+        },
+        {
+          "type": "choice",
+          "prompt": "[Session 2 · Mixing the Tenses] Which tense is this? \"Where are we going to install the new router?\"",
+          "options": [
+            "Future (going to)",
+            "Present Perfect",
+            "Past Simple",
+            "Present Simple"
+          ],
+          "correctIndex": 0
+        },
+        {
+          "type": "choice",
+          "prompt": "[Session 2 · Mixing the Tenses] Choose the auxiliary: Who ____ we call if the VPN fails again? (advice)",
+          "options": [
+            "should",
+            "did",
+            "are",
+            "has"
+          ],
+          "correctIndex": 0
+        },
+        {
+          "type": "choice",
+          "prompt": "[Session 2 · Mixing the Tenses] Choose the auxiliary: What ____ employees do before they leave the office? (obligation)",
+          "options": [
+            "must",
+            "are",
+            "have",
+            "did"
+          ],
+          "correctIndex": 0
+        },
+        {
+          "type": "text",
+          "prompt": "[Session 2 · Mixing the Tenses] Write the auxiliary: Which program ____ the intern installing right now?",
+          "answers": [
+            "is"
+          ],
+          "caseSensitive": false
+        },
+        {
+          "type": "text",
+          "prompt": "[Session 2 · Mixing the Tenses] Write the auxiliary: How many patches ____ they installed since Monday?",
+          "answers": [
+            "have"
+          ],
+          "caseSensitive": false
+        },
+        {
+          "type": "text",
+          "prompt": "[Session 2 · Mixing the Tenses] Write the auxiliary: When ____ the new laptops arrive? (prediction)",
+          "answers": [
+            "will"
+          ],
+          "caseSensitive": false
+        },
+        {
+          "type": "text",
+          "prompt": "[Session 2 · Mixing the Tenses] Write the auxiliary: Where ____ we going to host the new website?",
+          "answers": [
+            "are"
+          ],
+          "caseSensitive": false
+        },
+        {
+          "type": "text",
+          "prompt": "[Session 2 · Mixing the Tenses] Write the auxiliary: What ____ she done with the old hard drives?",
+          "answers": [
+            "has"
+          ],
+          "caseSensitive": false
+        },
+        {
+          "type": "choice",
+          "prompt": "[Session 2 · Mixing the Tenses] Choose the main verb: When will the technician ____?",
+          "options": [
+            "arrives",
+            "arrived",
+            "arrive",
+            "arriving"
+          ],
+          "correctIndex": 2
+        },
+        {
+          "type": "choice",
+          "prompt": "[Session 2 · Mixing the Tenses] Which question is CORRECT?",
+          "options": [
+            "Why is the server restart?",
+            "Why the server is restarting?",
+            "Why does the server restarting?",
+            "Why is the server restarting?"
+          ],
+          "correctIndex": 3
+        },
+        {
+          "type": "choice",
+          "prompt": "[Session 2 · Mixing the Tenses] Which question is CORRECT?",
+          "options": [
+            "What has he fix?",
+            "What has he fixed?",
+            "What has he fixing?",
+            "What he has fixed?"
+          ],
+          "correctIndex": 1
+        },
+        {
+          "type": "order",
+          "prompt": "[Session 2 · Mixing the Tenses] Put the fragments in order to make a correct question.",
+          "fragments": [
+            "What",
+            "are",
+            "you",
+            "going to",
+            "install",
+            "on the new PC?"
+          ]
+        },
+        {
+          "type": "order",
+          "prompt": "[Session 2 · Mixing the Tenses] Put the fragments in order to make a correct question.",
+          "fragments": [
+            "Why",
+            "have",
+            "they",
+            "changed",
+            "the login page?"
+          ]
+        },
+        {
+          "type": "order",
+          "prompt": "[Session 2 · Mixing the Tenses] Put the fragments in order to make a correct question.",
+          "fragments": [
+            "Where",
+            "should",
+            "we",
+            "store",
+            "the client's data?"
+          ]
+        },
+        {
+          "type": "order",
+          "prompt": "[Session 2 · Mixing the Tenses] Put the fragments in order to make a correct question.",
+          "fragments": [
+            "How long",
+            "will",
+            "the migration",
+            "take?"
+          ]
+        },
+        {
+          "type": "choice",
+          "prompt": "[Session 3 · Subject Questions & Prepositions] Subject or object question? \"Who hacked the website?\"",
+          "options": [
+            "Subject question (no do/does/did)",
+            "Object question (uses do/does/did)"
+          ],
+          "correctIndex": 0
+        },
+        {
+          "type": "choice",
+          "prompt": "[Session 3 · Subject Questions & Prepositions] Subject or object question? \"Who did the manager promote?\"",
+          "options": [
+            "Subject question (no do/does/did)",
+            "Object question (uses do/does/did)"
+          ],
+          "correctIndex": 1
+        },
+        {
+          "type": "choice",
+          "prompt": "[Session 3 · Subject Questions & Prepositions] \"A power cut stopped the servers.\" Ask for the CAUSE:",
+          "options": [
+            "What did stop the servers?",
+            "What stopped the servers?",
+            "What did the servers stop?",
+            "What stops did the servers?"
+          ],
+          "correctIndex": 1
+        },
+        {
+          "type": "choice",
+          "prompt": "[Session 3 · Subject Questions & Prepositions] \"Laura called the technician.\" Ask for the person who CALLED:",
+          "options": [
+            "Who did call the technician?",
+            "Who called the technician?",
+            "Who did Laura call?",
+            "Who calls did the technician?"
+          ],
+          "correctIndex": 1
+        },
+        {
+          "type": "choice",
+          "prompt": "[Session 3 · Subject Questions & Prepositions] \"Laura called the technician.\" Ask for the person Laura called:",
+          "options": [
+            "Who called Laura?",
+            "Who did Laura called?",
+            "Who did Laura call?",
+            "Who Laura called?"
+          ],
+          "correctIndex": 2
+        },
+        {
+          "type": "text",
+          "prompt": "[Session 3 · Subject Questions & Prepositions] Make a subject question (no do/does/did): Someone changed the Wi-Fi password. → ____ the Wi-Fi password?",
+          "answers": [
+            "Who changed",
+            "Who changed the Wi-Fi password?"
+          ],
+          "caseSensitive": false
+        },
+        {
+          "type": "text",
+          "prompt": "[Session 3 · Subject Questions & Prepositions] Make a subject question: Something is blocking the connection. → ____ the connection?",
+          "answers": [
+            "What is blocking",
+            "What's blocking",
+            "What is blocking the connection?",
+            "What's blocking the connection?"
+          ],
+          "caseSensitive": false
+        },
+        {
+          "type": "text",
+          "prompt": "[Session 3 · Subject Questions & Prepositions] Make a subject question: Someone knows the server password. → ____ the server password?",
+          "answers": [
+            "Who knows",
+            "Who knows the server password?"
+          ],
+          "caseSensitive": false
+        },
+        {
+          "type": "text",
+          "prompt": "[Session 3 · Subject Questions & Prepositions] Write the preposition: Which Wi-Fi network is your phone connected ____?",
+          "answers": [
+            "to"
+          ],
+          "caseSensitive": false
+        },
+        {
+          "type": "text",
+          "prompt": "[Session 3 · Subject Questions & Prepositions] Write the preposition: What are you searching ____ in the error logs?",
+          "answers": [
+            "for"
+          ],
+          "caseSensitive": false
+        },
+        {
+          "type": "text",
+          "prompt": "[Session 3 · Subject Questions & Prepositions] Write the preposition: Who did you work ____ on this project?",
+          "answers": [
+            "with"
+          ],
+          "caseSensitive": false
+        },
+        {
+          "type": "order",
+          "prompt": "[Session 3 · Subject Questions & Prepositions] Put the fragments in order to make a correct question.",
+          "fragments": [
+            "What",
+            "is",
+            "she",
+            "waiting",
+            "for?"
+          ]
+        },
+        {
+          "type": "order",
+          "prompt": "[Session 3 · Subject Questions & Prepositions] Put the fragments in order to make a correct question.",
+          "fragments": [
+            "What",
+            "are",
+            "the developers",
+            "talking",
+            "about?"
+          ]
+        },
+        {
+          "type": "order",
+          "prompt": "[Session 3 · Subject Questions & Prepositions] Put the fragments in order to make a correct question.",
+          "fragments": [
+            "Which department",
+            "did",
+            "you",
+            "apply",
+            "to?"
+          ]
+        },
+        {
+          "type": "order",
+          "prompt": "[Session 3 · Subject Questions & Prepositions] Put the fragments in order to make a correct question.",
+          "fragments": [
+            "Who",
+            "did",
+            "the client",
+            "complain",
+            "to?"
+          ]
+        },
+        {
+          "type": "choice",
+          "prompt": "[Session 3 · Subject Questions & Prepositions] Spot the bug: \"About what are you thinking?\"",
+          "options": [
+            "What are you thinking about?",
+            "What about are you thinking?",
+            "About what you are thinking?",
+            "What you are thinking about?"
+          ],
+          "correctIndex": 0
+        },
+        {
+          "type": "choice",
+          "prompt": "[Session 3 · Subject Questions & Prepositions] Spot the bug: \"Who did break the keyboard?\"",
+          "options": [
+            "Who broke the keyboard?",
+            "Who did broke the keyboard?",
+            "Who breaks did the keyboard?",
+            "Who the keyboard broke?"
+          ],
+          "correctIndex": 0
+        },
+        {
+          "type": "choice",
+          "prompt": "[Session 3 · Subject Questions & Prepositions] IT Mystery: you know an email was sent to the whole company, but not WHO sent it. Which question do you ask?",
+          "options": [
+            "Who did send the email?",
+            "Who sent the email?",
+            "Who did the email send?",
+            "Who sended the email?"
+          ],
+          "correctIndex": 1
+        },
+        {
+          "type": "choice",
+          "prompt": "[Session 3 · Subject Questions & Prepositions] Which question is CORRECT?",
+          "options": [
+            "What happened to the files?",
+            "What did happen to the files?",
+            "What happens did to the files?",
+            "What did the files happen?"
+          ],
+          "correctIndex": 0
+        },
+        {
+          "type": "choice",
+          "prompt": "[Final Challenge] Which question needs NO auxiliary (do/does/did)?",
+          "options": [
+            "What did you fix?",
+            "Who fixed the bug?",
+            "Where do you work?",
+            "When did it crash?"
+          ],
+          "correctIndex": 1
+        },
+        {
+          "type": "choice",
+          "prompt": "[Final Challenge] Which question is WRONG?",
+          "options": [
+            "Where is the installation guide?",
+            "What are you looking for?",
+            "Who did delete the backup?",
+            "How many bugs have they fixed?"
+          ],
+          "correctIndex": 2
+        },
+        {
+          "type": "text",
+          "prompt": "[Final Challenge] Fix the question by writing it again: \"What time the backup does start?\"",
+          "answers": [
+            "What time does the backup start?"
+          ],
+          "caseSensitive": false
+        },
+        {
+          "type": "text",
+          "prompt": "[Final Challenge] Fix the question by writing it again: \"Who did reset the router?\"",
+          "answers": [
+            "Who reset the router?"
+          ],
+          "caseSensitive": false
+        },
+        {
+          "type": "order",
+          "prompt": "[Final Challenge] Put the fragments in order to make a correct question.",
+          "fragments": [
+            "Who",
+            "is",
+            "the new intern",
+            "going to",
+            "work",
+            "with?"
+          ]
+        },
+        {
+          "type": "order",
+          "prompt": "[Final Challenge] Put the fragments in order to make a correct question.",
+          "fragments": [
+            "What",
+            "caused",
+            "the network",
+            "to go down",
+            "last night?"
+          ]
+        }
+      ]
+    }
+  }
+}
