@@ -1,0 +1,13 @@
+{
+  "name": "casino-campus",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Educational real-time multiplayer casino and table-game simulator with virtual chips.",
+  "scripts": {
+    "test": "node --test \"tests/*.cjs\"",
+    "start": "python3 -m http.server 8080"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
