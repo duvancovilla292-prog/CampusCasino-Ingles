@@ -3,16 +3,16 @@
    Administrator Panel (host-only), Host Settings (room, shop and mission management, mission
    resets), rig / chosen-winner toggle, bet limits, audit log, Central Bank admin view, and the
    final DOMContentLoaded bootstrap.
-   Load order: 5 of 5 (LAST) — needs every other file.
+   Load order: last — needs every other file.
    Classic <script> (not an ES module): top-level const / function declarations are shared
-   between the five files through the page's global lexical scope, so the cross-module
+   between all the script files through the page's global lexical scope, so the cross-module
    references of the original single-closure build keep working unchanged.
    ========================================================================= */
 "use strict";
 
 /* =========================================================================
    19c. DIALOG — promise-based replacement for window.confirm / window.prompt
-   Renders a centered dialog on desktop and a bottom sheet on phones (style.css, "ADMIN v3").
+   Renders a centered dialog on desktop and a bottom sheet on phones (CSS/main/10-admin-arcade-quiz.css, "ADMIN v3").
      Dialog.confirm({ title, message, confirmLabel, cancelLabel, tone: "danger" })  -> Promise<boolean>
      Dialog.prompt({ title, message, value, inputType, placeholder, confirmLabel }) -> Promise<string | null>
    Only one dialog is open at a time; Escape / backdrop tap cancels; focus is trapped and restored.

@@ -6,9 +6,9 @@ const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
 
-const source = fs.readFileSync(path.join(__dirname, '..', 'JS', 'casual-games.js'), 'utf8');
+const source = fs.readFileSync(path.join(__dirname, '..', 'JS', 'casual', 'arcade.js'), 'utf8');
 const start = source.indexOf('const Arcade = {');
-assert.ok(start > 0, 'Arcade must exist in casual-games.js');
+assert.ok(start > 0, 'Arcade must exist in JS/casual/arcade.js');
 // The object literal ends at the first "};" in column 0 (the file continues with bootstrap code afterwards).
 const code = source.slice(start, source.indexOf('\n};', start) + 3);
 

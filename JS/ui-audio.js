@@ -4,9 +4,9 @@
    SPA router, setup / auth / leaderboard screens, cosmetics & Shop v2, room chat, community
    jackpot, Social start/stop chain, navigation menu, init(), daily missions engine + room cfg
    sync, achievements and the daily Lucky Spin / rewards.
-   Load order: 2 of 5 — needs firebase-sync.js.
+   Load order: 2 (after firebase-sync.js) — needs firebase-sync.js.
    Classic <script> (not an ES module): top-level const / function declarations are shared
-   between the five files through the page's global lexical scope, so the cross-module
+   between all the script files through the page's global lexical scope, so the cross-module
    references of the original single-closure build keep working unchanged.
    ========================================================================= */
 "use strict";

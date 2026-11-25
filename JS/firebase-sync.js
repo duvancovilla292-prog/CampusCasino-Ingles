@@ -4,9 +4,9 @@
    cache, presence), PubSub + connection status, global session State, device storage, shareable
    links, shared table lobbies (Tables), Central Bank (loans) and the Z room listeners
    (bet limits, bank, dice, tournaments, audit) under rooms/<code>/...
-   Load order: 1 of 5 — no dependency on the other files at load time.
+   Load order: 1 (first) — no dependency on the other files at load time.
    Classic <script> (not an ES module): top-level const / function declarations are shared
-   between the five files through the page's global lexical scope, so the cross-module
+   between all the script files through the page's global lexical scope, so the cross-module
    references of the original single-closure build keep working unchanged.
    ========================================================================= */
 "use strict";

@@ -2,13 +2,14 @@ const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const vm = require('node:vm');
-const source = fs.readFileSync(require('node:path').join(__dirname, '..', 'JS', 'casual-games.js'), 'utf8');
+const source = fs.readFileSync(require('node:path').join(__dirname, '..', 'JS', 'casual', 'strategy-duels.js'), 'utf8');
 const context = vm.createContext({ Tables: { names: (seats) => Object.values(seats) }, window: { btoa, atob } });
 // Execute the actual pure engines without bootstrapping browser UI or a live room.
 vm.runInContext(source.split('/*DE-START*/')[1].split('/*DE-END*/')[0] + '\nthis.engines = { MME, BCE };', context);
-const hmStart = source.indexOf('    const LIVES = [6, 8, 10]');
-const hmEnd = source.indexOf('    /* ------------------------------ table UI', hmStart);
-vm.runInContext('(() => { const MAX = 6, PARTS = 10;\n' + source.slice(hmStart, hmEnd) + '\nthis.HME = HME; this.enc = enc; })()', context);
+const hangman = fs.readFileSync(require('node:path').join(__dirname, '..', 'JS', 'casual', 'hangman.js'), 'utf8');
+const hmStart = hangman.indexOf('    const LIVES = [6, 8, 10]');
+const hmEnd = hangman.indexOf('    /* ------------------------------ table UI', hmStart);
+vm.runInContext('(() => { const MAX = 6, PARTS = 10;\n' + hangman.slice(hmStart, hmEnd) + '\nthis.HME = HME; this.enc = enc; })()', context);
 const lobby = () => ({ seats: { a: 'Alice', b: 'Bob' }, owner: 'Alice', max: 2, bet: 0 });
 for (const [label, E] of Object.entries(context.engines)) {
     test(`${label}: secret setup, validation, turns, hints and final reveal`, () => {

@@ -1,0 +1,705 @@
+/* CASINO CAMPUS — Blackjack, Roulette, Player Wheel, Slots, Hi-Lo.
+   Part 2 of 10: the files in CSS/main are loaded in numeric order, so later files win ties in the cascade. */
+
+/* =========================================================================
+     BLACKJACK
+     ========================================================================= */
+.blackjack-table {
+    background: radial-gradient(ellipse at center, var(--color-felt-light), var(--color-felt-dark));
+    border: 6px solid #3a2415;
+    border-radius: var(--radius-lg);
+    padding: 1.75rem 1.5rem;
+    box-shadow: inset 0 0 60px rgba(0, 0, 0, 0.4), var(--shadow-soft);
+}
+
+.dealer-area,
+.player-area {
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+.dealer-area h3,
+.player-area h3 {
+    margin: 0 0 0.5rem;
+    color: var(--color-gold);
+    font-size: 0.95rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.card-row {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: 84px;
+    flex-wrap: wrap;
+}
+
+.card {
+    width: 58px;
+    height: 82px;
+    background: #fdfdfb;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1.15rem;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.35);
+    border: 1px solid #d8d8d0;
+}
+
+.card-red {
+    color: var(--color-red-dark);
+}
+
+.card-black {
+    color: var(--color-black);
+}
+
+.card-back {
+    background: repeating-linear-gradient(45deg, var(--color-felt-dark), var(--color-felt-dark) 6px, var(--color-felt-light) 6px, var(--color-felt-light) 12px);
+    border: 2px solid var(--color-gold-dark);
+}
+
+.card-deal-in {
+    animation: card-deal 0.28s ease;
+}
+
+@keyframes card-deal {
+    from {
+        opacity: 0;
+        transform: translateY(-16px) scale(0.9);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.score-display {
+    display: inline-block;
+    margin-top: 0.4rem;
+    font-size: 0.85rem;
+    color: var(--color-text-muted);
+}
+
+.blackjack-controls {
+    display: flex;
+    align-items: flex-end;
+    gap: 1.25rem;
+    flex-wrap: wrap;
+    margin-top: 1.5rem;
+    justify-content: center;
+}
+
+/* =========================================================================
+     ROULETTE
+     ========================================================================= */
+.roulette-layout {
+    display: flex;
+    gap: 2rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: flex-start;
+}
+
+.roulette-wheel-container {
+    position: relative;
+    width: 280px;
+    height: 280px;
+    flex-shrink: 0;
+}
+
+.roulette-wheel {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: var(--color-black);
+    border: 6px solid var(--color-gold-dark);
+    box-shadow: var(--shadow-strong), inset 0 0 20px rgba(0, 0, 0, 0.5);
+    transition: transform 3s cubic-bezier(0.15, 0.85, 0.25, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.roulette-wheel-svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+.rw-slice {
+    stroke: var(--color-gold-dark);
+    stroke-width: 0.4;
+}
+
+.rw-red {
+    fill: var(--color-red);
+}
+
+.rw-black {
+    fill: var(--color-black);
+}
+
+.rw-green {
+    fill: var(--color-green);
+}
+
+.rw-label {
+    fill: #fff;
+    font-family: var(--font-body, sans-serif);
+    font-size: 7.6px;
+    font-weight: 700;
+    text-anchor: middle;
+    dominant-baseline: central;
+    pointer-events: none;
+    user-select: none;
+}
+
+.roulette-wheel::after {
+    content: "";
+    position: absolute;
+    inset: 34%;
+    border-radius: 50%;
+    background: radial-gradient(circle, #2b2013, #14100a);
+    border: 3px solid var(--color-gold);
+}
+
+.roulette-pointer {
+    position: absolute;
+    top: -6px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+    border-top: 16px solid var(--color-gold-strong);
+    filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.5));
+    z-index: 2;
+}
+
+/* =========================================================================
+     PLAYER WHEEL (multiplayer name-elimination roulette)
+     ========================================================================= */
+.wheel-layout {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.25rem;
+}
+
+.wheel-container {
+    position: relative;
+    width: 280px;
+    height: 280px;
+    flex-shrink: 0;
+}
+
+@media (min-width: 640px) {
+    .wheel-container {
+        width: 340px;
+        height: 340px;
+    }
+}
+
+.wheel-dial {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    border: 6px solid var(--color-gold-dark);
+    box-shadow: var(--shadow-strong), inset 0 0 20px rgba(0, 0, 0, 0.5);
+    transition: transform 3.2s cubic-bezier(0.15, 0.85, 0.25, 1);
+    position: relative;
+    background: var(--color-felt-dark);
+}
+
+.wheel-hub {
+    position: absolute;
+    inset: 40%;
+    border-radius: 50%;
+    background: radial-gradient(circle, #2b2013, #14100a);
+    border: 3px solid var(--color-gold);
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+}
+
+.wheel-label {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    height: 1.1em;
+    line-height: 1.1em;
+    margin-top: -0.55em;
+    transform-origin: 0 50%;
+    text-align: right;
+    padding-right: 12px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--color-text);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    pointer-events: none;
+}
+
+.wheel-pointer {
+    position: absolute;
+    top: -6px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 11px solid transparent;
+    border-right: 11px solid transparent;
+    border-top: 18px solid var(--color-gold-strong);
+    filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.5));
+    z-index: 3;
+}
+
+.wheel-empty-state {
+    color: var(--color-text-muted);
+    font-size: 0.85rem;
+    text-align: center;
+    padding: 0 1rem;
+}
+
+.wheel-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    align-items: center;
+    justify-content: center;
+}
+
+.wheel-pool-panel {
+    width: 100%;
+    max-width: 420px;
+}
+
+.wheel-pool-list {
+    list-style: none;
+    margin: 0.5rem 0 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    justify-content: center;
+}
+
+.wheel-pool-chip {
+    background: var(--color-surface-alt);
+    border: 1px solid var(--color-border);
+    border-radius: 999px;
+    padding: 0.3rem 0.75rem;
+    font-size: 0.8rem;
+    color: var(--color-text);
+}
+
+.wheel-pool-count {
+    color: var(--color-text-muted);
+    font-size: 0.85rem;
+    text-align: center;
+}
+
+.wheel-winner-name {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--color-gold-strong);
+    text-align: center;
+    margin: 0.5rem 0 1.25rem;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.modal-actions .btn {
+    flex: 1;
+    min-width: 140px;
+}
+
+@keyframes wheel-pulse {
+
+    0%,
+    100% {
+        transform: translateX(-50%) scale(1);
+    }
+
+    50% {
+        transform: translateX(-50%) scale(1.15);
+    }
+}
+
+.wheel-pointer.is-spinning {
+    animation: wheel-pulse 0.4s ease-in-out infinite;
+}
+
+.roulette-board-wrapper {
+    flex: 1;
+    min-width: 280px;
+}
+
+.roulette-numbers {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(34px, 1fr));
+    gap: 4px;
+    margin-bottom: 0.75rem;
+}
+
+.roulette-number-cell {
+    aspect-ratio: 1;
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    color: #fff;
+    font-size: 0.78rem;
+    font-weight: 700;
+    cursor: pointer;
+    background: var(--color-surface-alt);
+}
+
+.roulette-number-cell.is-red {
+    background: var(--color-red-dark);
+}
+
+.roulette-number-cell.is-black {
+    background: var(--color-black);
+}
+
+.roulette-number-cell[data-number="0"] {
+    background: var(--color-green);
+}
+
+.roulette-number-cell.is-selected {
+    outline: 3px solid var(--color-gold-strong);
+    outline-offset: -3px;
+}
+
+.roulette-colors,
+.roulette-parity {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.roulette-color-bet,
+.roulette-parity-bet {
+    flex: 1;
+    color: #fff;
+    border-color: var(--color-border);
+}
+
+.roulette-color-bet.is-red {
+    background: var(--color-red-dark);
+}
+
+.roulette-color-bet.is-black {
+    background: var(--color-black);
+}
+
+.roulette-color-bet.is-green {
+    background: var(--color-green);
+}
+
+.roulette-parity-bet {
+    background: var(--color-surface-alt);
+}
+
+.roulette-color-bet.is-active,
+.roulette-parity-bet.is-active {
+    outline: 3px solid var(--color-gold-strong);
+    outline-offset: -3px;
+}
+
+.roulette-controls {
+    display: flex;
+    align-items: flex-end;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-top: 1.5rem;
+    justify-content: center;
+}
+
+.chip-panel {
+    display: flex;
+    gap: 0.4rem;
+}
+
+.chip-btn {
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    border: 2px dashed var(--color-gold-dark);
+    background: var(--color-surface-alt);
+    font-weight: 700;
+    font-size: 0.8rem;
+}
+
+.chip-btn.is-selected {
+    border-style: solid;
+    background: linear-gradient(135deg, var(--color-gold-strong), var(--color-gold-dark));
+    color: var(--color-text-inverse);
+}
+
+/* =========================================================================
+     SLOTS
+     ========================================================================= */
+.slots-machine {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.25rem;
+    background: linear-gradient(180deg, #2a1f10, #1a1409);
+    border: 6px solid var(--color-gold-dark);
+    border-radius: var(--radius-lg);
+    padding: 2rem 1.5rem;
+    box-shadow: var(--shadow-strong);
+}
+
+.slots-reels {
+    display: flex;
+    gap: 0.75rem;
+    background: var(--color-black);
+    padding: 1rem;
+    border-radius: var(--radius-md);
+    border: 3px solid var(--color-gold);
+}
+
+/* Slot machine reels (namespaced .sm-* so they never collide with the Lucky Draw .reel styles) */
+.slots-reels {
+    position: relative;
+    --sh: 76px;
+}
+
+.sm-reel {
+    position: relative;
+    width: 84px;
+    height: calc(var(--sh) * 3);
+    overflow: hidden;
+    border-radius: 10px;
+    background: linear-gradient(180deg, #d9d4c3 0%, #fffdf4 30%, #fffdf4 70%, #d9d4c3 100%);
+    box-shadow: inset 0 0 14px rgba(0, 0, 0, .45), 0 0 0 1px rgba(0, 0, 0, .6);
+    isolation: isolate;
+    contain: layout paint;
+}
+
+.sm-reel::before,
+.sm-reel::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 34%;
+    z-index: 3;
+    pointer-events: none;
+}
+
+.sm-reel::before {
+    top: 0;
+    background: linear-gradient(rgba(0, 0, 0, .55), rgba(0, 0, 0, 0));
+}
+
+.sm-reel::after {
+    bottom: 0;
+    background: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, .55));
+}
+
+.sm-strip {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    will-change: transform;
+    transform: translate3d(0, 0, 0);
+    backface-visibility: hidden;
+}
+
+.sm-sym {
+    height: var(--sh);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.3rem;
+    line-height: 1;
+    user-select: none;
+}
+
+.sm-streak {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    pointer-events: none;
+    opacity: 0;
+    will-change: opacity;
+    background: repeating-linear-gradient(180deg, rgba(255, 255, 255, .0) 0 6px, rgba(20, 20, 20, .28) 6px 9px, rgba(255, 255, 255, .35) 9px 13px);
+}
+
+.sm-payline {
+    position: absolute;
+    left: 6px;
+    right: 6px;
+    top: 50%;
+    height: 0;
+    z-index: 4;
+    pointer-events: none;
+    border-top: 2px solid rgba(245, 210, 122, .85);
+    box-shadow: 0 0 10px rgba(245, 210, 122, .8);
+    opacity: .55;
+    transition: opacity .25s;
+}
+
+.slots-reels.is-spinning .sm-payline {
+    opacity: .9;
+}
+
+.sm-reel.is-locked {
+    animation: sm-lock .22s cubic-bezier(.3, 1.6, .5, 1);
+}
+
+@keyframes sm-lock {
+    0% {
+        transform: scale(1);
+    }
+
+    40% {
+        transform: scale(1.045);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+.sm-reel.is-win {
+    box-shadow: inset 0 0 14px rgba(0, 0, 0, .35), 0 0 0 2px var(--color-gold-strong), 0 0 22px rgba(244, 196, 48, .85);
+}
+
+.sm-reel.is-win .sm-sym.is-mid {
+    animation: sm-pulse .5s ease-in-out 3;
+}
+
+@keyframes sm-pulse {
+    50% {
+        transform: scale(1.22);
+    }
+}
+
+@media (max-width: 480px) {
+    .slots-reels {
+        --sh: 64px;
+    }
+
+    .sm-reel {
+        width: 72px;
+    }
+
+    .sm-sym {
+        font-size: 2rem;
+    }
+}
+
+.slots-lever {
+    width: 90px;
+    height: 34px;
+    border-radius: 999px;
+    background: linear-gradient(135deg, var(--color-red), var(--color-red-dark));
+    border: 2px solid #7a1f1a;
+    cursor: pointer;
+    position: relative;
+    box-shadow: var(--shadow-soft);
+}
+
+.slots-lever::after {
+    content: "⬤";
+    position: absolute;
+    right: -8px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--color-gold-strong);
+    font-size: 1.3rem;
+}
+
+.slots-lever {
+    transition: transform .18s cubic-bezier(.3, 1.5, .5, 1);
+    will-change: transform;
+}
+
+.slots-lever.lever-pulled {
+    transform: translate3d(0, 6px, 0) scale(0.94);
+}
+
+.slots-controls {
+    display: flex;
+    align-items: flex-end;
+    gap: 1.25rem;
+    flex-wrap: wrap;
+    margin-top: 1.5rem;
+    justify-content: center;
+}
+
+/* =========================================================================
+     HI-LO
+     ========================================================================= */
+.hilo-table {
+    display: flex;
+    justify-content: center;
+    gap: 2.5rem;
+    flex-wrap: wrap;
+    background: radial-gradient(ellipse at center, var(--color-felt-light), var(--color-felt-dark));
+    border: 6px solid #3a2415;
+    border-radius: var(--radius-lg);
+    padding: 2rem 1.5rem;
+    box-shadow: inset 0 0 60px rgba(0, 0, 0, 0.4), var(--shadow-soft);
+}
+
+.hilo-current-card-area,
+.hilo-next-card-area {
+    text-align: center;
+}
+
+.hilo-current-card-area h3,
+.hilo-next-card-area h3 {
+    margin: 0 0 0.75rem;
+    color: var(--color-gold);
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.hilo-card {
+    width: 90px;
+    height: 128px;
+    background: #fdfdfb;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1.7rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    transition: transform 0.25s ease;
+}
+
+.hilo-card-hidden {
+    background: repeating-linear-gradient(45deg, var(--color-felt-dark), var(--color-felt-dark) 6px, var(--color-felt-light) 6px, var(--color-felt-light) 12px);
+    border: 2px solid var(--color-gold-dark);
+    color: transparent;
+}
+
+.hilo-controls {
+    display: flex;
+    align-items: flex-end;
+    gap: 1.25rem;
+    flex-wrap: wrap;
+    margin-top: 1.5rem;
+    justify-content: center;
+}
