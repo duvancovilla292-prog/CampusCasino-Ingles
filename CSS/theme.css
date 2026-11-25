@@ -2,9 +2,9 @@
    CASINO CAMPUS — LAS VEGAS THEMES
    Two ambiences of the same casino, selected with <html data-theme="...">
    (JS/theme.js sets the attribute and builds the switch):
-     night — "El casino en su punto máximo": midnight blue, deep violet, metallic
+     night — "The casino at its peak": midnight blue, deep violet, metallic
              gold, magenta / red neon, silver highlights.
-     day   — "La mañana después": the same casino in daylight, closed, with the
+     day   — "The morning after": the same casino in daylight, closed, with the
              traces of last night's party. Its tokens and scenery live in
              CSS/theme-day.css (loaded right after this file).
    How it works
@@ -799,7 +799,7 @@ html[data-theme] .role-badge {
     to { opacity: 1; translate: 0 0; }
 }
 
-/* ---------- "Juegos" inside the ☰ menu: the games catalog as nested sub-options ---------- */
+/* ---------- "Games" inside the ☰ menu: the games catalog as nested sub-options ---------- */
 .top-panel-actions {
     margin-left: auto;
 }
@@ -845,7 +845,7 @@ html[data-theme] .role-badge {
     white-space: nowrap;
 }
 
-/* the old dropdown becomes an in-place list under "Juegos" */
+/* the old dropdown becomes an in-place list under "Games" */
 .tp-menu-panel #game-selector .nav-menu-panel {
     position: static;
     display: none;
@@ -1036,7 +1036,7 @@ html[data-theme] .role-badge {
     to { translate: 3px 0; scale: 1.1; }
 }
 
-/* "🏠 Inicio" sits first in the ☰ menu, above "Juegos" */
+/* "🏠 Home" sits first in the ☰ menu, above "Games" */
 .tp-menu-panel > #btn-home {
     order: -2;
 }

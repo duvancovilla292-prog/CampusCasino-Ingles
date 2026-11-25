@@ -1,8 +1,8 @@
 /* =========================================================================
    CASINO CAMPUS — TOP BAR HAMBURGER MENU
-   The room actions (Juegos, Leaderboard, Daily Missions, Host Settings, Admin,
+   The room actions (Games, Leaderboard, Daily Missions, Host Settings, Admin,
    Shop, Leave) live inside #tp-menu-panel and open from the ☰ button.
-   - "Juegos" is the games selector (#game-selector, driven by NavMenu in
+   - "Games" is the games selector (#game-selector, driven by NavMenu in
      ui-audio.js). Inside the menu it unfolds in place, and each category
      (Casino Games, Tools, Casual & Party Games) is a sub-option that unfolds
      its own games.
@@ -25,7 +25,7 @@ const TopMenu = (() => {
     const gamesTrigger = document.getElementById("nav-menu-trigger");
     const gamesPanel = document.getElementById("nav-menu-panel");
     const visible = (el) => !el.hidden && !el.disabled && el.offsetParent !== null;
-    /** Top-level options: "Juegos" plus the action buttons. */
+    /** Top-level options: "Games" plus the action buttons. */
     const items = () => [gamesTrigger, ...panel.querySelectorAll(":scope > button")].filter((b) => b && visible(b));
     const closeGames = () => { if (typeof NavMenu !== "undefined" && NavMenu.root) NavMenu.close(); };
 
@@ -66,7 +66,7 @@ const TopMenu = (() => {
         });
     }
 
-    // Arrow keys inside "Juegos" move through the categories and the games that are showing
+    // Arrow keys inside "Games" move through the categories and the games that are showing
     // (handled here, before NavMenu, which only knows the flat list of games).
     if (gamesPanel) gamesPanel.addEventListener("keydown", (e) => {
         if (!["ArrowDown", "ArrowUp", "Home", "End"].includes(e.key)) return;
@@ -143,7 +143,7 @@ const TopMenu = (() => {
     });
 
     // Choosing an option runs its own handler first (bubbling order), then the menu folds away.
-    // "Juegos" and the categories only unfold; picking a game closes everything.
+    // "Games" and the categories only unfold; picking a game closes everything.
     panel.addEventListener("click", (e) => {
         const b = e.target.closest("button");
         if (!b || b === gamesTrigger || b.classList.contains("nav-cat-toggle")) return;

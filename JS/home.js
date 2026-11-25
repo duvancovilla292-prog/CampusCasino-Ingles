@@ -133,7 +133,7 @@ const Home = (() => {
         if (!top.length) {
             const li = document.createElement("li");
             li.className = "home-winners-empty";
-            li.textContent = "Aún no hay ganadores. ¡Sé el primero!";
+            li.textContent = "No winners yet. Be the first!";
             list.appendChild(li);
             return;
         }
@@ -173,7 +173,7 @@ const Home = (() => {
         window.setTimeout(() => {
             const cur = $("nav-menu-current"), icon = $("nav-menu-current-icon");
             if (Router.currentGameKey !== "home") return;
-            if (cur) cur.textContent = "Inicio";
+            if (cur) cur.textContent = "Home";
             if (icon) icon.textContent = "\u{1F3E0}";
         }, 0);
     }
@@ -192,7 +192,7 @@ const Home = (() => {
     const jp = $("jp-amount");
     if (jp) new MutationObserver(renderVault).observe(jp, { childList: true, characterData: true, subtree: true });
 
-    // "🏠 Inicio" in the ☰ menu
+    // "🏠 Home" in the ☰ menu
     const homeBtn = $("btn-home");
     if (homeBtn) homeBtn.addEventListener("click", () => { if (typeof Router !== "undefined") Router.selectGame("home"); });
 

@@ -3262,7 +3262,7 @@ body::before {
     }
 }
 
-/* La Viuda Negra (Black Widow Poker): table, widow, flip cards, seats, result overlay */
+/* Black Widow Poker: table, widow, flip cards, seats, result overlay */
 .bw-actions [hidden],
 #bw-turn-actions[hidden] {
     display: none !important;
@@ -3327,7 +3327,7 @@ body::before {
     background: rgba(0, 0, 0, .35);
 }
 
-/* La Viuda: obsidian tray in the middle of the felt */
+/* The Widow: obsidian tray in the middle of the felt */
 .bw-widow {
     margin: .6rem auto;
     padding: .6rem .8rem .8rem;
@@ -4821,7 +4821,7 @@ body::before {
     }
 }
 
-/* ===== Parqués & Dominoes / Casual & Party Games ===== */
+/* ===== Colombian Ludo & Dominoes / Casual & Party Games ===== */
 .pk0 {
     --k: #d8404a
 }

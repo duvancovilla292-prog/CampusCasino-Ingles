@@ -1341,7 +1341,7 @@ UNO.init();
 { const s0 = Social.start, s1 = Social.stop; Social.start = function () { s0.call(Social); UNO.start(); }; Social.stop = function () { s1.call(Social); UNO.stop(); }; }
 
 /* =========================================================================
-   COLOMBIAN LUDO (PARQUÉS) & DOMINOES (Casual & Party Games) — real-time multiplayer at rooms/<code>/parques and rooms/<code>/dominoes
+   COLOMBIAN LUDO (PARQUES) & DOMINOES (Casual & Party Games) — real-time multiplayer at rooms/<code>/parques and rooms/<code>/dominoes
    Both reuse the UNO table flow: shared lobby (host picks an optional stake, starts) -> match -> winner takes the pot.
    The rules engines mutate the Firebase transaction value `g`; clients only render shared state and animate `fx` records.
    Stake is charged to every seated player when the match starts (persisted per match, so a reload never double-charges).
@@ -1475,7 +1475,7 @@ const Party = (o) => {
 };
 
 /* =========================================================================
-   COLOMBIAN LUDO (PARQUÉS) — 4 tokens each, 68-square ring (an 18x18 grid perimeter), 7-square home lane, centre target.
+   COLOMBIAN LUDO (PARQUES) — 4 tokens each, 68-square ring (an 18x18 grid perimeter), 7-square home lane, centre target.
    Progress per token: -1 base | 0..67 ring (0 = own entry square) | 68..74 home lane | 75 centre (exact roll needed).
    Rules: a 6 brings a token out (capturing a lone rival on the entry square); 6 / capture / reaching the centre = roll again;
           three sixes in a row lose the turn; landing on a lone rival off a safe square (entries + corners) sends it to base;

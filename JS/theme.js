@@ -16,8 +16,8 @@ const Theme = (() => {
     const DEFAULT = "night";
     const root = document.documentElement;
     const OPTIONS = [
-        { id: "day", icon: "☀️", label: "Modo Día — Mañana", short: "Día", color: "#ece5d8" },
-        { id: "night", icon: "\u{1F319}", label: "Modo Noche — Casino", short: "Noche", color: "#05060d" }
+        { id: "day", icon: "☀️", label: "Day Mode — Morning", short: "Day", color: "#ece5d8" },
+        { id: "night", icon: "\u{1F319}", label: "Night Mode — Casino", short: "Night", color: "#05060d" }
     ];
     const valid = (t) => OPTIONS.some((o) => o.id === t);
     const reducedMotion = () => !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
@@ -78,7 +78,7 @@ const Theme = (() => {
         if (host.querySelector("[data-theme-set]")) return;
         host.classList.add("theme-switch");
         host.setAttribute("role", "radiogroup");
-        host.setAttribute("aria-label", "Ambiente del casino");
+        host.setAttribute("aria-label", "Casino ambience");
         OPTIONS.forEach((o) => {
             const b = document.createElement("button");
             b.type = "button";

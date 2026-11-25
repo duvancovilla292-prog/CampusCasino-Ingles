@@ -1,7 +1,7 @@
 /* =========================================================================
    CASINO CAMPUS — TRADITIONAL CASINO GAMES
    Shared card/deal engine (CardFX, Deck), Universal GameResolver, Blackjack,
-   Roulette, Slots, Hi-Lo, Craps, Crash, Money Wheel, La Viuda Negra, Quick Dice,
+   Roulette, Slots, Hi-Lo, Craps, Crash, Money Wheel, Black Widow, Quick Dice,
    Multiplayer Baccarat, 3D Poker Dice, and VIP Keno.
    ========================================================================= */
 "use strict";
@@ -2056,7 +2056,7 @@ const Extra = (() => {
 })();
 
 /* =========================================================================
-   12. BLACK WIDOW POKER (La Viuda Negra)
+   12. BLACK WIDOW POKER
    ========================================================================= */
 const HOUSE = "_house";
 
@@ -2161,16 +2161,16 @@ const BW = {
             const first = !((v.played[me] || 0) > 0), hand = v.hands[me].slice(), widow = v.widow.slice(); let note;
             if (type === "close") {
                 if (v.phase !== "play") return;
-                v.phase = "final"; v.closer = me; note = `${me} called \u201CMe hasta aqu\u00ED\u201D \u2014 final cycle begins`;
+                v.phase = "final"; v.closer = me; note = `${me} called \u201CI\u2019m done here\u201D \u2014 final cycle begins`;
             } else if (type === "swapall") {
                 if (!first || v.up) return;
                 v.fx = { id: Date.now() + "-" + Math.floor(Math.random() * 1e6), u: me, t: "all", was: 0, at: Date.now() };
-                v.hands[me] = widow; v.widow = hand; v.up = 1; note = `${me} swapped all 5 cards with La Viuda`;
+                v.hands[me] = widow; v.widow = hand; v.up = 1; note = `${me} swapped all 5 cards with the Widow`;
             } else if (type === "swap1") {
                 const h = p && p.h, w = p && p.w;
                 if ((!v.up && !first) || !(h >= 0 && h < 5) || !(w >= 0 && w < 5)) return;
                 v.fx = { id: Date.now() + "-" + Math.floor(Math.random() * 1e6), u: me, t: "one", h, w, was: v.up ? 1 : 0, at: Date.now() };
-                const t = hand[h]; hand[h] = widow[w]; widow[w] = t; v.hands[me] = hand; v.widow = widow; note = v.up ? `${me} swapped 1 card with La Viuda` : `${me} swapped 1 card with a hidden La Viuda card`;
+                const t = hand[h]; hand[h] = widow[w]; widow[w] = t; v.hands[me] = hand; v.widow = widow; note = v.up ? `${me} swapped 1 card with the Widow` : `${me} swapped 1 card with a hidden Widow card`;
             } else if (type === "fold") {
                 v.folded[me] = 1; note = `${me} folded`;
             } else if (type === "pass") { note = `${me} passed`; } else return;
@@ -2279,7 +2279,7 @@ const BW = {
         if (lEl) lEl.hidden = !lobby; if (vEl) vEl.hidden = lobby;
         if (lobby) {
             Tables.renderLobby(this.$("bw-lobby"), g, {
-                title: "La Viuda Negra table", game: "Black Widow Poker", max: this.MAX_SEATS, minStart: 1,
+                title: "Black Widow table", game: "Black Widow Poker", max: this.MAX_SEATS, minStart: 1,
                 soloNote: `Just you so far. Start now to play against The House (ante ${this.ANTE}), or wait.`,
                 onOpen: () => this.openTable(), onTake: (k) => this.take(k), onLeave: () => this.leave(),
                 onStart: () => this.deal(), onClose: () => this.closeTable(), onClaim: () => Tables.claim(this.ref, State.username)
@@ -2301,11 +2301,11 @@ const BW = {
         if (!canPick) this.sel.w = null;
         (g.widow || []).forEach((c, i) => {
             const cd = this.card("w" + i, c, up);
-            if (canPick) this.makePick(cd, "w", i, "La Viuda card " + (i + 1));
+            if (canPick) this.makePick(cd, "w", i, "Widow card " + (i + 1));
             el.appendChild(cd);
         });
         const lbl = this.$("bw-widow-label");
-        if (lbl) lbl.textContent = up ? "La Viuda \u2014 Face-up" : "La Viuda \u2014 Face-down";
+        if (lbl) lbl.textContent = up ? "The Widow \u2014 Face-up" : "The Widow \u2014 Face-down";
     },
     renderSeats() {
         const g = this.g, me = State.username, el = this.$("bw-seats"), live = this.isLive(g), inHand = live || (g.phase === "done" && !!g.res);
