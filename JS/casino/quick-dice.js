@@ -26,7 +26,7 @@ const Dice = {
             v = v || { st: "idle" }; const t = this.now(); why = "";
             if (v.st === "bet" && t > v.end) { why = "Betting closed."; return; }
             if (v.st === "done" && t < (v.doneAt || 0) + 4500) { why = "Next round opens shortly."; return; }
-            if (v.st !== "bet") v = { st: "bet", id: t + "-" + Math.random().toString(36).slice(2, 6), end: t + 9000, bets: {} };
+            if (v.st !== "bet") v = { st: "bet", id: t + "-" + Rng.float().toString(36).slice(2, 6), end: t + 9000, bets: {} };
             v.bets = v.bets || {}; if (v.bets[me]) { why = "Already bet."; return; }
             v.bets[me] = { s: side, a: amt }; return v;
         }, (e, ok) => { if (ok) { State.debit(amt); Sound.chip && Sound.chip(); } else if (why) Notify.warning(why); }, false);
@@ -34,7 +34,7 @@ const Dice = {
     roll() {
         zref("dice").transaction((v) => {
             if (!v || v.st !== "bet" || this.now() < v.end) return;
-            const a = 1 + Math.floor(Math.random() * 6), b = 1 + Math.floor(Math.random() * 6);
+            const a = 1 + Math.floor(Rng.float() * 6), b = 1 + Math.floor(Rng.float() * 6);
             v.st = "done"; v.d = [a, b]; v.doneAt = this.now(); return v;
         }, () => { }, false);
     },
@@ -56,8 +56,8 @@ const Dice = {
         this.anim = window.setInterval(() => {
             const fin = Date.now() - t0 > 1100;
             const d1 = document.getElementById("z-d1"), d2 = document.getElementById("z-d2");
-            if (d1) d1.textContent = f[(fin ? a : 1 + Math.floor(Math.random() * 6)) - 1];
-            if (d2) d2.textContent = f[(fin ? b : 1 + Math.floor(Math.random() * 6)) - 1];
+            if (d1) d1.textContent = f[(fin ? a : 1 + Math.floor(Rng.float() * 6)) - 1];
+            if (d2) d2.textContent = f[(fin ? b : 1 + Math.floor(Rng.float() * 6)) - 1];
             Sound.tick && Sound.tick(a + b);
             if (fin) { clearInterval(this.anim); this.settle(g); }
         }, 90);

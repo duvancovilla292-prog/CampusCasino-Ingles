@@ -24,7 +24,7 @@ const Slots = {
         }
     },
 
-    randomSymbol() { return this.SYMBOLS[Math.floor(Math.random() * this.SYMBOLS.length)]; },
+    randomSymbol() { return this.SYMBOLS[Math.floor(Rng.float() * this.SYMBOLS.length)]; },
 
     paint(i, symbols) {
         if (!DOM.reels || !DOM.reels[i]) return;

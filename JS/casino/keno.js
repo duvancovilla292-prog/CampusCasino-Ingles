@@ -86,7 +86,7 @@ const Keno = {
         if (this.isDrawing) return;
         this.selectedSpots.clear();
         while (this.selectedSpots.size < 10) {
-            this.selectedSpots.add(1 + Math.floor(Math.random() * 80));
+            this.selectedSpots.add(1 + Math.floor(Rng.float() * 80));
         }
         Sound.chip && Sound.chip();
         this.paintGrid();
@@ -172,7 +172,7 @@ const Keno = {
         // Blower animation setup
         const pool = Array.from({ length: 80 }, (_, i) => i + 1);
         for (let i = pool.length - 1; i > 0; i -= 1) {
-            const j = Math.floor(Math.random() * (i + 1));
+            const j = Math.floor(Rng.float() * (i + 1));
             [pool[i], pool[j]] = [pool[j], pool[i]];
         }
         const winning20 = pool.slice(0, 20);

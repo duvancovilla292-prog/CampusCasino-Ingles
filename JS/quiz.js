@@ -212,7 +212,7 @@ const Quiz = {
     },
     settings() { return this.normalizeSettings(this.data.settings); },
 
-    random() { return Math.random(); },
+    random() { return Rng.float(); },
 
     /** Server-synchronised clock (Firebase offset kept by the room listeners): every device agrees on when a turn ends. */
     now() { return Date.now() + ((typeof Dice !== "undefined" && Dice.off) || 0); },

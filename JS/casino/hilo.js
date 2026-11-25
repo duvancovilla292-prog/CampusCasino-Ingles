@@ -48,8 +48,8 @@ const HiLo = {
     },
 
     drawCard() {
-        const rank = Deck.RANKS[Math.floor(Math.random() * Deck.RANKS.length)];
-        const suit = Deck.SUITS[Math.floor(Math.random() * Deck.SUITS.length)];
+        const rank = Deck.RANKS[Math.floor(Rng.float() * Deck.RANKS.length)];
+        const suit = Deck.SUITS[Math.floor(Rng.float() * Deck.SUITS.length)];
         return { rank, suit, value: Deck.numericValue(rank) };
     },
 

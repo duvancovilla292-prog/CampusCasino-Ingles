@@ -54,7 +54,7 @@ const CardFX = {
         const r = el.getBoundingClientRect();
         let dx = 0, dy = -90;
         if (o && o.width) { dx = o.left + o.width / 2 - (r.left + r.width / 2); dy = o.top + o.height / 2 - (r.top + r.height / 2); }
-        const tilt = Math.random() * 14 - 7;
+        const tilt = Rng.float() * 14 - 7;
         el.style.zIndex = "30"; el.style.willChange = "transform, opacity";
         const slide = el.animate([
             { transform: `translate3d(${dx}px,${dy}px,0) rotate(${-tilt * 2}deg) scale(.72)`, opacity: 0, offset: 0 },
@@ -82,7 +82,7 @@ const Deck = {
             }
         }
         for (let i = deck.length - 1; i > 0; i -= 1) {
-            const j = Math.floor(Math.random() * (i + 1));
+            const j = Math.floor(Rng.float() * (i + 1));
             [deck[i], deck[j]] = [deck[j], deck[i]];
         }
         return deck;
@@ -181,7 +181,7 @@ const GameResolver = {
 
     resolve(gameId, results) {
         const r = results || {}, me = State.username;
-        const roundId = String(r.roundId || `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`);
+        const roundId = String(r.roundId || `${Date.now().toString(36)}-${Rng.float().toString(36).slice(2, 7)}`);
         const key = gameId + ":" + roundId;
         if (!gameId || !me || this.settled.has(key)) return Promise.resolve(null);
         this.settled.add(key);

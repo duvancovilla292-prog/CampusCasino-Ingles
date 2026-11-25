@@ -33,7 +33,7 @@ const PokerDice = {
         this.renderDiceUI();
     },
 
-    randDie() { return Math.floor(Math.random() * 6); },
+    randDie() { return Math.floor(Rng.float() * 6); },
 
     evalHand(dice) {
         const cnt = {};

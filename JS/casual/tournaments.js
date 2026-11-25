@@ -10,7 +10,7 @@ const Tour = {
     rounds() { try { return JSON.parse(this.d.b); } catch (e) { return []; } },
     create() {
         const ents = [...this.pick].filter((u) => Room.exists(u)); if (ents.length < 2) return Notify.error("Pick at least 2 players.");
-        const s = ents.slice().sort(() => Math.random() - 0.5); let n = 2; while (n < s.length) n *= 2;
+        const s = ents.slice().sort(() => Rng.float() - 0.5); let n = 2; while (n < s.length) n *= 2;
         const r0 = []; for (let i = 0; i < n / 2; i++) r0.push({ a: s[i] || null, b: s[n - 1 - i] || null, w: null });
         const rs = [r0]; for (let m = n / 4; m >= 1; m /= 2) rs.push(Array.from({ length: m }, () => ({ a: null, b: null, w: null })));
         r0.forEach((m, i) => { if (!m.b) this.advance(rs, 0, i, m.a); });

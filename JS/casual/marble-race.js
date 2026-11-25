@@ -315,7 +315,7 @@ const MarbleRace = (() => {
         const names = cfg.racers.map((r) => label(r.n)), hues = cfg.racers.map((r) => hue(r.n)), rot = new Float32Array(sim.n), parts = [];
         const MEDAL = ["🥇", "🥈", "🥉", "🏅", "🏅", "🏅"];
         let cam = 0, evp = 0, banner = null, ticker = null, lastT = 0;
-        const burst = (x, y, n, c, sp) => { for (let i = 0; i < n; i++) { const a = Math.random() * 6.283, v = (sp || 120) * (0.3 + Math.random()); parts.push({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 40, l: 1, c }); } };
+        const burst = (x, y, n, c, sp) => { for (let i = 0; i < n; i++) { const a = Rng.float() * 6.283, v = (sp || 120) * (0.3 + Rng.float()); parts.push({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 40, l: 1, c }); } };
         await Lk.frames(id, (dt, el) => {
             const tgt = Math.floor((now() - cfg.startAt) / (DT * 1000)); let steps = 0;
             while (sim.t < tgt && steps < 600 && !(sim.done && sim.t - sim.doneT > 300)) { sim.step(); steps++; }
@@ -410,12 +410,12 @@ const MarbleRace = (() => {
             if (names.length < 2) { Notify.warning("The marble race needs at least 2 players in the room."); return; }
             Lk.running = true; Lk.setBusy(true); Lk.el.result.textContent = "\u{1F52E} Preparing the track\u2026";
             try {
-                const map = st.mapSel === "random" ? MAP_IDS[Math.floor(Math.random() * MAP_IDS.length)] : st.mapSel;
+                const map = st.mapSel === "random" ? MAP_IDS[Math.floor(Rng.float() * MAP_IDS.length)] : st.mapSel;
                 const target = (Rig.on && names.includes(Rig.target)) ? Rig.target : null;
                 let pool = Lk.shuffle(names);
                 if (pool.length > MAXR) { pool = pool.slice(0, MAXR); if (target && !pool.includes(target)) pool[0] = target; pool = Lk.shuffle(pool); }
                 const racers = pool.map((n) => ({ n, a: Cosmetics.icon(n, "avatar") || "" }));
-                const cfg = { id: Date.now().toString(36) + Math.floor(Math.random() * 1e6).toString(36), map, count: Math.min(Lk.count, racers.length), racers, seed: Math.floor(Math.random() * 4294967296) >>> 0 };
+                const cfg = { id: Date.now().toString(36) + Math.floor(Rng.float() * 1e6).toString(36), map, count: Math.min(Lk.count, racers.length), racers, seed: Math.floor(Rng.float() * 4294967296) >>> 0 };
                 cfg.prize = GameResolver.readPrize("draw-prize", !!target);
                 if (target) cfg.seed = await findSeed(cfg, pool.indexOf(target));
                 cfg.w = Sim.run(cfg).slice(0, cfg.count).map((i) => racers[i].n);

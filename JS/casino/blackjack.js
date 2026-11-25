@@ -134,7 +134,7 @@ const Blackjack = {
     deal(v) {
         const names = Tables.names(v.seats).filter((u) => (v.bets || {})[u]);
         const deck = Array.from({ length: 52 }, (_, i) => i);
-        for (let i = 51; i > 0; i -= 1) { const j = Math.floor(Math.random() * (i + 1));[deck[i], deck[j]] = [deck[j], deck[i]]; }
+        for (let i = 51; i > 0; i -= 1) { const j = Math.floor(Rng.float() * (i + 1));[deck[i], deck[j]] = [deck[j], deck[i]]; }
         const hands = {}, st = {}, bets = {};
         names.forEach((u) => { hands[u] = [deck.pop(), deck.pop()]; st[u] = this.isNatural(hands[u]) ? "bj" : "play"; bets[u] = v.bets[u]; });
         const dealer = [deck.pop(), deck.pop()];

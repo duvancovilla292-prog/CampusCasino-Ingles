@@ -39,6 +39,7 @@ function load() {
         }
     };
     vm.createContext(ctx);
+    vm.runInContext(read('rng.js'), ctx); // shared random source used by quiz.js
     // Real Quiz.question and real GameCatalog.categories.
     vm.runInContext(read('quiz.js') + '\nglobalThis.Quiz = Quiz;', ctx);
     vm.runInContext(read('game-catalog.js') + '\nglobalThis.GameCatalog = GameCatalog;', ctx);

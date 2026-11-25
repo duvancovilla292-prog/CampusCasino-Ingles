@@ -39,7 +39,7 @@ const PQ = (() => {
         adv(g) { g.turn = (g.turn + 1) % g.order.length; g.ph = "roll"; g.six = 0; g.turnAt = Date.now(); },
         win(g, u, left) { g.phase = "done"; g.turnAt = Date.now(); g.res = { ws: [u], pot: g.pot || 0, left: left ? 1 : 0 }; return "win"; },
         roll(g, u) {
-            const d = 1 + Math.floor(Math.random() * 6); g.die = d; g.turnAt = Date.now();
+            const d = 1 + Math.floor(Rng.float() * 6); g.die = d; g.turnAt = Date.now();
             if (d === 6 && (g.six = (g.six || 0) + 1) >= 3) { E.adv(g); return "triple"; }
             const m = E.moves(g, u, d);
             if (!m.length) { if (d === 6) g.ph = "roll"; else E.adv(g); return "none"; }
@@ -155,7 +155,7 @@ const PQ = (() => {
         /* --- animations: the die tumbles, then the token hops square by square; captured tokens glide back to their base --- */
         rollAnim(v) {
             const d = pt$("pq-die"); d.classList.add("rolling"); let n = 0;
-            const iv = window.setInterval(() => { this.face(1 + Math.floor(Math.random() * 6)); Sound.tone(300 + Math.random() * 200, 25, "square", 0.02); if (++n > 7) { window.clearInterval(iv); d.classList.remove("rolling"); this.face(v); } }, 90);
+            const iv = window.setInterval(() => { this.face(1 + Math.floor(Rng.float() * 6)); Sound.tone(300 + Rng.float() * 200, 25, "square", 0.02); if (++n > 7) { window.clearInterval(iv); d.classList.remove("rolling"); this.face(v); } }, 90);
         },
         tokEl(u, k) { return Array.from(pt$("pq-tokens").children).find((e) => e.dataset.u === u && +e.dataset.k === k); },
         playFx() {

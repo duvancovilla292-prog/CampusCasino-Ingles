@@ -9,7 +9,7 @@
 const Extra = (() => {
     const $ = (s) => document.querySelector(s);
     const mk = (t, c, x) => { const n = document.createElement(t); if (c) n.className = c; if (x != null) n.textContent = x; return n; };
-    const rnd = (a, b) => a + Math.random() * (b - a);
+    const rnd = (a, b) => a + Rng.float() * (b - a);
     const RM = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const buzz = (ms) => { if (!RM) try { navigator.vibrate && navigator.vibrate(ms); } catch (e) { } };
     const shake = (el, ms = 25) => { if (RM || !el) return; el.classList.remove("fx-shake"); void el.offsetWidth; el.classList.add("fx-shake"); buzz(ms); };
@@ -94,8 +94,8 @@ const Extra = (() => {
         const go = btn("🎲 Roll Dice", "btn btn-primary", () => {
             if (busy) return; const bet = Validate.parseBet(g.bet); if (bet === null) return;
             State.debit(bet); busy = true; go.disabled = true; g.res.textContent = "";
-            const fin = [1 + Math.floor(Math.random() * 6), 1 + Math.floor(Math.random() * 6)];
-            const dice = [0, 1].map((i) => ({ x: 110 + i * 140, y: -40 - i * 30, vy: 0, rot: rnd(0, 6), vr: rnd(-12, 12), face: 1 + Math.floor(Math.random() * 6), n: 0, done: false, fin: fin[i] }));
+            const fin = [1 + Math.floor(Rng.float() * 6), 1 + Math.floor(Rng.float() * 6)];
+            const dice = [0, 1].map((i) => ({ x: 110 + i * 140, y: -40 - i * 30, vy: 0, rot: rnd(0, 6), vr: rnd(-12, 12), face: 1 + Math.floor(Rng.float() * 6), n: 0, done: false, fin: fin[i] }));
             const floor = h - 50;
             loop((dt) => {
                 const s = dt / 1000; felt(ctx, w, h);
@@ -105,8 +105,8 @@ const Extra = (() => {
                         if (d.y > floor) {
                             d.y = floor; d.vy *= -0.55; d.vr *= 0.6; d.n += 1; P.burst(d.x, floor + 28, 8, "#fff");
                             if (d.n === 1) shake(g.stage, 30);
-                            if (d.n >= 3 || Math.abs(d.vy) < 120) { d.done = true; d.vy = 0; d.rot = 0; d.face = d.fin; } else d.face = 1 + Math.floor(Math.random() * 6);
-                        } else if (Math.random() < 0.25) d.face = 1 + Math.floor(Math.random() * 6);
+                            if (d.n >= 3 || Math.abs(d.vy) < 120) { d.done = true; d.vy = 0; d.rot = 0; d.face = d.fin; } else d.face = 1 + Math.floor(Rng.float() * 6);
+                        } else if (Rng.float() < 0.25) d.face = 1 + Math.floor(Rng.float() * 6);
                     }
                     drawDie(ctx, d.x, d.y, 64, d.rot, d.face, Math.max(0, (floor - d.y) / 200));
                 });
@@ -155,7 +155,7 @@ const Extra = (() => {
         go.addEventListener("click", () => {
             if (run) return; const b = Validate.parseBet(g.bet); if (b === null) return;
             State.debit(b); bet = b; run = true; exploded = false; cashed = 0; t = 0; m = 1; g.res.textContent = "";
-            crashAt = Math.min(100, Math.max(1, Math.floor(96 / (1 - Math.random())) / 100));
+            crashAt = Math.min(100, Math.max(1, Math.floor(96 / (1 - Rng.float())) / 100));
             go.disabled = true; out.disabled = false; loop(frame);
         });
         out.addEventListener("click", () => {
@@ -188,7 +188,7 @@ const Extra = (() => {
             if (spinning) return; const total = Object.values(bets).reduce((a, b) => a + b, 0);
             if (!total) { Notify.error("Place a stake on at least one multiplier."); return; }
             spinning = true; spin.disabled = true; g.res.textContent = "";
-            const target = Math.floor(Math.random() * SL.length), th0 = th, dur = 4500;
+            const target = Math.floor(Rng.float() * SL.length), th0 = th, dur = 4500;
             const th1 = -1.5707963 - (target + rnd(0.2, 0.8)) * A - 6.283185307 * 6; let t0 = null, lastI = idx();
             loop((dt, now) => {
                 t0 = t0 || now; const p = Math.min(1, (now - t0) / dur), e = 1 - (1 - p) ** 3; th = th0 + (th1 - th0) * e;

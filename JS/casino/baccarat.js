@@ -70,7 +70,7 @@ const Baccarat = {
     total(hand) { return (hand || []).reduce((t, c) => t + this.val(c), 0) % 10; },
     rand(n) {
         if (window.crypto && window.crypto.getRandomValues) { const a = new Uint32Array(1); window.crypto.getRandomValues(a); return a[0] % n; }
-        return Math.floor(Math.random() * n);
+        return Math.floor(Rng.float() * n);
     },
     draw6() {
         const shoe = []; for (let d = 0; d < this.DECKS; d += 1) for (let c = 0; c < 52; c += 1) shoe.push(c);
@@ -131,7 +131,7 @@ const Baccarat = {
             v = v || { st: "idle" }; const t = this.now(); why = "";
             if (v.st === "bet" && t >= v.end) { why = "Bets are closed \u2014 dealing in progress."; return; }
             if (v.st === "done" && t < (v.doneAt || 0) + this.RESULT_MS) { why = "Next round opens shortly."; return; }
-            if (v.st !== "bet") v = { st: "bet", id: t + "-" + Math.random().toString(36).slice(2, 6), end: t + this.BET_MS, bets: {}, hist: v.hist || [] };
+            if (v.st !== "bet") v = { st: "bet", id: t + "-" + Rng.float().toString(36).slice(2, 6), end: t + this.BET_MS, bets: {}, hist: v.hist || [] };
             v.bets = v.bets || {};
             const b = Object.assign({ p: 0, b: 0, t: 0 }, v.bets[me] || {});
             b[spot] += amt; v.bets[me] = b;

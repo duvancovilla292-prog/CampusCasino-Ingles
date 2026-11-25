@@ -58,6 +58,7 @@ function client(db, host = false, extra = {}) {
     };
     if (extra.router) Object.assign(globals, { Router: extra.router, GameCatalog: { available: () => true }, Missions: { cfg: {} } });
     const context = vm.createContext(globals);
+    vm.runInContext(fs.readFileSync(require('node:path').join(__dirname, '..', 'JS', 'rng.js'), 'utf8'), context); // shared random source (JS/rng.js)
     vm.runInContext(source + '\nthis.quiz = Quiz;', context);
     const q = context.quiz;
     q.render = () => {}; q.renderHost = () => {}; q.syncAdmin = () => {}; q.clearAdmin = () => {};

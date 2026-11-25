@@ -1884,7 +1884,7 @@ const Rewards = {
     },
     spin() {
         if (this.spinning || this.spun() || !State.username) return;
-        let r = Math.random() * 100, idx = 0; for (; idx < SEG.length - 1; idx++) { if ((r -= WT[idx]) < 0) break; }
+        let r = Rng.float() * 100, idx = 0; for (; idx < SEG.length - 1; idx++) { if ((r -= WT[idx]) < 0) break; }
         const prize = SEG[idx]; this.spinning = true; $z("z-spin-go").disabled = true;
         Room.playersRef.child(State.username + "/spin/" + zday()).transaction((v) => (v ? undefined : { p: prize, ts: Date.now() }), (e, ok) => {
             if (e || !ok) { this.spinning = false; return Notify.warning("You already spun today."); }

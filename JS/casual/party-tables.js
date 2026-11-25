@@ -77,7 +77,7 @@ const Party = (o) => {
             this.ref.transaction((v) => {
                 if (!v || v.phase !== "play" || v.order[v.turn] !== u || v.hid !== g0.hid || v.turnAt !== g0.turnAt) return; v.idle = v.idle || {};
                 if (who && Date.now() - (v.turnAt || 0) < this.IDLE) return;
-                const id = Date.now() + "-" + Math.floor(Math.random() * 1e6); let note;
+                const id = Date.now() + "-" + Math.floor(Rng.float() * 1e6); let note;
                 if (type === "auto") {
                     v.idle[u] = (v.idle[u] || 0) + 1;
                     if (v.idle[u] >= 3) { o.E.leave(v, u); const k = Tables.seatOf(v.seats, u); if (k) delete v.seats[k]; if (v.owner === u) v.owner = Tables.names(v.seats)[0] || ""; v.fx = null; note = `${u} was removed for inactivity`; }

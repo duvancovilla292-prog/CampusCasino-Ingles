@@ -4,6 +4,7 @@ const fs = require('node:fs');
 const vm = require('node:vm');
 const source = fs.readFileSync(require('node:path').join(__dirname, '..', 'JS', 'casual', 'strategy-duels.js'), 'utf8');
 const context = vm.createContext({ Tables: { names: (seats) => Object.values(seats) }, window: { btoa, atob } });
+vm.runInContext(fs.readFileSync(require('node:path').join(__dirname, '..', 'JS', 'rng.js'), 'utf8'), context); // shared random source (JS/rng.js)
 // Execute the actual pure engines without bootstrapping browser UI or a live room.
 vm.runInContext(source.split('/*DE-START*/')[1].split('/*DE-END*/')[0] + '\nthis.engines = { MME, BCE };', context);
 const hangman = fs.readFileSync(require('node:path').join(__dirname, '..', 'JS', 'casual', 'hangman.js'), 'utf8');

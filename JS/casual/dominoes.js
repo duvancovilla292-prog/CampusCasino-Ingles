@@ -85,7 +85,7 @@ const DM = (() => {
         },
         deal(v) {
             const names = Tables.names(v.seats).slice(0, 4), rot = (v.rot || 0) + 1, order = names.map((_, i) => names[(i + rot) % names.length]), bet = v.bet || 0;
-            const ids = Array.from({ length: 28 }, (_, i) => i); for (let i = ids.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1));[ids[i], ids[j]] = [ids[j], ids[i]]; }
+            const ids = Array.from({ length: 28 }, (_, i) => i); for (let i = ids.length - 1; i > 0; i--) { const j = Math.floor(Rng.float() * (i + 1));[ids[i], ids[j]] = [ids[j], ids[i]]; }
             const hands = {}; order.forEach((u) => { hands[u] = ids.splice(-7); });
             const g = { seats: v.seats, owner: v.owner, max: v.max, rot, bet, phase: "play", hid: Date.now(), order, hands, yard: ids, ch: [], passes: 0, in: {}, pot: bet * order.length, turnAt: Date.now(), fx: null, res: null, turn: 0, open: 0 };
             const s = E.starter(g); g.open = s.id; g.turn = order.indexOf(s.u); g.last = `${s.u} opens with ${T[s.id][0]}-${T[s.id][1]}`;

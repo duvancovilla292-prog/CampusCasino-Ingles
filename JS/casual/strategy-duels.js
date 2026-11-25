@@ -14,7 +14,7 @@
 (() => {
     const BOT = "Casino Bot", $ = pt$, mk = ptMk;
     /*DE-START*/
-    const rnd = (n) => Math.floor(Math.random() * n);
+    const rnd = (n) => Math.floor(Rng.float() * n);
     const shuf = (a) => { for (let i = a.length - 1; i > 0; i--) { const j = rnd(i + 1);[a[i], a[j]] = [a[j], a[i]]; } return a; };
     const finish = (g, ws, why, left) => { g.phase = "done"; g.turnAt = Date.now(); g.res = { ws, pot: g.pot || 0, why: why || "", left: left ? 1 : 0 }; };
     const mkGame = (v, n, extra) => {
@@ -108,7 +108,7 @@
             isW, sqn, cs, legal, status, att,
             ai(g) {
                 const s = cs(g), ms = legal(s); let best = null, bv = -1e9;
-                ms.forEach((m) => { const v = -search(make(s, m), 2, -1e9, 1e9) + Math.random() * 6; if (v > bv) { bv = v; best = m; } });
+                ms.forEach((m) => { const v = -search(make(s, m), 2, -1e9, 1e9) + Rng.float() * 6; if (v > bv) { bv = v; best = m; } });
                 return best && { type: "move", p: { f: best.f, t: best.t, p: best.p } };
             },
             act(g, u, type, p, id) {
@@ -166,7 +166,7 @@
             CELLS, CORNER, reach,
             ai(g, u) {
                 const tgt = CORNER[(g.cn[u] + 3) % 6], ts = new Set(tgt), ap = tgt.reduce((a, i) => (hd(CELLS[i], [0, 0, 0]) > hd(CELLS[a], [0, 0, 0]) ? i : a), tgt[0]), d = (i) => hd(CELLS[i], CELLS[ap]); let best = null, bs = -1e9;
-                g.pc[u].forEach((f) => { const r = reach(g, f); for (const k in r) { const t = +k; let s = (d(f) - d(t)) * 10 + d(f) * 0.35 + Math.random() * 1.5; if (ts.has(t) && !ts.has(f)) s += 4; else if (ts.has(f) && !ts.has(t)) s -= 12; if (s > bs) { bs = s; best = { type: "move", p: { f, t } }; } } });
+                g.pc[u].forEach((f) => { const r = reach(g, f); for (const k in r) { const t = +k; let s = (d(f) - d(t)) * 10 + d(f) * 0.35 + Rng.float() * 1.5; if (ts.has(t) && !ts.has(f)) s += 4; else if (ts.has(f) && !ts.has(t)) s -= 12; if (s > bs) { bs = s; best = { type: "move", p: { f, t } }; } } });
                 return best;
             },
             act(g, u, type, p, id) {
@@ -284,7 +284,7 @@
             ai(g, u) {
                 if (g.phase !== "play") return null;
                 const me = String(g.order.indexOf(u)), op = me === "0" ? "1" : "0"; let best = null, bv = -1e9;
-                ORD.forEach((c) => { const r = drop(g.bd, c); if (r < 0) return; const v = -neg(put(g.bd, r * W + c, me), op, me, 4, -1e9, 1e9) + Math.random() * 2; if (v > bv) { bv = v; best = c; } });
+                ORD.forEach((c) => { const r = drop(g.bd, c); if (r < 0) return; const v = -neg(put(g.bd, r * W + c, me), op, me, 4, -1e9, 1e9) + Rng.float() * 2; if (v > bv) { bv = v; best = c; } });
                 return best == null ? null : { type: "drop", p: { c: best } };
             },
             act(g, u, type, p, id) {
@@ -320,7 +320,7 @@
                 for (let id = 0; id < 5 && ok; id++) {
                     const len = SH[id][1]; let done = false;
                     for (let t = 0; t < 200 && !done; t++) {
-                        const hz = Math.random() < 0.5, r = rnd(hz ? 10 : 11 - len), c = rnd(hz ? 11 - len : 10);
+                        const hz = Rng.float() < 0.5, r = rnd(hz ? 10 : 11 - len), c = rnd(hz ? 11 - len : 10);
                         const cs = Array.from({ length: len }, (_, k) => (r + (hz ? 0 : k)) * 10 + c + (hz ? k : 0));
                         if (cs.every((i) => f[i] === ".")) { cs.forEach((i) => { f[i] = String(id); }); done = true; }
                     }

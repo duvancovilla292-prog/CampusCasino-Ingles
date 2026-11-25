@@ -36,7 +36,7 @@
     const THEME_KEYS = Object.keys(THEMES);
 
     /* ------------------------------ pure helpers ------------------------------ */
-    const rnd = (n) => Math.floor(Math.random() * n);
+    const rnd = (n) => Math.floor(Rng.float() * n);
     /** Uppercases, strips accents (Ñ -> N), keeps A–Z and single spaces. */
     const clean = (s) => String(s || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().replace(/[^A-Z]+/g, " ").trim();
     const wordOk = (w) => w.length >= 3 && w.length <= 24 && (w.match(/[A-Z]/g) || []).length >= 3 && w.split(" ").length <= 4;

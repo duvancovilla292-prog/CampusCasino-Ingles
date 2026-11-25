@@ -91,7 +91,7 @@ const BW = {
             if (!Tables.canDrive(v, me) && !(v.phase === "done" && Date.now() - (v.turnAt || 0) >= this.NEXT_MS)) return;
             const solo = names.length === 1, rot = (v.rot || 0) + 1, order = names.map((_, i) => names[(i + rot) % names.length]);
             const deck = Array.from({ length: 52 }, (_, i) => i);
-            for (let i = 51; i > 0; i -= 1) { const j = Math.floor(Math.random() * (i + 1));[deck[i], deck[j]] = [deck[j], deck[i]]; }
+            for (let i = 51; i > 0; i -= 1) { const j = Math.floor(Rng.float() * (i + 1));[deck[i], deck[j]] = [deck[j], deck[i]]; }
             const n = order.length * 5, hands = {}, ante = {}; order.forEach((u, i) => { hands[u] = deck.slice(i * 5, i * 5 + 5); ante[u] = this.ANTE; });
             if (solo) hands[HOUSE] = deck.slice(n + 5, n + 10);
             return {
@@ -112,12 +112,12 @@ const BW = {
                 v.phase = "final"; v.closer = me; note = `${me} called \u201CI\u2019m done here\u201D \u2014 final cycle begins`;
             } else if (type === "swapall") {
                 if (!first || v.up) return;
-                v.fx = { id: Date.now() + "-" + Math.floor(Math.random() * 1e6), u: me, t: "all", was: 0, at: Date.now() };
+                v.fx = { id: Date.now() + "-" + Math.floor(Rng.float() * 1e6), u: me, t: "all", was: 0, at: Date.now() };
                 v.hands[me] = widow; v.widow = hand; v.up = 1; note = `${me} swapped all 5 cards with the Widow`;
             } else if (type === "swap1") {
                 const h = p && p.h, w = p && p.w;
                 if ((!v.up && !first) || !(h >= 0 && h < 5) || !(w >= 0 && w < 5)) return;
-                v.fx = { id: Date.now() + "-" + Math.floor(Math.random() * 1e6), u: me, t: "one", h, w, was: v.up ? 1 : 0, at: Date.now() };
+                v.fx = { id: Date.now() + "-" + Math.floor(Rng.float() * 1e6), u: me, t: "one", h, w, was: v.up ? 1 : 0, at: Date.now() };
                 const t = hand[h]; hand[h] = widow[w]; widow[w] = t; v.hands[me] = hand; v.widow = widow; note = v.up ? `${me} swapped 1 card with the Widow` : `${me} swapped 1 card with a hidden Widow card`;
             } else if (type === "fold") {
                 v.folded[me] = 1; note = `${me} folded`;
@@ -195,8 +195,8 @@ const BW = {
     },
     sparkle() {
         for (let i = 0; i < 30; i += 1) {
-            const s = document.createElement("span"); s.className = "spark"; s.style.left = (30 + Math.random() * 40) + "vw"; s.style.top = (30 + Math.random() * 30) + "vh";
-            s.style.setProperty("--sx", ((Math.random() - 0.5) * 320) + "px"); s.style.setProperty("--sy", ((Math.random() - 0.5) * 320) + "px");
+            const s = document.createElement("span"); s.className = "spark"; s.style.left = (30 + Rng.float() * 40) + "vw"; s.style.top = (30 + Rng.float() * 30) + "vh";
+            s.style.setProperty("--sx", ((Rng.float() - 0.5) * 320) + "px"); s.style.setProperty("--sy", ((Rng.float() - 0.5) * 320) + "px");
             s.addEventListener("animationend", () => s.remove()); document.body.appendChild(s);
         }
     },

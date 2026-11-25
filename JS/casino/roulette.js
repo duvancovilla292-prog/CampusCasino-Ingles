@@ -168,8 +168,8 @@ const Roulette = {
         if (DOM.rouletteWheel) DOM.rouletteWheel.querySelectorAll(".rw-win").forEach((n) => n.classList.remove("rw-win"));
 
         const count = this.WHEEL_ORDER.length, step = 360 / count;
-        const slotIndex = Math.floor(Math.random() * count);
-        const jitter = (Math.random() - 0.5) * step * 0.6;
+        const slotIndex = Math.floor(Rng.float() * count);
+        const jitter = (Rng.float() - 0.5) * step * 0.6;
         const cur = ((this.wheelRotation % 360) + 360) % 360;
         const target = (((-(slotIndex * step + jitter)) % 360) + 360) % 360;
         const delta = (((target - cur) % 360) + 360) % 360;

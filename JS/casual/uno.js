@@ -19,7 +19,7 @@ const UNO = (() => {
     const SYM = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "\u2298", "\u21C4", "+2", "\u2605", "+4"];
     const VN = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "Skip", "Reverse", "Draw Two", "Wild", "Wild Draw Four"];
     const $ = (id) => document.getElementById(id), mk = (t, c, x) => { const n = document.createElement(t); if (c) n.className = c; if (x != null) n.textContent = x; return n; };
-    const sh = (a) => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1));[a[i], a[j]] = [a[j], a[i]]; } return a; };
+    const sh = (a) => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Rng.float() * (i + 1));[a[i], a[j]] = [a[j], a[i]]; } return a; };
     const nm = (id) => (CARDS[id][0] === 4 ? VN[CARDS[id][1]] : CN[CARDS[id][0]] + " " + VN[CARDS[id][1]]);
     const face = (id) => { const [c, v] = CARDS[id], d = mk("div", "uc c" + c), s = SYM[v]; d.append(mk("i", "a", s), mk("b", "", s), mk("i", "z", s)); d.setAttribute("aria-label", nm(id)); return d; };
     const back = () => mk("div", "uc bk");
@@ -148,7 +148,7 @@ const UNO = (() => {
             this.ref.transaction((v) => {
                 if (!v || v.phase !== "play" || v.order[v.turn] !== u) return; E.fix(v);
                 if (who && Date.now() - (v.turnAt || 0) < this.IDLE) return;
-                const id = Date.now() + "-" + Math.floor(Math.random() * 1e6); let note, r;
+                const id = Date.now() + "-" + Math.floor(Rng.float() * 1e6); let note, r;
                 if (type === "play") {
                     if (!p || (r = E.play(v, u, p.id, p.col)) === false) return;
                     v.fx = { id, t: "p", u, c: p.id, at: Date.now() }; const x = CARDS[p.id][1];
@@ -247,7 +247,7 @@ const UNO = (() => {
         },
         /* --- animations: cards glide along an arc between the piles, hands and seats (deal/draw reuse CardFX) --- */
         fly(el, from, to, delay, dur) {
-            const dx = to.left + to.width / 2 - (from.left + from.width / 2), dy = to.top + to.height / 2 - (from.top + from.height / 2), tilt = Math.random() * 20 - 10;
+            const dx = to.left + to.width / 2 - (from.left + from.width / 2), dy = to.top + to.height / 2 - (from.top + from.height / 2), tilt = Rng.float() * 20 - 10;
             el.style.setProperty("--uw", from.width + "px");
             Object.assign(el.style, { position: "fixed", left: from.left + "px", top: from.top + "px", margin: "0", zIndex: "400", pointerEvents: "none", willChange: "transform" }); document.body.appendChild(el);
             const a = el.animate([

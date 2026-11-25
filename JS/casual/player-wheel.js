@@ -190,8 +190,8 @@ const PlayerWheel = {
         Sound.click();
 
         const count = this.pool.length, slice = 360 / count;
-        const winnerIndex = Rig.idx(this.pool, Math.floor(Math.random() * count));
-        const jitter = (Math.random() - 0.5) * slice * 0.6;              // land anywhere inside the slice, not dead centre
+        const winnerIndex = Rig.idx(this.pool, Math.floor(Rng.float() * count));
+        const jitter = (Rng.float() - 0.5) * slice * 0.6;              // land anywhere inside the slice, not dead centre
         const currentMod = ((this.rotation % 360) + 360) % 360;
         const targetAngle = (((360 - (winnerIndex * slice + slice / 2 + jitter)) % 360) + 360) % 360;
         let delta = targetAngle - currentMod;

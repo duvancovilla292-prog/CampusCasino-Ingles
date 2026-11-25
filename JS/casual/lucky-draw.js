@@ -63,7 +63,7 @@ const LuckyDraw = {
         const out = list.slice();
         if (Rig.on && out.includes(Rig.target)) { const r = out.filter((x) => x !== Rig.target); return [Rig.target, ...this.shuffle.call({ shuffle: null }, r)]; }
         for (let i = out.length - 1; i > 0; i -= 1) {
-            const j = Math.floor(Math.random() * (i + 1));
+            const j = Math.floor(Rng.float() * (i + 1));
             [out[i], out[j]] = [out[j], out[i]];
         }
         return out;
@@ -261,7 +261,7 @@ const LuckyDraw = {
             const reel = this.mk("div", "reel is-spinning");
             const strip = this.mk("div", "reel-strip");
             for (let i = 0; i < target + 4; i += 1) {
-                strip.appendChild(this.mk("div", "reel-item", i === target ? winner : names[Math.floor(Math.random() * names.length)]));
+                strip.appendChild(this.mk("div", "reel-item", i === target ? winner : names[Math.floor(Rng.float() * names.length)]));
             }
             const streak = this.mk("div", "reel-streak");
             reel.append(strip, streak, this.mk("div", "reel-window"));
@@ -316,8 +316,8 @@ const LuckyDraw = {
         const gap = Math.asin(Math.min(0.9, (r + 5) / R));
         const palette = ["#e0483e", "#f4c430", "#2e8b57", "#e8e8e8", "#3b6fb6"];
         const balls = this.shuffle(names).map((name, i) => {
-            const a = Math.random() * Math.PI * 2, d = Math.sqrt(Math.random()) * (R - r - 4);
-            return { name, x: cx + Math.cos(a) * d, y: cy + Math.sin(a) * d, vx: (Math.random() - 0.5) * 200, vy: (Math.random() - 0.5) * 200, color: palette[i % palette.length], mode: "free" };
+            const a = Rng.float() * Math.PI * 2, d = Math.sqrt(Rng.float()) * (R - r - 4);
+            return { name, x: cx + Math.cos(a) * d, y: cy + Math.sin(a) * d, vx: (Rng.float() - 0.5) * 200, vy: (Rng.float() - 0.5) * 200, color: palette[i % palette.length], mode: "free" };
         });
 
         const step = (dt, blow) => {
@@ -326,7 +326,7 @@ const LuckyDraw = {
             free.forEach((b) => {
                 b.vy += 420 * s;
                 if (b.y > cy + R * 0.2) b.vy -= blow * 1500 * s;          // air jet from the bottom
-                b.vx += (Math.random() - 0.5) * blow * 1200 * s;
+                b.vx += (Rng.float() - 0.5) * blow * 1200 * s;
                 const sp = Math.hypot(b.vx, b.vy);
                 if (sp > 620) { b.vx *= 620 / sp; b.vy *= 620 / sp; }
                 b.x += b.vx * s; b.y += b.vy * s;
@@ -396,7 +396,7 @@ const LuckyDraw = {
                 pt += dt;
                 if (phase === "blow") {
                     blow = 1;
-                    if (Math.floor(pt / 130) !== Math.floor((pt - dt) / 130)) Sound.tone(200 + Math.random() * 220, 40, "triangle", 0.03);
+                    if (Math.floor(pt / 130) !== Math.floor((pt - dt) / 130)) Sound.tone(200 + Rng.float() * 220, 40, "triangle", 0.03);
                     if (pt > 1700) { phase = "pull"; pt = 0; ball.mode = "pull"; blow = 0.5; }
                 } else if (phase === "pull") {
                     const dx = cx - ball.x, dy = mouthY + r - ball.y, d = Math.hypot(dx, dy);
@@ -433,7 +433,7 @@ const LuckyDraw = {
         this.el.stage.replaceChildren(area);
 
         deck.classList.add("is-shuffling");
-        for (let i = 0; i < 8; i += 1) { Sound.tone(300 + Math.random() * 200, 40, "square", 0.025); await this.wait(220, id); }
+        for (let i = 0; i < 8; i += 1) { Sound.tone(300 + Rng.float() * 200, 40, "square", 0.025); await this.wait(220, id); }
         deck.classList.remove("is-shuffling");
 
         const suits = Deck.SUITS;
@@ -442,7 +442,7 @@ const LuckyDraw = {
             const inner = this.mk("div", "deal-inner");
             const back = this.mk("div", "deal-face deal-back", "\u2660");
             const front = this.mk("div", "deal-face deal-front");
-            const suit = suits[Math.floor(Math.random() * suits.length)];
+            const suit = suits[Math.floor(Rng.float() * suits.length)];
             const red = suit === "\u2665" || suit === "\u2666";
             front.classList.toggle("is-red", red);
             front.append(this.mk("span", "deal-suit", suit), this.mk("span", "deal-name", winner), this.mk("span", "deal-tag", "WINNER"));
@@ -487,9 +487,9 @@ const LuckyDraw = {
         const slotX = (k) => 20 + (w - 40) * (k + 0.5) / winners.length;
         const src = { x: cx, y: 8 };
         const chips = this.shuffle(names).map((name, i) => ({
-            name, a: Math.random() * Math.PI * 2, ro: 0.25 + Math.random() * 0.7, dir: Math.random() < 0.5 ? -1 : 1,
-            w0: 0.7 + Math.random() * 0.8, color: this.CHIP_COLORS[i % this.CHIP_COLORS.length],
-            delay: Math.random() * 700, mode: "orbit", x: cx, y: -60, slot: -1
+            name, a: Rng.float() * Math.PI * 2, ro: 0.25 + Rng.float() * 0.7, dir: Rng.float() < 0.5 ? -1 : 1,
+            w0: 0.7 + Rng.float() * 0.8, color: this.CHIP_COLORS[i % this.CHIP_COLORS.length],
+            delay: Rng.float() * 700, mode: "orbit", x: cx, y: -60, slot: -1
         }));
         let time = 0;
 
@@ -736,7 +736,7 @@ const LuckyDraw = {
         this.el.stage.replaceChildren(grid);
 
         grid.classList.add("is-shuffling");
-        for (let i = 0; i < 6; i += 1) { Sound.tone(260 + Math.random() * 160, 40, "square", 0.025); await this.wait(180, id); }
+        for (let i = 0; i < 6; i += 1) { Sound.tone(260 + Rng.float() * 160, 40, "square", 0.025); await this.wait(180, id); }
         grid.classList.remove("is-shuffling");
 
         const open = (c, win) => {

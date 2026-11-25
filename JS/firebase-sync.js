@@ -137,7 +137,7 @@ const Room = {
         const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // no ambiguous 0/O/1/I
         let code = "";
         for (let i = 0; i < 6; i += 1) {
-            code += chars[Math.floor(Math.random() * chars.length)];
+            code += chars[Rng.int(chars.length)];
         }
         return code;
     },
