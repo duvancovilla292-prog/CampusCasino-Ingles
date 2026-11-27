@@ -354,7 +354,7 @@ The administrator panel opens only on the **device that created the room** (a `d
 - **Reset chips:** set a new balance for a player.
 - **Kick:** remove a player. Their screen returns to the first screen with a notice, their seat is freed if the table is in the lobby, betting or finished, and their profile is deleted. You cannot kick yourself, and the player can rejoin with the room code.
 - **Delete:** remove a player's profile.
-- **Export / Import:** download or restore a JSON backup (`casino-campus-backup-<timestamp>.json`).
+- **Export / Import:** download or restore a JSON backup of the whole room, named `CasinoCampus_<ROOM>_<YYYY-MM-DD>.json`.
 - **Delete all:** remove every player in the room.
 - **Arcade:** after unlocking the panel, the Arcade Games tab shows **Manage games** (see [Arcade](#arcade-iframe-games)).
 

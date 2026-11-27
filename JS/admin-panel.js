@@ -303,7 +303,7 @@ const GamesAdmin = {
 const Backup = {
     APP: "casino-campus",
     VERSION: 2,
-    FILE_NAME: "data.json",
+    SITE_NAME: "CasinoCampus",
     MAX_BYTES: 5 * 1024 * 1024,
     MAX: { questions: 200, items: 300, names: 80, players: 500, depth: 8 },
     busy: false,
@@ -406,13 +406,24 @@ const Backup = {
         };
     },
 
-    /** Saves the object as a file (Blob + temporary link; works on GitHub Pages and on phones). */
+    /**
+     * Download name: page name, room code and local date, e.g. "CasinoCampus_3G58RX_2026-11-27.json".
+     * Characters that are not safe in file names are dropped from the room code.
+     */
+    fileName(roomCode, date = new Date()) {
+        const pad = (n) => String(n).padStart(2, "0");
+        const room = String(roomCode || "").replace(/[^A-Za-z0-9_-]/g, "").slice(0, 20) || "NoRoom";
+        return `${this.SITE_NAME}_${room}_${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}.json`;
+    },
+
+    /** Saves the object as a file (Blob + temporary link; works on GitHub Pages and on phones). Returns the file name. */
     download(payload) {
         const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
-        const url = URL.createObjectURL(blob), link = document.createElement("a");
-        link.href = url; link.download = this.FILE_NAME;
+        const url = URL.createObjectURL(blob), link = document.createElement("a"), name = this.fileName(payload.roomCode);
+        link.href = url; link.download = name;
         document.body.appendChild(link); link.click(); link.remove();
         window.setTimeout(() => URL.revokeObjectURL(url), 1000); // revoking at once cancels the download in some browsers
+        return name;
     },
 
     async exportData() {
@@ -421,8 +432,8 @@ const Backup = {
         this.busy = true;
         try {
             const payload = await this.collect(), m = payload.modules;
-            this.download(payload);
-            Notify.success(`${this.FILE_NAME} downloaded: ${m.casualGames.games.length} games, ${m.quiz.questions.length} questions, ` +
+            const name = this.download(payload);
+            Notify.success(`${name} downloaded: ${m.casualGames.games.length} games, ${m.quiz.questions.length} questions, ` +
                 `${m.store.items.length} store items, ${Object.keys(m.players).length} players.`);
         } catch (e) {
             Notify.error("Could not export the data. Check your connection and try again.");

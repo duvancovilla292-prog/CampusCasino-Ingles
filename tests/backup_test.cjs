@@ -271,3 +271,10 @@ test('quiz import: settings are optional, questions of unknown types are skipped
     const choice = b.validate({ modules: { quiz: { questions: [], live: { optionsVisible: false, answerVisible: true, question: { prompt: 'Q?', options: ['a', 'b'], correctIndex: 0 } } } } });
     assert.equal(choice.plan.quiz.live.answerVisible, false, 'choice: answer only after the options');
 });
+
+test('download file name: page name, room code and local date', () => {
+    const b = load();
+    assert.equal(b.fileName('3G58RX', new Date(2026, 10, 27, 23, 59)), 'CasinoCampus_3G58RX_2026-11-27.json');
+    assert.equal(b.fileName('AB/C 12', new Date(2026, 0, 5)), 'CasinoCampus_ABC12_2026-01-05.json', 'unsafe characters are dropped');
+    assert.equal(b.fileName(null, new Date(2026, 0, 5)), 'CasinoCampus_NoRoom_2026-01-05.json');
+});
