@@ -1,0 +1,206 @@
+{
+  "version": 1,
+  "updatedAt": "2026-11-28T00:00:00.000Z",
+  "games": [
+    {
+      "id": "word-hunt",
+      "title": "Word Hunt",
+      "icon": "🔤",
+      "description": "Catch the falling letters and guess the word for each theme.",
+      "src": "https://html5.gamedistribution.com/831704704ed044388a5e17fb1a14eb91/",
+      "width": 800,
+      "height": 600,
+      "enabled": true
+    },
+    {
+      "id": "free-words",
+      "title": "Free Words",
+      "icon": "📝",
+      "description": "Mix the letters and make as many English words as you can before time runs out.",
+      "src": "https://html5.gamedistribution.com/a82bfcc90a8548a3976b0b2d13dd37dd/",
+      "width": 800,
+      "height": 600,
+      "enabled": true
+    },
+    {
+      "id": "wordseeker",
+      "title": "WordSeeker",
+      "icon": "🔎",
+      "description": "Word hunt and spelling game for fans of Scrabble, crosswords and anagrams.",
+      "src": "https://html5.gamedistribution.com/0d8c781d55134669b2d424e7e427e19a/",
+      "width": 800,
+      "height": 600,
+      "enabled": true
+    },
+    {
+      "id": "word-ocean",
+      "title": "Word Ocean",
+      "icon": "🌊",
+      "description": "Relaxing word puzzle: connect letters to find the hidden words.",
+      "src": "https://html5.gamedistribution.com/278a44ffc9e44489ba5d61338238276b/",
+      "width": 800,
+      "height": 600,
+      "enabled": true
+    },
+    {
+      "id": "guess-the-character",
+      "title": "Guess the Character",
+      "icon": "🐾",
+      "description": "Guess the animal's name in English from a picture with missing pieces.",
+      "src": "https://html5.gamedistribution.com/280efd415bf24b89b36742a2da1b9e6b/",
+      "width": 800,
+      "height": 600,
+      "enabled": true
+    },
+    {
+      "id": "vex-10",
+      "title": "Vex 10",
+      "icon": "🏃",
+      "description": "Stickman parkour full of traps and gravity tricks.",
+      "src": "https://html5.gamedistribution.com/57820e917cff42488d174341b8866760/",
+      "width": 800,
+      "height": 600,
+      "enabled": true
+    },
+    {
+      "id": "vex-6",
+      "title": "Vex 6",
+      "icon": "🏃",
+      "description": "More stickman parkour challenges from the Vex series.",
+      "src": "https://html5.gamedistribution.com/4925e12574364121a48c61c35f649c36/",
+      "width": 800,
+      "height": 600,
+      "enabled": true
+    },
+    {
+      "id": "vex-5",
+      "title": "Vex 5",
+      "icon": "🏃",
+      "description": "Classic Vex parkour: run, jump and dodge the traps.",
+      "src": "https://html5.gamedistribution.com/f120262ab72743039fbce88c1f370df8/",
+      "width": 800,
+      "height": 600,
+      "enabled": true
+    },
+    {
+      "id": "vex-4",
+      "title": "Vex 4",
+      "icon": "🏃",
+      "description": "The original Vex obstacle courses.",
+      "src": "https://html5.gamedistribution.com/80e6a5ae477f4d4fbcd1ea293d10087d/",
+      "width": 800,
+      "height": 600,
+      "enabled": true
+    },
+    {
+      "id": "snow-rider-3d",
+      "title": "Snow Rider 3D",
+      "icon": "🛷",
+      "description": "Ride a sled down a snowy slope and dodge the obstacles.",
+      "src": "https://html5.gamedistribution.com/3b79a8537ebc414fb4f9672a9b8c68c8/",
+      "width": 800,
+      "height": 600,
+      "enabled": true
+    },
+    {
+      "id": "x-parkour",
+      "title": "X Parkour",
+      "icon": "🤸",
+      "description": "Stickman runner: go as fast as you can and get past the obstacles.",
+      "src": "https://html5.gamedistribution.com/059ed2c363354fc3a1bc69f452878673/",
+      "width": 800,
+      "height": 600,
+      "enabled": true
+    },
+    {
+      "id": "parkour-race",
+      "title": "Parkour Race",
+      "icon": "🧱",
+      "description": "3D pixel parkour race with 20 levels: run, jump and slide.",
+      "src": "https://html5.gamedistribution.com/09efae2b2ec346bab60b393e6a78fe6e/",
+      "width": 800,
+      "height": 600,
+      "enabled": true
+    },
+    {
+      "id": "stickman-race-3d",
+      "title": "Stickman Race 3D",
+      "icon": "🏁",
+      "description": "Fast 3D stickman race against other runners.",
+      "src": "https://html5.gamedistribution.com/a8eaf9a5498a4df9b3076864f377373a/",
+      "width": 800,
+      "height": 600,
+      "enabled": true
+    },
+    {
+      "id": "snake-3d",
+      "title": "3D Snake",
+      "icon": "🐍",
+      "description": "Snake in 3D with stages, skins and an apple shop.",
+      "src": "https://html5.gamedistribution.com/40caa9898a864a95a5bbbf4b7d0a8484/",
+      "width": 800,
+      "height": 600,
+      "enabled": true
+    },
+    {
+      "id": "merge-cannon",
+      "title": "Merge Cannon: Chicken Defense",
+      "icon": "💥",
+      "description": "Merge cannons to make them stronger and stop the chickens.",
+      "src": "https://html5.gamedistribution.com/bec78e2bc19243a6bb7e0939b9154e12/",
+      "width": 800,
+      "height": 600,
+      "enabled": true
+    },
+    {
+      "id": "soccer-skills",
+      "title": "Soccer Skills: Euro Cup",
+      "icon": "⚽",
+      "description": "Online soccer game with national teams.",
+      "src": "https://html5.gamedistribution.com/899c82ac71ba4dd5a571fc9bc35f55f8/",
+      "width": 800,
+      "height": 600,
+      "enabled": true
+    },
+    {
+      "id": "traffic-rider-moto-bike-racing",
+      "title": "Traffic Rider Moto Bike Racing",
+      "icon": "🏍",
+      "description": "Race, dodge and overtake traffic on a busy highway.",
+      "src": "https://html5.gamedistribution.com/3ae409f702f64fab98743afbfdf211a1/",
+      "width": 800,
+      "height": 600,
+      "enabled": true
+    },
+    {
+      "id": "crazy-bike-stunts-pvp",
+      "title": "Crazy Bike Stunts PvP",
+      "icon": "🏁",
+      "description": "Stunt driving with custom rides and a 2-player mode.",
+      "src": "https://html5.gamedistribution.com/0c89181b9cfe4897afa41b0f94385da9/",
+      "width": 800,
+      "height": 600,
+      "enabled": true
+    },
+    {
+      "id": "q",
+      "title": "q (rename me)",
+      "icon": "🎮",
+      "description": "Game from the room's previous list; give it a real title in Manage games.",
+      "src": "https://html5.gamedistribution.com/96e8930b69c044c687e3dc617bdb4a43/",
+      "width": 800,
+      "height": 600,
+      "enabled": true
+    },
+    {
+      "id": "kick-the-buddy",
+      "title": "Kick The Buddy",
+      "icon": "🥊",
+      "description": "Hidden: GameDistribution shows \"not available here\" on this site.",
+      "src": "https://html5.gamedistribution.com/3785ca02d41845c389b09c5e1ff4ced7/",
+      "width": 800,
+      "height": 600,
+      "enabled": false
+    }
+  ]
+}
